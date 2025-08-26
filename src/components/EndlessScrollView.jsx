@@ -98,7 +98,7 @@ export function EndlessScrollView({ ref, className, onDown, onDownCancel, onUp, 
 
         ref?.current.addEventListener('wheel', handler, { passive: false });
         return () => {
-            ref?.current.removeEventListener('wheel', handler);
+            ref?.current?.removeEventListener('wheel', handler);
         }
     }, [dragging.current]);
 
@@ -107,7 +107,7 @@ export function EndlessScrollView({ ref, className, onDown, onDownCancel, onUp, 
             ref={ref}
             {...props}
 
-            className={cn("bg-white ring-1 ring-white inset-shadow-lg cursor-default overflow-hidden select-none", className)}
+            className={cn("cursor-default overflow-hidden select-none", className)}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
@@ -117,7 +117,7 @@ export function EndlessScrollView({ ref, className, onDown, onDownCancel, onUp, 
             onContextMenu={(event => {
                 event.preventDefault();
             })}
-            style={{ overscrollBehavior: "contain" }}
+            style={{ overscrollBehavior: "contain", touchAction: "none" }}
         >
             {children}
         </div>

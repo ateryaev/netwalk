@@ -5,13 +5,6 @@ path {
     xstroke: url(#star);
 }
 
-.svgtop {
-    d: path("M50 50 l0 -40");
-}
-
-.svgtop.long {
-    d: path("M50 50 l0 -50");
-}
 
 /* path {
     background-color: #e5e5f7;

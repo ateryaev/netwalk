@@ -12,6 +12,11 @@ export function createGame(cols, rows) {
         cells: [],
         cols,
         rows,
+        ends: 0,
+        endsOn: 0,
+        atXY: null,
+        isConnected: null,
+        rotateAtXY: null,
     };
 
     //create empty cells
@@ -26,6 +31,35 @@ export function createGame(cols, rows) {
                 figure: 0
             };
         }
+    }
+
+    function countEnds() {
+        let count = 0;
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                const cell = game.cells[row][col];
+                if (cell.figure === 0) continue;
+                if (cell.source) continue;
+                const dirs = figureToDirs(cell.figure);
+                if (dirs.length === 1) count++;
+            }
+        }
+        return count;
+    }
+
+    function countEndsOn() {
+        let count = 0;
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                const cell = game.cells[row][col];
+                if (cell.figure === 0) continue;
+                if (cell.source) continue;
+                const dirs = figureToDirs(cell.figure);
+                if (dirs.length === 1 && cell.on) count++;
+            }
+        }
+        console.log("ENDS ON", count);
+        return count;
     }
 
     function atXY(x, y) {
@@ -179,6 +213,10 @@ export function createGame(cols, rows) {
         updateOnFromSource(serverCol, serverRow + 1, 1);
         updateOnFromSource(serverCol + 1, serverRow, 2);
         updateOnFromSource(serverCol + 1, serverRow + 1, 2);
+
+
+        game.endsOn = countEndsOn();
+        console.log("ENDS ON 1", game.endsOn);
         return;
     }
 
@@ -204,7 +242,7 @@ export function createGame(cols, rows) {
         { x: serverCol + 1, y: serverRow + 1 }
     ];
 
-    for (let i = 0; i < 400; i++) {
+    for (let i = 0; i < 40 * 40; i++) {
         // console.log(`CAN GO FROM ${ends.length}`, i);
         if (ends.length === 0) {
             console.log("No more ends to process", i);
@@ -244,6 +282,8 @@ export function createGame(cols, rows) {
         }
 
     }
+
+    game.ends = countEnds();
 
     game.shufle = function () {
         for (let row = 0; row < rows; row++) {
