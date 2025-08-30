@@ -1,5 +1,6 @@
 import { bymod, rnd } from "./helpers";
 import { TOP, RIGHT, BOTTOM, LEFT, DIRS } from "./cfg";
+import { countProgress } from "./game";
 // const TOP = 0b1000;
 // const RIGHT = 0b0100;
 // const BOTTOM = 0b0010;
@@ -296,7 +297,7 @@ export function createGame(cols, rows) {
 
     //game.shufle();
     updateOnStates();
-
+    game.counts = countProgress(game);
     return game;
 
 

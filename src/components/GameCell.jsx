@@ -3,7 +3,8 @@ import { cn } from "../utils/cn";
 import { bymod, rnd } from "../utils/helpers";
 import { SIZE } from "../utils/cfg";
 
-export function GameCell({ className, conectedTo, on, data, figure, style, selected, ...props }) {
+
+export function GameCell({ className, conectedTo, on, data, figure, selected, ...props }) {
 
     const isEnd = useMemo(() => (figure === 0b1000 || figure === 0b0100 || figure === 0b0010 || figure === 0b0001), [figure])
     const actives = useMemo(() => (on === 1 || on === 2), [on]);
@@ -69,7 +70,8 @@ export function GameCell({ className, conectedTo, on, data, figure, style, selec
                 (on === 3) && 'stroke-red-200 saturate-50 '
             )}
 
-            style={{ width: `${SIZE}px`, height: `${SIZE}px`, ...style }}
+            {...props}
+            //style={{ width: `${size}px`, height: `${size}px`, ...style }}
             ref={rotorRef}>
 
             {figure & 0b1000 && <path d={`M50 50 l0 -${conectedTo.top ? 50 : 36}`} />}

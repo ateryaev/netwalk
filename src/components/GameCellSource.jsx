@@ -3,7 +3,7 @@ import { cn } from "../utils/cn";
 import { bymod } from "../utils/helpers";
 import { SIZE } from "../utils/cfg";
 
-export function GameCellSource({ className, conectedTo1, conectedTo2, on, data, figure1, figure2, pos, style, ...props }) {
+export function GameCellSource({ className, conectedTo1, conectedTo2, on, data, figure1, figure2, pos, style, size, ...props }) {
 
     //const [renderValue, setRenderValue] = useState(0);
     const [phase, setPhase] = useState(0);
@@ -16,13 +16,13 @@ export function GameCellSource({ className, conectedTo1, conectedTo2, on, data, 
     const init = useRef(false);
 
 
-    useEffect(() => {
-        //increase phase every 1s
-        const interval = setInterval(() => {
-            setPhase((prev) => bymod(prev + (on === 1 ? 1 : -1), 12));
-        }, 200);
-        return () => clearInterval(interval);
-    }, []);
+    // useEffect(() => {
+    //     //increase phase every 1s
+    //     const interval = setInterval(() => {
+    //         setPhase((prev) => bymod(prev + (on === 1 ? 1 : -1), 12));
+    //     }, 200);
+    //     return () => clearInterval(interval);
+    // }, []);
 
 
 
@@ -52,7 +52,7 @@ export function GameCellSource({ className, conectedTo1, conectedTo2, on, data, 
                     move2Ref.current.style.translate = "0 0px";
                     move2Ref.current.style.transition = transition;
                 });
-
+                setPhase((prev) => bymod(prev + (on === 1 ? 1 : -1), 12));
             });
         init.current = true;
 
@@ -70,7 +70,7 @@ export function GameCellSource({ className, conectedTo1, conectedTo2, on, data, 
                 (on === 2) && 'stroke-amber-400',
                 (on === 3) && 'stroke-red-200 saturate-50'
             )}
-            style={{ width: `${SIZE}px`, height: `${SIZE * 2}px`, ...style }}
+            style={{ width: `${size}px`, height: `${size * 2}px`, ...style }}
         >
             < g ref={rotor1Ref} style={{ rotatex: "-45deg", transformOrigin: "50px 50px" }}>
                 {figure1 & 0b1000 && <path d={`M50 50 l0 -${conectedTo1.top ? 50 : 36}`} />}

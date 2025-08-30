@@ -4,4 +4,4 @@ export const BOTTOM = 0b0010;
 export const LEFT = 0b0001;
 export const DIRS = [TOP, RIGHT, BOTTOM, LEFT];
 
-export const SIZE = 80;
+export const SIZE = 100;

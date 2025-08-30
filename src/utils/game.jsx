@@ -52,6 +52,32 @@ export function countEndsOn(game) {
     return count;
 }
 
+export function countProgress(game) {
+    let counts = {
+        total: 0,
+        colors: {
+            0: 0,
+            3: 0
+        }
+    };
+
+
+    for (let row = 0; row < game.rows; row++) {
+        for (let col = 0; col < game.cols; col++) {
+            const cell = game.cells[row][col];
+            if (cell.figure === 0) continue;
+            //if (cell.source) continue;
+            counts.total++;
+
+            if (!counts.colors[cell.on]) counts.colors[cell.on] = 0;
+            counts.colors[cell.on]++;
+
+        }
+    }
+    console.log("countProgress", counts);
+    return counts;
+}
+
 export function countEnds(game) {
     let count = 0;
     for (let row = 0; row < game.rows; row++) {

@@ -1,18 +1,37 @@
 import { use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import { cn } from './utils/cn'
-
-import { EndlessScrollView } from './components/EndlessScrollView';
-import { GameCell } from './components/GameCell';
-import { rnd, bymod } from './utils/helpers';
 import { createGame } from './utils/gameplay';
-import { GameCellBg } from './components/GameCellBg';
-import { GameCellSource } from './components/GameCellSource';
-import { SIZE } from "./utils/cfg";
-import { countEnds, countEndsOn } from './utils/game';
 import { PagePlay } from './PagePlay';
 import { PageMenu } from './PageMenu';
+import { PageTest } from './PageTest';
+import { countProgress } from './utils/game';
 
+
+// function restart(cols, rows) {
+
+//     let newGame = createGame(cols, rows);
+//     newGame.shufle();
+//     newGame.updateOnStates();
+//     onGameChange(newGame);
+//     scrollCenter();
+// }
+
+// function shufle() {
+//     game.shufle();
+//     game.updateOnStates();
+//     onGameChange({ ...game })
+// }
+
+// function scrollClamp() {
+//     let newScrollLeft = bymod(scrollLeft, contentWidth);
+//     if (newScrollLeft > contentWidth / 2) newScrollLeft -= contentWidth;
+//     let newScrollTop = bymod(scrollTop, contentHeight);
+//     if (newScrollTop > contentHeight / 2) newScrollTop -= contentHeight;
+
+//     setScrollLeft(newScrollLeft);
+//     setScrollTop(newScrollTop);
+// }
 
 function App() {
 
@@ -23,16 +42,20 @@ function App() {
     let newGame = createGame(cols, rows);
     newGame.shufle();
     newGame.updateOnStates();
+    newGame.counts = countProgress(newGame);
 
     setGame(newGame);
     setPage("play");
   }
 
   const [page, setPage] = useState("play");
-  const [game, setGame] = useState(createGame(8, 8)); //load from localStorage or create new
+  const [game, setGame] = useState(createGame(4, 4)); //load from localStorage or create new
 
   if (page === "menu") return (
-    <PageMenu onNewGame={handleNewGame} />
+    <PageMenu onNewGame={handleNewGame} onTest={() => setPage("test")} />
+  )
+  if (page === "test") return (
+    <PageTest onBack={() => setPage("menu")} />
   )
   if (page === "play")
     return (
