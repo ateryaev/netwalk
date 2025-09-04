@@ -136,7 +136,7 @@ export function PanZoomView({ ref, className,
             onContextMenu={(event => {
                 event.preventDefault();
             })}
-            style={{ overscrollBehavior: "contain", touchAction: "none" }}
+            style={{ overscrollBehavior: "contain", touchAction: "none", background: "red", ...(props.style) }}
         >
             {children}
         </div>

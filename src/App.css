@@ -4,7 +4,7 @@
 body {
 
   text-size-adjust: none;
-  font-family: "WDXL Lubrifont TC", sans-serif, Roboto Mono, fredoka, Verdana, Geneva, Tahoma, sans-serif;
+  font-family: fredoka, "WDXL Lubrifont TC", sans-serif, Roboto Mono, fredoka, Verdana, Geneva, Tahoma, sans-serif;
   touch-action: manipulation;
   margin: 0;
   padding: 0;

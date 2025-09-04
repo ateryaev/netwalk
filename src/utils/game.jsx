@@ -1,11 +1,17 @@
-import { DIRS } from "./cfg";
+import { BOTTOM, DIRS, LEFT, RIGHT, TOP, TRANS_DURATION } from "./cfg";
+import { bymod } from "./helpers";
 
-function figureToDirs(figure) {
-    const dirs = [];
-    DIRS.forEach((dir) => {
-        (figure & dir) && dirs.push(dir);
-    });
-    return dirs;
+function invertDir(dir) {
+    return {
+        [TOP]: BOTTOM,
+        [RIGHT]: LEFT,
+        [BOTTOM]: TOP,
+        [LEFT]: RIGHT
+    }[dir];
+}
+
+export function extractDirs(figure) {
+    return DIRS.filter(dir => figure & dir);
 }
 
 export function create(cols, rows) {
@@ -18,6 +24,7 @@ export function create(cols, rows) {
         atXY: null,
         isConnected: null,
         rotateAtXY: null,
+        rotatedOn: 0
     };
 
     //create empty cells
@@ -37,36 +44,22 @@ export function create(cols, rows) {
     return game;
 }
 
-export function countEndsOn(game) {
-    let count = 0;
-    for (let row = 0; row < game.rows; row++) {
-        for (let col = 0; col < game.cols; col++) {
-            const cell = game.cells[row][col];
-            if (cell.figure === 0) continue;
-            if (cell.source) continue;
-            const dirs = figureToDirs(cell.figure);
-            if (dirs.length === 1 && cell.on) count++;
-        }
-    }
-    console.log("ENDS ON", count);
-    return count;
-}
-
 export function countProgress(game) {
     let counts = {
         total: 0,
         colors: {
             0: 0,
+            1: 0,
+            2: 0,
             3: 0
         }
     };
-
 
     for (let row = 0; row < game.rows; row++) {
         for (let col = 0; col < game.cols; col++) {
             const cell = game.cells[row][col];
             if (cell.figure === 0) continue;
-            //if (cell.source) continue;
+            if (cell.source) continue;
             counts.total++;
 
             if (!counts.colors[cell.on]) counts.colors[cell.on] = 0;
@@ -78,16 +71,35 @@ export function countProgress(game) {
     return counts;
 }
 
-export function countEnds(game) {
-    let count = 0;
-    for (let row = 0; row < game.rows; row++) {
-        for (let col = 0; col < game.cols; col++) {
-            const cell = game.cells[row][col];
-            if (cell.figure === 0) continue;
-            if (cell.source) continue;
-            const dirs = figureToDirs(cell.figure);
-            if (dirs.length === 1) count++;
-        }
+function atXY(game, x, y) {
+    x = bymod(x, game.cols);
+    y = bymod(y, game.rows);
+    return game.cells[y][x];
+}
+function atXYD(game, x, y, dir) {
+
+    switch (dir) {
+        case TOP: return atXY(game, x, y - 1);
+        case RIGHT: return atXY(game, x + 1, y);
+        case BOTTOM: return atXY(game, x, y + 1);
+        case LEFT: return atXY(game, x - 1, y);
+        default: return null;
     }
-    return count;
+}
+
+
+export function getRtConnections(game, now, x, y) {
+    const cell = atXY(game, x, y);
+
+    if (now - cell.rotatedOn < TRANS_DURATION) return 0;
+    let rtConnections = 0;
+    extractDirs(cell.figure).forEach((dir) => {
+        const ocell = atXYD(game, x, y, dir);
+        if (ocell.figure & invertDir(dir)) {
+            if (cell.on === ocell.on) {
+                if (now - ocell.rotatedOn >= TRANS_DURATION) rtConnections |= dir;
+            }
+        }
+    })
+    return rtConnections;
 }

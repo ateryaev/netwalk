@@ -61,6 +61,7 @@ export function GameCellSource({ className, conectedTo1, conectedTo2, on, data, 
 
     return (
         <svg viewBox={"0 0 100 200"}
+            shapeRendering="auto"
             fill="none"
             stroke="currentColor" strokeWidth="18"
             strokeLinecap="round" strokeLinejoin="round"
@@ -72,7 +73,7 @@ export function GameCellSource({ className, conectedTo1, conectedTo2, on, data, 
             )}
             style={{ width: `${size}px`, height: `${size * 2}px`, ...style }}
         >
-            < g ref={rotor1Ref} style={{ rotatex: "-45deg", transformOrigin: "50px 50px" }}>
+            <g ref={rotor1Ref} style={{ rotatex: "-45deg", transformOrigin: "50px 50px" }}>
                 {figure1 & 0b1000 && <path d={`M50 50 l0 -${conectedTo1.top ? 50 : 36}`} />}
                 {figure1 & 0b0100 && <path d={`M50 50 l${conectedTo1.right ? 50 : 36} 0`} />}
 
@@ -86,7 +87,7 @@ export function GameCellSource({ className, conectedTo1, conectedTo2, on, data, 
                 {figure2 & 0b0100 && <path d={`M50 150 l${conectedTo2.right ? 50 : 36} 0`} />}
 
             </g>
-            <g ref={rotor2Ref} style={{ rotatex: "0deg", transformOrigin: "50px 150px" }}>
+            <g ref={rotor2Ref} style={{ rotatex: "0deg", transformOrigin: "50px 150px" }} >
                 {figure2 & 0b0010 && <path d={`M50 150 l0 ${conectedTo2.bottom ? 50 : 36}`} />}
                 {figure2 & 0b0001 && <path d={`M50 150 l-${conectedTo2.left ? 50 : 36} 0`} />}
 
@@ -96,7 +97,14 @@ export function GameCellSource({ className, conectedTo1, conectedTo2, on, data, 
 
 
             <rect x="24" y="24" width="52" height="152" rx="20" fill="#fff" />
-            <path strokeWidth={0} stroke="black" fill="#333"
+            <g opacity={1} stroke="#333">
+                <path strokeWidth={18} opacity={1} d={`M50 50 l0 0`} />
+                <path strokeWidth={18} opacity={1} d={`M50 75 l0 0`} />
+                <path strokeWidth={18} opacity={1} d={`M50 100 l0 0`} />
+                <path strokeWidth={18} opacity={1} d={`M50 125 l0 0`} />
+                <path strokeWidth={18} opacity={1} d={`M50 150 l0 0`} />
+            </g>
+            {/* <path strokeWidth={0} stroke="black" fill="#333"
                 d1={phase % 2 == 0 ? "M30 100 q10 10 20 0 q10 -10 20 0 l0 70 l-40 0 z" :
                     "M30 100 q10 -10 20 0 q10 10 20 0 l0 70 l-40 0 z"
                 }
@@ -110,10 +118,10 @@ export function GameCellSource({ className, conectedTo1, conectedTo2, on, data, 
                         "q10 0 20 0 q10 0 20 0",
                     ].at(phase % 2) +
                     `l0 ${on === 1 ? 70 : 120} l-40 0 z `
-                } />
+                } /> */}
 
             {/* <rect x="24" y="24" width="52" height="152" rx="20" strokeWidth={18 + 9} stroke="black" opacity={0.1} /> */}
-            <rect x="24" y="24" width="52" height="152" rx="20" strokeWidth={18} fill="none" />
+            {/* <rect x="24" y="24" width="52" height="152" rx="20" strokeWidth={18} fill="none" /> */}
             {/* <path strokeWidth={78} opacity="0.1" d="M50 50 l0 100" stroke="black" />
 
                 

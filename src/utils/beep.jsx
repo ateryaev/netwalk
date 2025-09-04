@@ -38,7 +38,8 @@ function vibro(param) {
 }
 
 export function beepButton() {
-    beep(0.2, 50, 0, 0.05);
+    // beep(0.2, 50, 0, 0.05);
+    vibro(2)
 }
 
 export function preBeepButton() {
@@ -46,7 +47,7 @@ export function preBeepButton() {
 }
 
 export function beepSwipe(index) {
-    beep(0.4, 30, 0, 0.05);
+    //beep(0.4, 30, 0, 0.05);
     vibro(1)
 }
 

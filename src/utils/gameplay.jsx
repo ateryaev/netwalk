@@ -27,9 +27,11 @@ export function createGame(cols, rows) {
             game.cells[row][col] = {
                 x: col,
                 y: row,
-                source: 0,
-                on: false,
-                figure: 0
+                source: 0,      // 0 - regular cell, 1 - blue source, 2 - orange
+                on: 0,          // 0 - off, 1 - blue, 2 - orange, 3 - red-mix
+                figure: 0,      // 4 bits TRBL
+                connections: 0, // 4 bits TRBL
+                rotatedOn: 0,
             };
         }
     }
@@ -120,12 +122,19 @@ export function createGame(cols, rows) {
     //check if a cell is connected in a given direction to neighboring cell
     function isConnected(x, y, dir) {
         const cell = atXY(x, y);
+
         const pf = cell.figure;// posedFigure(cell.figure, cell.pos);
         if ((pf & dir) === 0) return false; // No connection in this direction
+
+        //console.log(dir.toString(2));
         const oppositeCell = atXYD(x, y, dir);
         const opf = oppositeCell.figure;//posedFigure(oppositeCell.figure, oppositeCell.pos);
+        //console.log(pf.toString(2).padStart(4, "0"), dir.toString(2).padStart(4, "0"), opf.toString(2).padStart(4, "0"));
+        //console.log((opf & oppositeDir(dir)) !== 0)
 
         if (cell.on !== oppositeCell.on) return false;
+        // const now = performance.now();
+        //  if ((now - cell.rotatedOn < 250) || (now - oppositeCell.rotatedOn < 250)) return false;
 
         return (opf & oppositeDir(dir)) !== 0; // Check if the opposite cell is connected back
     }
@@ -160,12 +169,14 @@ export function createGame(cols, rows) {
             cell1.figure = newFigure1;
             cell2.figure = newFigure2;
         }
+        cell.rotatedOn = performance.now()
 
     }
 
     game.rotateAtXY = rotateAtXY;
 
     function updateOnFromSource(x, y) {
+        //return;
         const sourceCell = atXY(x, y);
         const color = sourceCell.source;
         sourceCell.on |= color;
@@ -196,19 +207,29 @@ export function createGame(cols, rows) {
 
     function updateOnStates() {
         //all off
-        const actives = [];
+        // const actives = [];
+        // for (let row = 0; row < rows; row++) {
+        //     for (let col = 0; col < cols; col++) {
+        //         console.log(`CONNS2: [${col}:${row}]`, atXY(col, row).figure, atXY(col, row).on)
+        //     }
+        // }
+        // a.b.c = 1
         for (let row = 0; row < rows; row++) {
             for (let col = 0; col < cols; col++) {
                 const cell = atXY(col, row);
                 cell.on = 0;
-                cell.done = 0; // Reset done state
-                if (cell.source) {
-                    cell.on = cell.source;
-                    actives.push(cell);
-                    //cell.done = cell.source; // Reset done state
-                }
+
+                // cell.connections = 0b0000;
+                // if (game.isConnected(col, row, TOP)) cell.connections |= TOP;
+                // if (game.isConnected(col, row, RIGHT)) cell.connections |= RIGHT;
+                // if (game.isConnected(col, row, BOTTOM)) cell.connections |= BOTTOM;
+                // if (game.isConnected(col, row, LEFT)) cell.connections |= LEFT;
+
+                cell.done = cell.source; // Reset done state
+                cell.on = cell.source ? cell.source : 0;
             }
         }
+
 
         updateOnFromSource(serverCol, serverRow, 1);
         updateOnFromSource(serverCol, serverRow + 1, 1);
@@ -216,10 +237,22 @@ export function createGame(cols, rows) {
         updateOnFromSource(serverCol + 1, serverRow + 1, 2);
 
 
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                const cell = atXY(col, row);
+                cell.connections = 0b0000;
+                if (game.isConnected(col, row, TOP)) cell.connections |= TOP;
+                if (game.isConnected(col, row, RIGHT)) cell.connections |= RIGHT;
+                if (game.isConnected(col, row, BOTTOM)) cell.connections |= BOTTOM;
+                if (game.isConnected(col, row, LEFT)) cell.connections |= LEFT;
+
+            }
+        }
         game.endsOn = countEndsOn();
         console.log("ENDS ON 1", game.endsOn);
         return;
     }
+
 
     game.updateOnStates = updateOnStates;
 
@@ -242,6 +275,8 @@ export function createGame(cols, rows) {
         { x: serverCol, y: serverRow + 1 },
         { x: serverCol + 1, y: serverRow + 1 }
     ];
+
+
 
     for (let i = 0; i < 40 * 40; i++) {
         // console.log(`CAN GO FROM ${ends.length}`, i);
@@ -284,6 +319,7 @@ export function createGame(cols, rows) {
 
     }
 
+
     game.ends = countEnds();
 
     game.shufle = function () {
@@ -296,6 +332,7 @@ export function createGame(cols, rows) {
     }
 
     //game.shufle();
+
     updateOnStates();
     game.counts = countProgress(game);
     return game;

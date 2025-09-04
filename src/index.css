@@ -1,5 +1,5 @@
 @import "tailwindcss";
 
 path {
-    transition: all 0.2s;
+    xtransition: all 0.2s;
 }

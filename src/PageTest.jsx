@@ -8,7 +8,6 @@ import { createGame } from './utils/gameplay';
 import { GameCellBg } from './components/GameCellBg';
 import { GameCellSource } from './components/GameCellSource';
 import { SIZE } from "./utils/cfg";
-import { countEnds, countEndsOn } from './utils/game';
 import { GameHeader } from './components/GameHeader';
 import { PanZoomView } from './components/PanZoomView';
 import { addXY, divXY, minmax, mulXY, printXY, subXY, XY } from './utils/vectors';

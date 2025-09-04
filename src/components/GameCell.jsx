@@ -61,6 +61,7 @@ export function GameCell({ className, conectedTo, on, data, figure, selected, ..
 
     return (
         <svg viewBox={"0 0 100 100"}
+            shapeRendering="auto"
             stroke="currentColor" strokeWidth="18"
             strokeLinecap="round" strokeLinejoin="round"
             className={cn("absolute transition-none [stroke] stroke-neutral-300",
