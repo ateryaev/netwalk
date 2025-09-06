@@ -1,3 +1,7 @@
+export function minmax(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+}
+
 export function bymod(value, mod) {
     return ((value) % mod + mod) % mod;
 }
@@ -5,8 +9,6 @@ export function bymod(value, mod) {
 export function rnd(max) {
     return Math.floor(Math.random() * (max + 1));
 }
-
-
 
 export function bytesToString(bytes) {
     if (bytes < 1024) return `${bytes} B`;
@@ -40,4 +42,10 @@ export function loadFromLocalStorage(key, defaultValue) {
 }
 export function saveToLocalStorage(key, value) {
     localStorage.setItem(key, JSON.stringify(value));
+}
+
+
+export function progress(when, duration) {
+    const now = performance.now();
+    return minmax((now - when) / duration, 0.0, 1.0);
 }

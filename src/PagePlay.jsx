@@ -1,17 +1,13 @@
 import { use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import { cn } from './utils/cn'
-
-import { GameCell } from './components/GameCell';
-import { rnd, bymod } from './utils/helpers';
-import { GameCellBg } from './components/GameCellBg';
-import { GameCellSource } from './components/GameCellSource';
-import { BOTTOM, COLORS, RIGHT, SIZE, TOP, TRANS_DURATION } from "./utils/cfg";
+import { rnd, bymod, progress } from './utils/helpers';
+import { BOTTOM, COLORS, LEFT, RIGHT, SIZE, TOP, TRANS_DURATION } from "./utils/cfg";
 import { countProgress, extractDirs, getRtConnections } from './utils/game';
 import { GameHeader } from './components/GameHeader';
 import { PanZoomView } from './components/PanZoomView';
 import { addXY, distXY, divXY, minmax, mulXY, printXY, subXY, XY } from './utils/vectors';
-import { createFigureSprite, drawDir, drawPixels, getBgImage, getFigureImage, getFigureSprite, getSourceBgImage, getSourceSprite } from './utils/canvas';
+import { getBgImage, getFigureImage, getSourceBgImage } from './utils/canvas';
 
 export function PagePlay({ game, onGameChange, onBack }) {
 
@@ -28,7 +24,11 @@ export function PagePlay({ game, onGameChange, onBack }) {
 
 
     const cellSize = useMemo(() => (SIZE * zoom), [zoom]);
-    const [selected, setSelected] = useState({ col: -1, row: -1, leftIndex: -1, topIndex: -1, scrollLeft: 0, scrollTop: 0 });
+    const [selected, setSelected] = useState({
+        col: -1, row: -1, leftIndex: -1, topIndex: -1,
+        active: false,
+        changedOn: 0
+    });
 
     const [viewSize, setViewSize] = useState(XY(0, 0));
 
@@ -40,8 +40,9 @@ export function PagePlay({ game, onGameChange, onBack }) {
         const minZoom = longestSize / (12 * SIZE);
         const maxZoom = longestSize / (6 * SIZE);
         //return { min: minZoom, max: maxZoom };
-        return { min: 0.5, max: 2 };
+        return { min: 0.65, max: 1.25 };
     }, [viewSize]);
+
 
     const contentSize = useMemo(() => (XY(cellSize * game.cols, cellSize * game.rows)), [game.cols, game.rows, cellSize]);
 
@@ -65,87 +66,20 @@ export function PagePlay({ game, onGameChange, onBack }) {
     const startRowOffset = useMemo(() => (scrollTopAbs % cellSize) / cellSize, [scrollTopAbs, cellSize]);
 
 
-    const viewCells = useMemo(() => {
-        // console.log("CALCULATING VIEW CELLS", viewCols, viewRows, startCol, startRow, gameCols, gameRows);
-        const items = [];
+    useEffect(() => {
+        // console.log("PRELOADING SPRITES");
+        // let cnt = 1;
+        // for (let figure = 0; figure < 16; figure++) {
+        //     for (let conns = 1; conns < 16; conns++) {
+        //         for (let on = 1; on < 4; on++) {
+        //             console.log("PRELOADING SPRITES", cnt++, figure, conns, on);
+        //             getFigureImage(figure, COLORS[on], on === 1 || on === 2, conns);
+        //         }
+        //     }
+        // }
+        //const img = getFigureImage(cell.figure, COLORS[cell.on], cell.on === 1 || cell.on === 2, conns);
+    }, [])
 
-        const extra = 1; //to see big servers
-
-        for (let row = 0 - extra; row < viewRows + extra * 0; row++) {
-            for (let col = 0 - extra; col < viewCols + extra * 0; col++) {
-
-                const gameCol = bymod(startCol + col, game.cols);
-                const gameRow = bymod(startRow + row, game.rows);
-
-                const currentLeftIndex = contentLeftIndex + Math.floor((startCol + col) / game.cols)
-                const currentTopIndex = contentTopIndex + Math.floor((startRow + row) / game.rows)
-
-                const cell = game.atXY(gameCol, gameRow);
-
-                // const style = {
-                //     translate: `${-startColOffset * cellSize + col * cellSize}px ${-startRowOffset * cellSize + row * cellSize}px`,
-                //     width: `${cellSize}px`, height: `${cell.source ? cellSize * 2 : cellSize}px`,
-                // }
-                const style = {
-                    translate: `${col * SIZE}px ${row * SIZE}px`,
-                    width: `${SIZE}px`,
-                    height: `${cell.source ? SIZE * 2 : SIZE}px`,
-                }
-
-                if (cell.source && game.atXY(gameCol, gameRow - 1).source) continue;
-
-                let isSelected = selected.col === gameCol && selected.row === gameRow && selected.leftIndex === currentLeftIndex && selected.topIndex === currentTopIndex;
-                if (cell.source && selected.col === gameCol && selected.row === gameRow + 1 && selected.leftIndex === currentLeftIndex && selected.topIndex === currentTopIndex) {
-                    isSelected = true;
-                }
-
-                //if (cell.source && game.atXY(gameCol - 1, gameRow).source) continue;
-
-                //continue;
-                !cell.source && items.push(<GameCell key={`${gameCol}:${gameRow}:${currentLeftIndex}:${currentTopIndex}`}
-                    figure={cell.figure}
-                    conectedTo={{
-                        top: game.isConnected(gameCol, gameRow, 0b1000),
-                        right: game.isConnected(gameCol, gameRow, 0b0100),
-                        bottom: game.isConnected(gameCol, gameRow, 0b0010),
-                        left: game.isConnected(gameCol, gameRow, 0b0001),
-                    }}
-                    on={cell.on || false}
-                    data={cell}
-                    style={style}
-                    size={SIZE} />);
-
-                cell.source && items.push(<GameCellSource key={`source_${gameCol}:${gameRow}:${currentLeftIndex}:${currentTopIndex}`}
-                    //figure1={posedFigure(cell.figure, cell.pos)}
-                    figure1={cell.figure}
-                    figure2={game.atXY(gameCol, gameRow + 1).figure}
-                    conectedTo1={{
-                        top: game.isConnected(gameCol, gameRow, 0b1000),
-                        right: game.isConnected(gameCol, gameRow, 0b0100),
-                        bottom: game.isConnected(gameCol, gameRow, 0b0010),
-                        left: game.isConnected(gameCol, gameRow, 0b0001),
-                    }}
-                    conectedTo2={{
-                        top: game.isConnected(gameCol, gameRow + 1, 0b1000),
-                        right: game.isConnected(gameCol, gameRow + 1, 0b0100),
-                        bottom: game.isConnected(gameCol, gameRow + 1, 0b0010),
-                        left: game.isConnected(gameCol, gameRow + 1, 0b0001),
-                    }}
-                    on={cell.on || false}
-                    data={cell}
-                    style={style}
-                    size={SIZE} />);
-
-            }
-            //console.log(`Row ${row}: ${str}`);
-        }
-        return items;//.map((child, index) => (<Fragment key={`${index}`}>{child}</Fragment>));
-    }, [contentTopIndex, selected, game, contentLeftIndex, viewCols, viewRows, startRow, startCol]);
-
-
-
-
-    const oldViewSize = useRef(null);
 
     const [isViewSizeReady, setIsViewSizeReady] = useState(false);
 
@@ -170,8 +104,12 @@ export function PagePlay({ game, onGameChange, onBack }) {
 
         setSelected({
             pointerId: pointerId,
-            col: selectedCol, row: selectedRow,
-            leftIndex: selectedLeftIndex, topIndex: selectedTopIndex,
+            col: selectedCol,
+            row: selectedRow,
+            leftIndex: selectedLeftIndex,
+            topIndex: selectedTopIndex,
+            active: true,
+            changedOn: performance.now()
             //scrollLeft: scrollLeft, scrollTop: scrollTop
         });
         setMsg("DOWN:" + pointerId)
@@ -184,7 +122,9 @@ export function PagePlay({ game, onGameChange, onBack }) {
         if (selected.pointerId !== pointerId) return;
 
         setSelected({
-            ...selected, col: -1, row: -1
+            ...selected,
+            active: false,
+            changedOn: performance.now()
         })
         if (noClick) return;
         x += scroll.x * zoom;
@@ -273,35 +213,6 @@ export function PagePlay({ game, onGameChange, onBack }) {
     const canvasRef = useRef(null);
 
 
-    function drawSourceRect(ctx, x, y, w, h) {
-
-        // ctx.beginPath();
-        // ctx.rect(x + 24, y + 24, w - 24 * 2, h - 24 * 2);
-        // ctx.fillStyle = "#333";
-        // ctx.fill();
-
-        ctx.beginPath();
-        ctx.rect(x + 50, y + 50, w - 50 * 2, h - 50 * 2);
-        // makes line ends and corners rounded
-        ctx.lineWidth = 60;
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.rect(x + 50, y + 50, w - 50 * 2, h - 50 * 2);
-        // makes line ends and corners rounded
-        ctx.lineWidth = 30;
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
-        ctx.fillStyle = "#333"
-        ctx.strokeStyle = "#333"
-        ctx.stroke(); ctx.fill();
-
-    }
-    //draw on canvas
-
-    const [update, setUpdate] = useState(0);
     useEffect(() => {
         if (!canvasRef.current) return;
         //requestAnimationFrame(() => {
@@ -310,6 +221,8 @@ export function PagePlay({ game, onGameChange, onBack }) {
         //width={`${viewSize.x / 2 / zoom}`} height={`${viewSize.y / 2 / zoom}`}
         const ctx = canvasRef.current.getContext('2d');
         //ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+        ctx.fillStyle = "#fff"
+        ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 
         let animationFrame = null;
 
@@ -319,7 +232,7 @@ export function PagePlay({ game, onGameChange, onBack }) {
             //console.time('RENDER');
             const now = performance.now();
             ctx.save();
-            ctx.fillStyle = "#000";
+            ctx.fillStyle = "#202020";
             ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
             // const offsetX = startColOffset - startColOffset % 10;
             // const offsetY = startRowOffset - startRowOffset % 10;
@@ -336,174 +249,326 @@ export function PagePlay({ game, onGameChange, onBack }) {
 
             const extra = 1; //to see big servers
 
+            //draw bg, selection
             for (let row = 0 - extra; row < viewRows + extra * 0; row++) {
                 for (let col = 0 - extra; col < viewCols + extra * 0; col++) {
-
                     const x = col * SIZE;
                     const y = row * SIZE;
                     const gameCol = bymod(startCol + col, game.cols);
                     const gameRow = bymod(startRow + row, game.rows);
-
-                    const currentLeftIndex = contentLeftIndex + Math.floor((startCol + col) / game.cols)
-                    const currentTopIndex = contentTopIndex + Math.floor((startRow + row) / game.rows)
+                    ctx.save();
+                    ctx.translate(x, y);
 
                     const cell = game.atXY(gameCol, gameRow);
+                    const cell_l = game.atXY(gameCol - 1, gameRow);
+                    const cell_t = game.atXY(gameCol, gameRow - 1);
+                    const cell_b = game.atXY(gameCol, gameRow + 1);
 
-                    // if ((!cell.source || !game.atXY(gameCol, gameRow - 1).source) && (gameCol + gameRow) % 2) {
-                    //     ctx.fillStyle = cell.source ? "#222" : "#333";
-                    //     ctx.fillRect(x, y, SIZE, cell.source ? SIZE * 2 : SIZE);
-                    // }
+                    const isOdd = (gameCol + gameRow) % 2 === 0;
 
-                    let isSelected = selected.col === gameCol && selected.row === gameRow && selected.leftIndex === currentLeftIndex && selected.topIndex === currentTopIndex;
-                    // if (cell.source && selected.col === gameCol && selected.row === gameRow + 1 && selected.leftIndex === currentLeftIndex && selected.topIndex === currentTopIndex) {
-                    //     isSelected = true;
-                    // }
-                    if (isSelected) {
-                        ctx.fillStyle = "#666";
-                        //ctx.fillRect(x, y, SIZE, cell.source > 0 ? SIZE * 2 : SIZE);
+
+
+                    const gap = 4;
+                    let insideW = SIZE - gap * 2;
+                    let insideH = cell.source ? SIZE * 2 - gap * 2 : SIZE - gap * 2;
+
+
+                    const skipRenderInside = (cell.source && cell_t.source === cell.source);//has rendered before
+
+                    // ctx.fillStyle = "#333"
+                    // ctx.fillRect(-4, -4, 8, 8);
+                    // if (!cell_l.source || cell_l.source !== cell.source) ctx.fillRect(- 4, 6, 8, SIZE - 12);
+                    // if (!cell_t.source || cell_t.source !== cell.source) ctx.fillRect(6, - 4, SIZE - 12, 8);
+
+                    if (!skipRenderInside) {
+                        if (cell.source) ctx.fillStyle = "#111";
+                        else ctx.fillStyle = isOdd ? "#222" : "#333";
+                        ctx.fillRect(gap, gap, insideW, insideH);
+                        const currentLeftIndex = contentLeftIndex + Math.floor((startCol + col) / game.cols)
+                        const currentTopIndex = contentTopIndex + Math.floor((startRow + row) / game.rows)
+                        let isSelected = selected.col === gameCol && selected.row === gameRow && selected.leftIndex === currentLeftIndex && selected.topIndex === currentTopIndex;
+                        const selectChangeDelta = 1 - minmax((now - selected.changedOn), 0, TRANS_DURATION) / TRANS_DURATION;
+                        if (!isSelected && cell.source && cell_b.source === cell.source) {
+                            isSelected = selected.col === gameCol && selected.row === gameRow + 1 && selected.leftIndex === currentLeftIndex && selected.topIndex === currentTopIndex;
+                        }
+                        ctx.fillStyle = "#555";
+                        if (isSelected && selectChangeDelta < 1 && !selected.active) {
+                            ctx.globalAlpha = selected.active ? 1 - selectChangeDelta : selectChangeDelta;
+                            ctx.fillRect(gap, gap, insideW, insideH);
+                            ctx.globalAlpha = 1;
+                        } else if (isSelected && selected.active) {
+                            ctx.fillRect(gap, gap, insideW, insideH);
+                        }
                     }
 
+                    ctx.restore();
+                }
+            }
 
 
-                    let angle = 0;
-                    const timeMs = now - cell.rotatedOn;
-                    //console.log("MS", timeMs.toFixed(0))
-                    if (timeMs < TRANS_DURATION && !cell.source) {
-                        angle = -(1 - timeMs / TRANS_DURATION);//* Math.PI / 2;
-                        //setUpdate((prev) => prev + 1);
-                    }
+            // ctx.strokeStyle = "#202020";
+            // ctx.lineWidth = 8;
 
-                    // extractDirs(cell.figure).forEach((dir) => {
-                    //drawDir(ctx, x, y, dir, angle, cell.on)
-                    // ctx.save()
-                    // ctx.translate(x, y);
+            // ctx.beginPath()
+            // for (let row = 0 - extra; row < viewRows + extra * 0; row++) {
+            //     const y = row * SIZE;
+            //     const gameRow = bymod(startRow + row, game.rows);
+            //     if (gameRow !== 0) {
+            //         ctx.moveTo(0, y);
+            //         ctx.lineTo(viewRows * game.cols * SIZE, y);
+            //     }
+            // }
+
+            // for (let col = 0 - extra; col < viewCols + extra * 0; col++) {
+            //     const x = col * SIZE;
+            //     const gameCol = bymod(startCol + col, game.cols);
+            //     if (gameCol !== 0) {
+            //         ctx.moveTo(x, 0);
+            //         ctx.lineTo(x, viewRows * game.rows * SIZE);
+            //     }
+            //     //ctx.fillRect(x - 2, 0, 4, viewRows * game.cols * SIZE);
+            // }
+            // ctx.closePath()
+            // ctx.stroke();
+
+            //draw frame around 0,0
+            ctx.globalAlpha = 1
+            ctx.strokeStyle = "#111";
+            ctx.lineWidth = 8;
+
+            ctx.beginPath()
+            for (let row = 0 - extra; row < viewRows + extra * 0; row++) {
+                const y = row * SIZE;
+                const gameRow = bymod(startRow + row, game.rows);
+                if (gameRow === 0) {
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(viewRows * game.cols * SIZE, y);
+                }
+            }
+
+            for (let col = 0 - extra; col < viewCols + extra * 0; col++) {
+                const x = col * SIZE;
+                const gameCol = bymod(startCol + col, game.cols);
+                if (gameCol === 0) {
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, viewRows * game.rows * SIZE);
+                    //ctx.arc(100, 75, 50, 0, 2 * Math.PI)
+                }
+
+            }
+            ctx.closePath();
+            ctx.stroke();
+
+            // for (let row = 0 - extra; row < viewRows + extra * 0; row++) {
+            //     for (let col = 0 - extra; col < viewCols + extra * 0; col++) {
+            //         const x = col * SIZE;
+            //         const y = row * SIZE;
+            //         const gameCol = bymod(startCol + col, game.cols);
+            //         const gameRow = bymod(startRow + row, game.rows);
+            //         // ctx.save();
+            //         // ctx.translate(x, y);
+            //         if (gameCol === 0 && gameRow === 0) {
+            //             ctx.beginPath();
+            //             ctx.fillStyle = "#000"
+            //             ctx.arc(x, y, 15, 0, 2 * Math.PI);
+            //             ctx.closePath()
+            //             ctx.fill();
+
+            //             ctx.beginPath();
+            //             ctx.fillStyle = "#2a2a2a"
+            //             ctx.arc(x, y, 5, 0, 2 * Math.PI);
+            //             ctx.closePath()
+            //             ctx.fill();
+            //         }
+            //     }
+            // }
+
+            // ctx.strokeStyle = "#181818";
+            // ctx.lineWidth = 0;
+
+            // ctx.beginPath()
+            // for (let row = 0 - extra; row < viewRows + extra * 0; row++) {
+            //     const y = row * SIZE;
+            //     const gameRow = bymod(startRow + row, game.rows);
+            //     if (gameRow === 0) {
+            //         ctx.moveTo(0, y);
+            //         ctx.lineTo(viewRows * game.cols * SIZE, y);
+            //     }
+            // }
+
+            // for (let col = 0 - extra; col < viewCols + extra * 0; col++) {
+            //     const x = col * SIZE;
+            //     const gameCol = bymod(startCol + col, game.cols);
+            //     if (gameCol === 0) {
+            //         ctx.moveTo(x, 0);
+            //         ctx.lineTo(x, viewRows * game.rows * SIZE);
+            //     }
+            //     //ctx.fillRect(x - 2, 0, 4, viewRows * game.cols * SIZE);
+            // }
+            // ctx.closePath()
+            // ctx.stroke();
 
 
+            ctx.globalAlpha = 1;
 
-                    // //console.log(getFigureImage())
-                    // const img = getFigureImage(cell.figure, COLORS[cell.on]);
+            //draw cells
+            for (let row = 0 - extra; row < viewRows + extra * 0; row++) {
+                for (let col = 0 - extra; col < viewCols + extra * 0; col++) {
 
-                    // img && ctx.drawImage(img, 0, 0, SIZE, SIZE);
+                    let x = col * SIZE;
+                    let y = row * SIZE;
+                    ctx.save();
+                    ctx.translate(x, y);
+                    x = y = 0;
+                    const gameCol = bymod(startCol + col, game.cols);
+                    const gameRow = bymod(startRow + row, game.rows);
 
-                    // ctx.restore()
+                    const cell = game.atXY(gameCol, gameRow);
+                    const isEnd = (cell.figure === 0b1000 || cell.figure === 0b0100 || cell.figure === 0b0010 || cell.figure === 0b0001);
 
-
-                    const bgImg = getBgImage(1 === (gameCol + gameRow) % 2);
-                    if (bgImg) {
-                        ctx.save();
-                        ctx.translate(x, y);       // move origin
-                        ctx.drawImage(bgImg, -1, -1, SIZE + 2, SIZE + 2);
-                        ctx.restore();
-                    }
 
 
 
                     const conns = getRtConnections(game, now, gameCol, gameRow);
-                    const img = getFigureImage(cell.figure, COLORS[cell.on], cell.on === 1 || cell.on === 2, conns);
-                    if (img) {
-                        ctx.save();
-                        ctx.translate(x + SIZE / 2, y + SIZE / 2);       // move origin
-                        ctx.rotate(angle);         // rotate (radians)
-                        ctx.drawImage(img, -SIZE / 2 - 2, -SIZE / 2 - 2, SIZE + 4, SIZE + 4);
-                        ctx.restore();
-                    }
 
-                    // if (cell.source && game.atXY(gameCol, gameRow + 1).source) {
-                    //     const sourceImg = getSourceBgImage(COLORS[cell.on]);
-                    //     if (sourceImg) {
-                    //         ctx.save();
-                    //         ctx.translate(x, y);       // move origin
-                    //         ctx.drawImage(sourceImg, 0, 0, SIZE, SIZE * 2);
-                    //         ctx.restore();
-                    //     }
-                    // }
-                    if (cell.source && game.atXY(gameCol, gameRow - 1).source) {
-                        const sourceImg = getSourceBgImage(COLORS[cell.on]);
-                        if (sourceImg) {
+                    if (cell.source) {
+                        const rotateProgress = (progress(cell.rotatedOn, TRANS_DURATION * 1) - 1);
+                        const cellTop = game.atXY(gameCol, gameRow - 1);
+                        const cellBottom = game.atXY(gameCol, gameRow + 1);
+
+                        if (cellTop.source === cell.source) {
+                            const figure2rotate = cell.figure & (BOTTOM | LEFT);
+                            const figure2down = cell.figure & (RIGHT);
+                            const img2rotate = getFigureImage(figure2rotate, COLORS[cell.source], true, conns);
+                            const img2down = getFigureImage(figure2down, COLORS[cell.source], true, conns);
                             ctx.save();
-                            ctx.translate(x, y);       // move origin
-                            ctx.drawImage(sourceImg, 0, -SIZE, SIZE, SIZE * 2);
+                            ctx.translate(SIZE / 2, SIZE / 2);       // move origin
+                            ctx.rotate(rotateProgress * Math.PI / 2);         // rotate (radians)
+                            img2rotate && ctx.drawImage(img2rotate, -SIZE / 2 - 1, -SIZE / 2 - 1, SIZE + 2, SIZE + 2);
                             ctx.restore();
+                            img2down && ctx.drawImage(img2down, -1, SIZE * (rotateProgress) - 1, SIZE + 2, SIZE + 2);
+                        } else if (cellBottom.source === cell.source) {
+                            const figure2rotate = cell.figure & (TOP | RIGHT);
+                            const figure2up = cell.figure & (LEFT);
+                            const img2rotate = getFigureImage(figure2rotate, COLORS[cell.source], true, conns);
+                            const img2up = getFigureImage(figure2up, COLORS[cell.source], true, conns);
+                            ctx.save();
+                            ctx.translate(SIZE / 2, SIZE / 2);       // move origin
+                            ctx.rotate(rotateProgress * Math.PI / 2);         // rotate (radians)
+                            img2rotate && ctx.drawImage(img2rotate, -SIZE / 2 - 1, -SIZE / 2 - 1, SIZE + 2, SIZE + 2);
+                            ctx.restore();
+                            img2up && ctx.drawImage(img2up, -1, -SIZE * (rotateProgress) - 1, SIZE + 2, SIZE + 2);
+                        }
+
+                    } else if (!cell.source) {
+                        const angle = (progress(cell.rotatedOn, TRANS_DURATION * 1) - 1) * Math.PI / 2;
+                        const switchingDelta = progress(cell.switchedOn, TRANS_DURATION * 2);
+                        ctx.save();
+                        ctx.translate(SIZE / 2, SIZE / 2);       // move origin
+                        ctx.rotate(angle);         // rotate (radians)
+
+                        if (switchingDelta < 1) {
+                            const imgBefore = getFigureImage(cell.figure, COLORS[cell.onBefore], cell.onBefore === 1 || cell.onBefore === 2, conns);
+                            if (imgBefore) {
+                                ctx.drawImage(imgBefore, -SIZE / 2 - 1, -SIZE / 2 - 1, SIZE + 2, SIZE + 2);
+                            }
+                        }
+
+                        const img = getFigureImage(cell.figure, COLORS[cell.on], cell.on === 1 || cell.on === 2, conns);
+                        if (img) {
+                            ctx.globalAlpha = switchingDelta
+                            ctx.drawImage(img, -SIZE / 2 - 1, -SIZE / 2 - 1, SIZE + 2, SIZE + 2);
+                        }
+                        ctx.restore();
+
+
+
+                        const showing = minmax(switchingDelta * 2, 1, 2) - 1;
+                        const hiding = minmax(switchingDelta * 2, 0, 1);
+
+                        if (isEnd && cell.on) {
+                            ctx.globalAlpha = showing;
+                            ctx.beginPath();
+                            ctx.moveTo(SIZE / 2, SIZE / 2);
+                            ctx.lineTo(SIZE / 2, SIZE / 2)
+                            ctx.lineWidth = 20 * showing;
+                            ctx.lineJoin = "round";
+                            ctx.lineCap = "round";
+                            ctx.strokeStyle = "#fff"
+                            ctx.stroke();
+
+                            ctx.beginPath();
+                            ctx.moveTo(SIZE / 2, SIZE / 2);
+                            ctx.lineTo(SIZE / 2, SIZE / 2)
+                            ctx.lineWidth = 5 * showing;
+                            ctx.lineJoin = "round";
+                            ctx.lineCap = "round";
+                            ctx.strokeStyle = "#111"
+                            ctx.stroke();
+                        }
+                        if (isEnd && cell.onBefore) {
+                            ctx.globalAlpha = (1 - hiding);
+                            ctx.beginPath();
+                            ctx.moveTo(SIZE / 2, SIZE / 2);
+                            ctx.lineTo(SIZE / 2, SIZE / 2)
+                            ctx.lineWidth = 20 * (1 - hiding);
+                            ctx.lineJoin = "round";
+                            ctx.lineCap = "round";
+                            ctx.strokeStyle = "#fff"
+                            ctx.stroke();
+
+                            ctx.beginPath();
+                            ctx.moveTo(SIZE / 2, SIZE / 2);
+                            ctx.lineTo(SIZE / 2, SIZE / 2)
+                            ctx.lineWidth = 5 * (1 - hiding);
+                            ctx.lineJoin = "round";
+                            ctx.lineCap = "round";
+                            ctx.strokeStyle = "#111"
+                            ctx.stroke();
+                        }
+
+                        if (isEnd && !cell.on) {
+                            ctx.globalAlpha = 0.5
+                            const d = 5 * showing;
+                            ctx.beginPath();
+                            ctx.moveTo(SIZE / 2 - d, SIZE / 2 - d);
+                            ctx.lineTo(SIZE / 2 + d, SIZE / 2 + d)
+                            ctx.moveTo(SIZE / 2 + d, SIZE / 2 - d);
+                            ctx.lineTo(SIZE / 2 - d, SIZE / 2 + d)
+                            ctx.lineWidth = 2.5;
+                            ctx.lineJoin = "round";
+                            ctx.lineCap = "round";
+                            ctx.strokeStyle = "#111"
+                            ctx.stroke();
+                        }
+                        if (isEnd && !cell.onBefore) {
+                            ctx.globalAlpha = (1 - hiding)
+                            const d = 5 * (1 - hiding);
+                            ctx.beginPath();
+                            ctx.moveTo(SIZE / 2 - d, SIZE / 2 - d);
+                            ctx.lineTo(SIZE / 2 + d, SIZE / 2 + d)
+                            ctx.moveTo(SIZE / 2 + d, SIZE / 2 - d);
+                            ctx.lineTo(SIZE / 2 - d, SIZE / 2 + d)
+                            ctx.lineWidth = 2.5;
+                            ctx.lineJoin = "round";
+                            ctx.lineCap = "round";
+                            ctx.strokeStyle = "#111"
+                            ctx.stroke();
                         }
                     }
 
+                    ctx.globalAlpha = 1
 
-                    // })
-
-
-                    // const conns = getRtConnections(game, now, gameCol, gameRow);
-                    // if (conns & RIGHT)
-                    //     drawPixels(ctx, x, y, [[5, 2]], COLORS[cell.on], 20, 1)
-                    // if (conns & BOTTOM)
-                    //     drawPixels(ctx, x, y, [[2, 5]], COLORS[cell.on], 20, 1)
-
-                    // const isEnd = (cell.figure === 0b1000 || cell.figure === 0b0100 || cell.figure === 0b0010 || cell.figure === 0b0001);
-                    // if (!isEnd)
-                    //     drawPixels(ctx, x, y, [[2, 2]], COLORS[cell.on], 20, 1)
-                    // if (isEnd) {
-                    //     if (cell.on) drawPixels(ctx, x, y, [[2, 2]], "#fff", 20, 1)
-                    //     if (!cell.on) drawPixels(ctx, x, y, [[2, 2]], COLORS[cell.on], 20, 1)
-                    //     drawPixels(ctx, x, y, [[2, 1], [2, 3], [1, 2], [3, 2]], COLORS[cell.on], 20, 1)
-                    // }
-
-
-                    // if (cell.source && !game.atXY(gameCol, gameRow - 1).source) {
-                    //     drawPixels(ctx, x, y, [
-                    //         [1, 1], [2, 1], [3, 1],
-                    //         [1, 2], [3, 2],
-                    //         [1, 3], [3, 3],
-                    //         [1, 4], [3, 4],
-                    //         [1, 5], [3, 5],], COLORS[cell.on], 20, 1)
-                    //     drawPixels(ctx, x, y, [[2, 2], [2, 3], [2, 4], [2, 5]], "#fff", 20, 1)
-                    // }
-
-                    // if (cell.source && !game.atXY(gameCol, gameRow + 1).source) {
-                    //     drawPixels(ctx, x, y, [
-                    //         [1, 0], [3, 0],
-                    //         [1, 1], [3, 1],
-                    //         [1, 2], [3, 2],
-                    //         [1, 3], [2, 3], [3, 3],], COLORS[cell.on], 20, 1)
-                    //     drawPixels(ctx, x, y, [[2, 0], [2, 1], [2, 2]], "#fff", 20, 1)
-                    // }
-
-                    //const image = getFigureSprite(cell.figure, getRtConnections(game, now, gameCol, gameRow), cell.on)
-                    // //const image = getFigureSprite(cell.figure, cell.connections, cell.on)
-
-                    //ctx.drawImage(image, x, y, SIZE, SIZE);
-                    // ctx.save();
-                    // ctx.translate(x + SIZE / 2, y + SIZE / 2);       // move origin
-                    // ctx.rotate(angle);         // rotate (radians)
-                    // ctx.drawImage(image, -SIZE / 2, -SIZE / 2, SIZE, SIZE);
-                    // ctx.restore();
-
-                    // if (cell.source && !game.atXY(gameCol, gameRow - 1).source) {
-                    //     const sourceImage = getSourceSprite(0, 0, 0, 0, cell.source);
-                    // }
-
-                    // if (cell.source && !game.atXY(gameCol, gameRow + 1).source) {
-                    //     const sourceImage = getSourceSprite(0, 0, 0, 0, cell.source);
-                    //     //ctx.drawImage(sourceImage, x, y, SIZE, SIZE * 2);
-                    //     ctx.drawImage(sourceImage, 0, SIZE * 2, SIZE * 2, SIZE * 2, x, y, SIZE, SIZE);
-                    //     // ctx.strokeStyle = COLORS.at(cell.on)
-                    //     // drawSourceRect(ctx, x, y, SIZE, cell.source ? SIZE * 2 : SIZE);
-                    // }
-
-                    // const sourceImage = getSourceSprite(0, 0, 0, 0, cell.source);
-
+                    if (cell.source && game.atXY(gameCol, gameRow - 1).source) {
+                        const sourceImg = getSourceBgImage(COLORS[cell.on]);
+                        if (sourceImg) {
+                            ctx.drawImage(sourceImg, 0, -SIZE, SIZE, SIZE * 2);
+                        }
+                    }
+                    ctx.restore(); //translate(x,y)
                 }
             }
-            ctx.globalAlpha = 0.0;
-            ctx.fillStyle = "#fff";
-            for (let row = 0 - extra; row < viewRows + extra * 0; row++) {
-                const y = row * SIZE;
 
-                ctx.fillRect(0, y - 2, viewCols * game.cols * SIZE, 4);
-            }
-            for (let col = 0 - extra; col < viewCols + extra * 0; col++) {
-                const x = col * SIZE;
-
-                ctx.fillRect(x - 2, 0, 4, viewRows * game.cols * SIZE);
-            }
             ctx.restore();
             animationFrame = requestAnimationFrame(render)
             //console.timeEnd('RENDER')
@@ -522,7 +587,7 @@ export function PagePlay({ game, onGameChange, onBack }) {
     }, [viewSize, zoom, scroll, game, selected]);
     //}, [contentTopIndex, selected, game, contentLeftIndex, viewCols, viewRows, startRow, startCol]);
     return (
-        <div className="flex flex-col flex-1">
+        <div className="flex flex-col flex-1 bg-black">
 
             <GameHeader game={game} onBack={onBack} onLevelClick={() => { scrollCenter(true) }} >
                 {/* S: {msg}
@@ -537,7 +602,6 @@ export function PagePlay({ game, onGameChange, onBack }) {
                 onResize={handleResize}
                 onScroll={handleScroll}
                 onZoom={handleZoom}
-                xstyle={{ background: "#222", backgroundImage: 'url(/chess.bg.svg)', backgroundSize: `${cellSize * 2}px ${cellSize * 2}px`, backgroundPosition: `-${scrollLeftAbs}px -${scrollTopAbs}px` }}
             >
                 {/* {viewCells} */}
                 {/* <svg viewBox={`${startColOffset * SIZE} ${startRowOffset * SIZE} ${viewSize.x / zoom} ${viewSize.y / zoom}`}
@@ -580,8 +644,8 @@ export function PagePlay({ game, onGameChange, onBack }) {
                 ></div> */}
 
             </PanZoomView >
-            <div className='p-1 text-xs text-center ring-8 ring-black/10 z-10 text-black'>
-                Netwalk v1.0, by Anton Ateryaev, 2025
+            <div className='p-1 text-[10px] font-bold text-center ring-8 ring-black/20 z-40 text-[#aaa] bg-[#eee] font-mono uppercase text-ellipsis whitespace-nowrap overflow-hidden'>
+                Netwalk v0.1 by Anton Teryaev, 2025
 
             </div>
 

@@ -31,7 +31,9 @@ export function createGame(cols, rows) {
                 on: 0,          // 0 - off, 1 - blue, 2 - orange, 3 - red-mix
                 figure: 0,      // 4 bits TRBL
                 connections: 0, // 4 bits TRBL
-                rotatedOn: 0,
+                rotatedOn: 0, // time user click on cell
+                switchedOn: 0, // time color was changed
+                onBefore: 0, // 0..3 previous color
             };
         }
     }
@@ -146,6 +148,7 @@ export function createGame(cols, rows) {
         if (!cell) return;
         if (!cell.source) {
             cell.figure = (cell.figure >> 1) | (cell.figure << 3) & 0b1111; // Rotate left
+            cell.rotatedOn = performance.now()
         } else {
             //let cell1 = null;
             let cellUp = atXY(x, y - 1);
@@ -168,9 +171,9 @@ export function createGame(cols, rows) {
 
             cell1.figure = newFigure1;
             cell2.figure = newFigure2;
+            cell1.rotatedOn = performance.now()
+            cell2.rotatedOn = performance.now()
         }
-        cell.rotatedOn = performance.now()
-
     }
 
     game.rotateAtXY = rotateAtXY;
@@ -182,11 +185,10 @@ export function createGame(cols, rows) {
         sourceCell.on |= color;
         const actives = [sourceCell];
 
-
         for (let i = 0; i < actives.length; i++) {
 
             const cell = actives[i];
-            const pf = cell.figure;//posedFigure(cell.figure, cell.pos);//figure rotated by pos
+            const pf = cell.figure;
 
             figureToDirs(pf).forEach((dir) => {
                 const od = oppositeDir(dir);
@@ -206,19 +208,13 @@ export function createGame(cols, rows) {
     }
 
     function updateOnStates() {
-        //all off
-        // const actives = [];
-        // for (let row = 0; row < rows; row++) {
-        //     for (let col = 0; col < cols; col++) {
-        //         console.log(`CONNS2: [${col}:${row}]`, atXY(col, row).figure, atXY(col, row).on)
-        //     }
-        // }
-        // a.b.c = 1
+
         for (let row = 0; row < rows; row++) {
             for (let col = 0; col < cols; col++) {
                 const cell = atXY(col, row);
+                cell.onBefore = cell.on;
                 cell.on = 0;
-
+                //cell.rotatedOn = performance.now()
                 // cell.connections = 0b0000;
                 // if (game.isConnected(col, row, TOP)) cell.connections |= TOP;
                 // if (game.isConnected(col, row, RIGHT)) cell.connections |= RIGHT;
@@ -227,6 +223,8 @@ export function createGame(cols, rows) {
 
                 cell.done = cell.source; // Reset done state
                 cell.on = cell.source ? cell.source : 0;
+
+
             }
         }
 
@@ -240,6 +238,9 @@ export function createGame(cols, rows) {
         for (let row = 0; row < rows; row++) {
             for (let col = 0; col < cols; col++) {
                 const cell = atXY(col, row);
+                if (cell.on !== cell.onBefore) {
+                    cell.switchedOn = performance.now();
+                }
                 cell.connections = 0b0000;
                 if (game.isConnected(col, row, TOP)) cell.connections |= TOP;
                 if (game.isConnected(col, row, RIGHT)) cell.connections |= RIGHT;
