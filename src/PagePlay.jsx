@@ -2,8 +2,8 @@ import { use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import { cn } from './utils/cn'
 import { rnd, bymod, progress } from './utils/helpers';
-import { BOTTOM, COLORS, LEFT, RIGHT, SIZE, TOP, TRANS_DURATION } from "./utils/cfg";
-import { countProgress, extractDirs, getRtConnections } from './utils/game';
+import { BOTTOM, LEFT, RIGHT, SIZE, TOP, TRANS_DURATION } from "./utils/cfg";
+import { atXYD, countProgress, getCellRect, getRtConnections, isOff, isOn } from './utils/game';
 import { GameHeader } from './components/GameHeader';
 import { PanZoomView } from './components/PanZoomView';
 import { addXY, distXY, divXY, minmax, mulXY, printXY, subXY, XY } from './utils/vectors';
@@ -40,7 +40,7 @@ export function PagePlay({ game, onGameChange, onBack }) {
         const minZoom = longestSize / (12 * SIZE);
         const maxZoom = longestSize / (6 * SIZE);
         //return { min: minZoom, max: maxZoom };
-        return { min: 0.65, max: 1.25 };
+        return { min: 0.55, max: 1.25 };
     }, [viewSize]);
 
 
@@ -246,12 +246,9 @@ export function PagePlay({ game, onGameChange, onBack }) {
 
             ctx.translate(dx, dy)
 
-
-            const extra = 1; //to see big servers
-
             //draw bg, selection
-            for (let row = 0 - extra; row < viewRows + extra * 0; row++) {
-                for (let col = 0 - extra; col < viewCols + extra * 0; col++) {
+            for (let row = 0; row < viewRows; row++) {
+                for (let col = 0; col < viewCols; col++) {
                     const x = col * SIZE;
                     const y = row * SIZE;
                     const gameCol = bymod(startCol + col, game.cols);
@@ -260,44 +257,35 @@ export function PagePlay({ game, onGameChange, onBack }) {
                     ctx.translate(x, y);
 
                     const cell = game.atXY(gameCol, gameRow);
-                    const cell_l = game.atXY(gameCol - 1, gameRow);
-                    const cell_t = game.atXY(gameCol, gameRow - 1);
-                    const cell_b = game.atXY(gameCol, gameRow + 1);
-
-                    const isOdd = (gameCol + gameRow) % 2 === 0;
-
-
 
                     const gap = 4;
-                    let insideW = SIZE - gap * 2;
-                    let insideH = cell.source ? SIZE * 2 - gap * 2 : SIZE - gap * 2;
+                    const cellRect = getCellRect(game, gameCol, gameRow);
+                    const insideW = SIZE * cellRect.cols - gap * 2;
+                    const insideH = SIZE * cellRect.rows - gap * 2;
 
-
-                    const skipRenderInside = (cell.source && cell_t.source === cell.source);//has rendered before
-
-                    // ctx.fillStyle = "#333"
-                    // ctx.fillRect(-4, -4, 8, 8);
-                    // if (!cell_l.source || cell_l.source !== cell.source) ctx.fillRect(- 4, 6, 8, SIZE - 12);
-                    // if (!cell_t.source || cell_t.source !== cell.source) ctx.fillRect(6, - 4, SIZE - 12, 8);
+                    const skipRenderInside = (gameCol !== cellRect.x || gameRow !== cellRect.y);//has rendered before
 
                     if (!skipRenderInside) {
+                        const isOdd = (gameCol + gameRow) % 2 === 0;
                         if (cell.source) ctx.fillStyle = "#111";
                         else ctx.fillStyle = isOdd ? "#222" : "#333";
                         ctx.fillRect(gap, gap, insideW, insideH);
                         const currentLeftIndex = contentLeftIndex + Math.floor((startCol + col) / game.cols)
-                        const currentTopIndex = contentTopIndex + Math.floor((startRow + row) / game.rows)
-                        let isSelected = selected.col === gameCol && selected.row === gameRow && selected.leftIndex === currentLeftIndex && selected.topIndex === currentTopIndex;
-                        const selectChangeDelta = 1 - minmax((now - selected.changedOn), 0, TRANS_DURATION) / TRANS_DURATION;
-                        if (!isSelected && cell.source && cell_b.source === cell.source) {
-                            isSelected = selected.col === gameCol && selected.row === gameRow + 1 && selected.leftIndex === currentLeftIndex && selected.topIndex === currentTopIndex;
-                        }
-                        ctx.fillStyle = "#555";
-                        if (isSelected && selectChangeDelta < 1 && !selected.active) {
-                            ctx.globalAlpha = selected.active ? 1 - selectChangeDelta : selectChangeDelta;
-                            ctx.fillRect(gap, gap, insideW, insideH);
-                            ctx.globalAlpha = 1;
-                        } else if (isSelected && selected.active) {
-                            ctx.fillRect(gap, gap, insideW, insideH);
+                        const currentTopIndex = contentTopIndex + Math.floor((startRow + row) / game.rows);
+
+                        if (selected.leftIndex === currentLeftIndex && selected.topIndex === currentTopIndex) {
+                            const selectedRect = getCellRect(game, selected.col, selected.row);
+                            if (selectedRect.x === cellRect.x && selectedRect.y === cellRect.y) {
+                                const selectChangeDelta = 1 - minmax((now - selected.changedOn), 0, TRANS_DURATION) / TRANS_DURATION;
+                                ctx.fillStyle = "#555";
+                                if (selectChangeDelta < 1 && !selected.active) {
+                                    ctx.globalAlpha = selected.active ? 1 - selectChangeDelta : selectChangeDelta;
+                                    ctx.fillRect(gap, gap, insideW, insideH);
+                                    ctx.globalAlpha = 1;
+                                } else if (selected.active) {
+                                    ctx.fillRect(gap, gap, insideW, insideH);
+                                }
+                            }
                         }
                     }
 
@@ -305,39 +293,13 @@ export function PagePlay({ game, onGameChange, onBack }) {
                 }
             }
 
-
-            // ctx.strokeStyle = "#202020";
-            // ctx.lineWidth = 8;
-
-            // ctx.beginPath()
-            // for (let row = 0 - extra; row < viewRows + extra * 0; row++) {
-            //     const y = row * SIZE;
-            //     const gameRow = bymod(startRow + row, game.rows);
-            //     if (gameRow !== 0) {
-            //         ctx.moveTo(0, y);
-            //         ctx.lineTo(viewRows * game.cols * SIZE, y);
-            //     }
-            // }
-
-            // for (let col = 0 - extra; col < viewCols + extra * 0; col++) {
-            //     const x = col * SIZE;
-            //     const gameCol = bymod(startCol + col, game.cols);
-            //     if (gameCol !== 0) {
-            //         ctx.moveTo(x, 0);
-            //         ctx.lineTo(x, viewRows * game.rows * SIZE);
-            //     }
-            //     //ctx.fillRect(x - 2, 0, 4, viewRows * game.cols * SIZE);
-            // }
-            // ctx.closePath()
-            // ctx.stroke();
-
             //draw frame around 0,0
             ctx.globalAlpha = 1
             ctx.strokeStyle = "#111";
             ctx.lineWidth = 8;
 
             ctx.beginPath()
-            for (let row = 0 - extra; row < viewRows + extra * 0; row++) {
+            for (let row = 0; row < viewRows; row++) {
                 const y = row * SIZE;
                 const gameRow = bymod(startRow + row, game.rows);
                 if (gameRow === 0) {
@@ -346,7 +308,7 @@ export function PagePlay({ game, onGameChange, onBack }) {
                 }
             }
 
-            for (let col = 0 - extra; col < viewCols + extra * 0; col++) {
+            for (let col = 0; col < viewCols; col++) {
                 const x = col * SIZE;
                 const gameCol = bymod(startCol + col, game.cols);
                 if (gameCol === 0) {
@@ -359,106 +321,72 @@ export function PagePlay({ game, onGameChange, onBack }) {
             ctx.closePath();
             ctx.stroke();
 
-            // for (let row = 0 - extra; row < viewRows + extra * 0; row++) {
-            //     for (let col = 0 - extra; col < viewCols + extra * 0; col++) {
-            //         const x = col * SIZE;
-            //         const y = row * SIZE;
-            //         const gameCol = bymod(startCol + col, game.cols);
-            //         const gameRow = bymod(startRow + row, game.rows);
-            //         // ctx.save();
-            //         // ctx.translate(x, y);
-            //         if (gameCol === 0 && gameRow === 0) {
-            //             ctx.beginPath();
-            //             ctx.fillStyle = "#000"
-            //             ctx.arc(x, y, 15, 0, 2 * Math.PI);
-            //             ctx.closePath()
-            //             ctx.fill();
-
-            //             ctx.beginPath();
-            //             ctx.fillStyle = "#2a2a2a"
-            //             ctx.arc(x, y, 5, 0, 2 * Math.PI);
-            //             ctx.closePath()
-            //             ctx.fill();
-            //         }
-            //     }
-            // }
-
-            // ctx.strokeStyle = "#181818";
-            // ctx.lineWidth = 0;
-
-            // ctx.beginPath()
-            // for (let row = 0 - extra; row < viewRows + extra * 0; row++) {
-            //     const y = row * SIZE;
-            //     const gameRow = bymod(startRow + row, game.rows);
-            //     if (gameRow === 0) {
-            //         ctx.moveTo(0, y);
-            //         ctx.lineTo(viewRows * game.cols * SIZE, y);
-            //     }
-            // }
-
-            // for (let col = 0 - extra; col < viewCols + extra * 0; col++) {
-            //     const x = col * SIZE;
-            //     const gameCol = bymod(startCol + col, game.cols);
-            //     if (gameCol === 0) {
-            //         ctx.moveTo(x, 0);
-            //         ctx.lineTo(x, viewRows * game.rows * SIZE);
-            //     }
-            //     //ctx.fillRect(x - 2, 0, 4, viewRows * game.cols * SIZE);
-            // }
-            // ctx.closePath()
-            // ctx.stroke();
-
-
             ctx.globalAlpha = 1;
 
+            const sourcesToDraw = new Map();
             //draw cells
-            for (let row = 0 - extra; row < viewRows + extra * 0; row++) {
-                for (let col = 0 - extra; col < viewCols + extra * 0; col++) {
+            for (let row = 0; row < viewRows; row++) {
+                for (let col = 0; col < viewCols; col++) {
 
                     let x = col * SIZE;
                     let y = row * SIZE;
                     ctx.save();
                     ctx.translate(x, y);
-                    x = y = 0;
+                    //x = y = 0;
                     const gameCol = bymod(startCol + col, game.cols);
                     const gameRow = bymod(startRow + row, game.rows);
 
                     const cell = game.atXY(gameCol, gameRow);
                     const isEnd = (cell.figure === 0b1000 || cell.figure === 0b0100 || cell.figure === 0b0010 || cell.figure === 0b0001);
 
-
-
-
                     const conns = getRtConnections(game, now, gameCol, gameRow);
 
                     if (cell.source) {
-                        const rotateProgress = (progress(cell.rotatedOn, TRANS_DURATION * 1) - 1);
-                        const cellTop = game.atXY(gameCol, gameRow - 1);
-                        const cellBottom = game.atXY(gameCol, gameRow + 1);
 
-                        if (cellTop.source === cell.source) {
-                            const figure2rotate = cell.figure & (BOTTOM | LEFT);
-                            const figure2down = cell.figure & (RIGHT);
-                            const img2rotate = getFigureImage(figure2rotate, COLORS[cell.source], true, conns);
-                            const img2down = getFigureImage(figure2down, COLORS[cell.source], true, conns);
-                            ctx.save();
-                            ctx.translate(SIZE / 2, SIZE / 2);       // move origin
-                            ctx.rotate(rotateProgress * Math.PI / 2);         // rotate (radians)
-                            img2rotate && ctx.drawImage(img2rotate, -SIZE / 2 - 1, -SIZE / 2 - 1, SIZE + 2, SIZE + 2);
-                            ctx.restore();
-                            img2down && ctx.drawImage(img2down, -1, SIZE * (rotateProgress) - 1, SIZE + 2, SIZE + 2);
-                        } else if (cellBottom.source === cell.source) {
-                            const figure2rotate = cell.figure & (TOP | RIGHT);
-                            const figure2up = cell.figure & (LEFT);
-                            const img2rotate = getFigureImage(figure2rotate, COLORS[cell.source], true, conns);
-                            const img2up = getFigureImage(figure2up, COLORS[cell.source], true, conns);
-                            ctx.save();
-                            ctx.translate(SIZE / 2, SIZE / 2);       // move origin
-                            ctx.rotate(rotateProgress * Math.PI / 2);         // rotate (radians)
-                            img2rotate && ctx.drawImage(img2rotate, -SIZE / 2 - 1, -SIZE / 2 - 1, SIZE + 2, SIZE + 2);
-                            ctx.restore();
-                            img2up && ctx.drawImage(img2up, -1, -SIZE * (rotateProgress) - 1, SIZE + 2, SIZE + 2);
+                        const rotateProgress = (progress(cell.rotatedOn, TRANS_DURATION * 1) - 1);
+
+                        const cell_l = atXYD(game, gameCol, gameRow, LEFT);
+                        const cell_t = atXYD(game, gameCol, gameRow, TOP);
+                        const cell_r = atXYD(game, gameCol, gameRow, RIGHT);
+                        const cell_b = atXYD(game, gameCol, gameRow, BOTTOM);
+
+                        let figure2move = 0;
+                        let figure2rotate = cell.figure;
+
+                        if (cell_l.source === cell.source) {
+                            figure2move |= TOP;
+                            figure2rotate &= ~LEFT;
                         }
+                        if (cell_r.source === cell.source) {
+                            figure2move |= BOTTOM;
+                            figure2rotate &= ~RIGHT;
+                        }
+                        if (cell_t.source === cell.source) {
+                            figure2move |= RIGHT;
+                            figure2rotate &= ~TOP;
+                        }
+                        if (cell_b.source === cell.source) {
+                            figure2move |= LEFT;
+                            figure2rotate &= ~BOTTOM;
+                        }
+                        figure2rotate &= (~figure2move);
+
+                        const img2rotate = getFigureImage(figure2rotate, cell.source, true, conns);
+                        const img2down = getFigureImage(cell.figure & figure2move & RIGHT, cell.source, true, conns);
+                        const img2up = getFigureImage(cell.figure & figure2move & LEFT, cell.source, true, conns);
+                        const img2right = getFigureImage(cell.figure & figure2move & TOP, cell.source, true, conns);
+                        const img2left = getFigureImage(cell.figure & figure2move & BOTTOM, cell.source, true, conns);
+
+                        img2down && ctx.drawImage(img2down, -1, SIZE * (rotateProgress) - 1, SIZE + 2, SIZE + 2);
+                        img2up && ctx.drawImage(img2up, -1, -SIZE * (rotateProgress) - 1, SIZE + 2, SIZE + 2);
+                        img2left && ctx.drawImage(img2left, -SIZE * (rotateProgress) - 1, -1, SIZE + 2, SIZE + 2);
+                        img2right && ctx.drawImage(img2right, SIZE * (rotateProgress) - 1, -1, SIZE + 2, SIZE + 2);
+
+                        ctx.save();
+                        ctx.translate(SIZE / 2, SIZE / 2);       // move origin
+                        ctx.rotate(rotateProgress * Math.PI / 2);         // rotate (radians)
+                        img2rotate && ctx.drawImage(img2rotate, -SIZE / 2 - 1, -SIZE / 2 - 1, SIZE + 2, SIZE + 2);
+                        ctx.restore();
 
                     } else if (!cell.source) {
                         const angle = (progress(cell.rotatedOn, TRANS_DURATION * 1) - 1) * Math.PI / 2;
@@ -468,13 +396,13 @@ export function PagePlay({ game, onGameChange, onBack }) {
                         ctx.rotate(angle);         // rotate (radians)
 
                         if (switchingDelta < 1) {
-                            const imgBefore = getFigureImage(cell.figure, COLORS[cell.onBefore], cell.onBefore === 1 || cell.onBefore === 2, conns);
+                            const imgBefore = getFigureImage(cell.figure, cell.onBefore, cell.onBefore === 1 || cell.onBefore === 2, conns);
                             if (imgBefore) {
                                 ctx.drawImage(imgBefore, -SIZE / 2 - 1, -SIZE / 2 - 1, SIZE + 2, SIZE + 2);
                             }
                         }
 
-                        const img = getFigureImage(cell.figure, COLORS[cell.on], cell.on === 1 || cell.on === 2, conns);
+                        const img = getFigureImage(cell.figure, cell.on, cell.on === 1 || cell.on === 2, conns);
                         if (img) {
                             ctx.globalAlpha = switchingDelta
                             ctx.drawImage(img, -SIZE / 2 - 1, -SIZE / 2 - 1, SIZE + 2, SIZE + 2);
@@ -486,7 +414,7 @@ export function PagePlay({ game, onGameChange, onBack }) {
                         const showing = minmax(switchingDelta * 2, 1, 2) - 1;
                         const hiding = minmax(switchingDelta * 2, 0, 1);
 
-                        if (isEnd && cell.on) {
+                        if (isEnd && isOn(cell.on)) {
                             ctx.globalAlpha = showing;
                             ctx.beginPath();
                             ctx.moveTo(SIZE / 2, SIZE / 2);
@@ -496,17 +424,17 @@ export function PagePlay({ game, onGameChange, onBack }) {
                             ctx.lineCap = "round";
                             ctx.strokeStyle = "#fff"
                             ctx.stroke();
-
+                            ctx.globalAlpha = 1;
                             ctx.beginPath();
                             ctx.moveTo(SIZE / 2, SIZE / 2);
                             ctx.lineTo(SIZE / 2, SIZE / 2)
-                            ctx.lineWidth = 5 * showing;
+                            ctx.lineWidth = 5;// * showing;
                             ctx.lineJoin = "round";
                             ctx.lineCap = "round";
                             ctx.strokeStyle = "#111"
                             ctx.stroke();
                         }
-                        if (isEnd && cell.onBefore) {
+                        if (isEnd && isOn(cell.onBefore)) {
                             ctx.globalAlpha = (1 - hiding);
                             ctx.beginPath();
                             ctx.moveTo(SIZE / 2, SIZE / 2);
@@ -516,19 +444,19 @@ export function PagePlay({ game, onGameChange, onBack }) {
                             ctx.lineCap = "round";
                             ctx.strokeStyle = "#fff"
                             ctx.stroke();
-
+                            ctx.globalAlpha = hiding < 1 ? 1 : 0;
                             ctx.beginPath();
                             ctx.moveTo(SIZE / 2, SIZE / 2);
                             ctx.lineTo(SIZE / 2, SIZE / 2)
-                            ctx.lineWidth = 5 * (1 - hiding);
+                            ctx.lineWidth = 5;// * (1 - hiding);
                             ctx.lineJoin = "round";
                             ctx.lineCap = "round";
                             ctx.strokeStyle = "#111"
                             ctx.stroke();
                         }
 
-                        if (isEnd && !cell.on) {
-                            ctx.globalAlpha = 0.5
+                        if (isEnd && !isOn(cell.on)) {
+                            ctx.globalAlpha = 1 - 0.5 * showing
                             const d = 5 * showing;
                             ctx.beginPath();
                             ctx.moveTo(SIZE / 2 - d, SIZE / 2 - d);
@@ -541,8 +469,8 @@ export function PagePlay({ game, onGameChange, onBack }) {
                             ctx.strokeStyle = "#111"
                             ctx.stroke();
                         }
-                        if (isEnd && !cell.onBefore) {
-                            ctx.globalAlpha = (1 - hiding)
+                        if (isEnd && !isOn(cell.onBefore)) {
+                            ctx.globalAlpha = 0.5 + hiding * 0.5
                             const d = 5 * (1 - hiding);
                             ctx.beginPath();
                             ctx.moveTo(SIZE / 2 - d, SIZE / 2 - d);
@@ -558,16 +486,35 @@ export function PagePlay({ game, onGameChange, onBack }) {
                     }
 
                     ctx.globalAlpha = 1
-
-                    if (cell.source && game.atXY(gameCol, gameRow - 1).source) {
-                        const sourceImg = getSourceBgImage(COLORS[cell.on]);
-                        if (sourceImg) {
-                            ctx.drawImage(sourceImg, 0, -SIZE, SIZE, SIZE * 2);
-                        }
+                    if (cell.source) {
+                        const rect = getCellRect(game, gameCol, gameRow);
+                        const sourceX = x - (gameCol - rect.x) * SIZE;
+                        const sourceY = y - (gameRow - rect.y) * SIZE;
+                        sourcesToDraw.set(sourceX + "_" + sourceY, { sourceX, sourceY, rect })
                     }
-                    ctx.restore(); //translate(x,y)
+                    // if (cell.source && !game.atXY(gameCol, gameRow - 1).source && !game.atXY(gameCol - 1, gameRow).source) {
+                    //     const rect = getCellRect(game, gameCol, gameRow);
+                    //     sourcesToDraw.push()
+
+                    //     const sourceImg = getSourceBgImage(COLORS[cell.on], rect.cols, rect.rows);
+                    //     if (sourceImg) {
+                    //         ctx.drawImage(sourceImg, 0, 0, SIZE * rect.cols, SIZE * rect.rows);
+                    //     }
+                    // }
+                    ctx.restore();
                 }
             }
+
+            // Draw all sources
+            //console.log("SIZE of sourcesToDraw:", sourcesToDraw.size)
+            sourcesToDraw.forEach(({ sourceX, sourceY, rect }) => {
+                const sourceImg = getSourceBgImage(game.atXY(rect.x, rect.y).on, rect.cols, rect.rows);
+                if (sourceImg) {
+                    ctx.drawImage(sourceImg, sourceX, sourceY, SIZE * rect.cols, SIZE * rect.rows);
+                }
+            });
+
+
 
             ctx.restore();
             animationFrame = requestAnimationFrame(render)

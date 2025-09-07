@@ -1,4 +1,5 @@
-import { BOTTOM, COLORS, LEFT, RADS, RIGHT, SIZE, TOP, TRANS_DURATION } from "./cfg";
+import { BOTTOM, COLOR, LEFT, RADS, RIGHT, SIZE, TOP, TRANS_DURATION } from "./cfg";
+import { rnd } from "./helpers";
 
 function rasterizeSVG(svgTxt, w, h) {
     return new Promise((resolve) => {
@@ -25,6 +26,9 @@ const sourceFgCache = {};
 const bgCache = {};
 
 export function getFigureImage(figure, color, solved, conns) {
+    solved = color === 1 || color === 2 || color === 4;
+    color = COLOR(color)
+    //color = COLORS[color];
     const key = `${figure}-${color}-${solved}-${conns}`;
     let imageObj = figureImageCache[key];
 
@@ -89,7 +93,7 @@ export function getFigureImage(figure, color, solved, conns) {
             img.complete = true;
             figureImageCache[key] = img;
             figureImageCache.loadedCount++;
-            console.log("RAST COUNT:", figureImageCache.loadedCount)
+            //    console.log("RAST COUNT:", figureImageCache.loadedCount)
         });
 
         // imageObj = new Image();
@@ -101,8 +105,9 @@ export function getFigureImage(figure, color, solved, conns) {
     }
 }
 
-export function getSourceBgImage(color) {
-    const key = `${color} `;
+export function getSourceBgImage(color, cols, rows) {
+    color = COLOR(color);
+    const key = `${color} ${cols} ${rows} `;
     let imageObj = sourceFgCache[key];
 
     //extractDirs(figure)
@@ -123,36 +128,50 @@ export function getSourceBgImage(color) {
         */
         const r = 50;
         let eyes = ""
-        for (let i = 0; i < 50; i++) {
-            //cx =25..75
-            //cy=25..175
-            //opacity=0.2..0.8
+        for (let c = 0; c < 4 * cols + (cols - 1) * 6; c++) {
+            for (let r = 0; r < 4 * rows + (rows - 1) * 6; r++) {
 
-            let cx = 25 + Math.random() * 40; // Random x-coordinate between 25 and 75
-            let cy = 25 + Math.random() * 150; // Random y-coordinate between 25 and 175
+                let cx = 35 + c * 10;
+                let cy = 35 + r * 10;
+                eyes += `<circle cx="${cx}" cy="${cy}" r="${2.5}" opacity="${1}" stroke="none" fill="#333"/>`;
+                if (rnd(4) === 4) {
+                    eyes += `<circle cx="${cx}" cy="${cy}" r="${3}" opacity="${1}" stroke="none" fill="${color}"/>`;
+                }
+            }
 
-            cx = Math.round(cx / 10) * 10 + 6
-            cy = Math.round(cy / 10) * 10 + 6
-
-            const opacity = 0.1 + Math.random() * 0.9; // Random opacity between 0.2 and 0.8
-            const scale = 1.1 - opacity;// Math.random(); // Random scale between 1 and 2
-            //eyes += `<circle cx="${cx}" cy="${cy}" r="${5 * scale}" opacity="${opacity}" stroke="#fff" fill="#111" stroke-width="${7.5 * scale}"/>`;
-            eyes += `<circle cx="${cx}" cy="${cy}" r="${3}" opacity="${1}" stroke="none" fill="#222"/>`;
         }
+        // for (let i = 0; i < 8; i++) {
+        //     //cx =25..75
+        //     //cy=25..175
+        //     //opacity=0.2..0.8
+
+        //     //rnd(4)
+
+        //     rnd()
+
+        //     let cx = 25 + Math.random() * 50; // Random x-coordinate between 25 and 75
+        //     let cy = 25 + Math.random() * 50; // Random y-coordinate between 25 and 175
+
+        //     cx = Math.round(cx / 10) * 10 + 6
+        //     cy = Math.round(cy / 10) * 10 + 6
+
+        //     const opacity = 0.1 + Math.random() * 0.9; // Random opacity between 0.2 and 0.8
+        //     const scale = 1.1 - opacity;// Math.random(); // Random scale between 1 and 2
+        //     //eyes += `<circle cx="${cx}" cy="${cy}" r="${5 * scale}" opacity="${opacity}" stroke="#fff" fill="#111" stroke-width="${7.5 * scale}"/>`;
+        //     eyes += `<circle cx="${cx}" cy="${cy}" r="${3}" opacity="${1}" stroke="none" fill="#222"/>`;
+        // }
         const svgTxt = `<svg xmlns="http://www.w3.org/2000/svg" version="1.2"
-        width="10"
-        height="20"
-        stroke-linecap="round" stroke-linejoin="round"
+        stroke-linecap="round" 
+        stroke-linejoin="round"
         stroke="${color}"
         fill="#fff"
-        viewBox="0 0 100 200">
-
-        <rect x="25" y="25" width="50" stroke-width="0" height="150" rx="15" ry="15" fill="#fff" stroke="none" />
+        viewBox="0 0 ${cols * 100} ${rows * 100}">
+        <rect x="25" y="25" width="${cols * 100 - 50}" stroke-width="0" height="${rows * 100 - 50}" rx="15" ry="15" fill="#444" stroke="none" />
+        
+        <rect x="20" y="20" width="${cols * 100 - 40}" stroke-width="15" height="${rows * 100 - 40}" rx="15" ry="15" fill="none" stroke="${color}" />
         <g opacity="1">
         ${eyes}
         </g>
-        <rect x="20" y="20" width="60" stroke-width="15" height="160" rx="15" ry="15" fill="none" stroke="${color}" />
-            
         </svg > `;
 
         sourceFgCache[key] = { complete: false }
@@ -160,7 +179,7 @@ export function getSourceBgImage(color) {
 
             img.complete = true;
             sourceFgCache[key] = img;
-            sourceFgCache.loadedCount++;
+            //sourceFgCache.loadedCount++;
             //console.log("RAST COUNT:", figureImageCache.loadedCount)
         });
 

@@ -1,6 +1,6 @@
 import { bymod, rnd } from "./helpers";
 import { TOP, RIGHT, BOTTOM, LEFT, DIRS } from "./cfg";
-import { countProgress } from "./game";
+import { countProgress, getCellRect, initSource, rotateCell } from "./game";
 // const TOP = 0b1000;
 // const RIGHT = 0b0100;
 // const BOTTOM = 0b0010;
@@ -144,35 +144,18 @@ export function createGame(cols, rows) {
     game.isConnected = isConnected;
 
     function rotateAtXY(x, y) {
-        const cell = atXY(x, y);
-        if (!cell) return;
-        if (!cell.source) {
-            cell.figure = (cell.figure >> 1) | (cell.figure << 3) & 0b1111; // Rotate left
-            cell.rotatedOn = performance.now()
-        } else {
-            //let cell1 = null;
-            let cellUp = atXY(x, y - 1);
-            let cellDown = atXY(x, y + 1);
-
-            const [cell1, cell2] = cellUp.source ? [cellUp, cell] : [cell, cellDown];
-
-            const figure1 = cell1.figure;
-            const figure2 = cell2.figure;
-
-            let newFigure1 = BOTTOM;
-            let newFigure2 = TOP;
-            if (figure2 & LEFT) newFigure1 |= LEFT;
-            if (figure1 & LEFT) newFigure1 |= TOP;
-            if (figure1 & TOP) newFigure1 |= RIGHT;
-
-            if (figure1 & RIGHT) newFigure2 |= RIGHT;
-            if (figure2 & RIGHT) newFigure2 |= BOTTOM;
-            if (figure2 & BOTTOM) newFigure2 |= LEFT;
-
-            cell1.figure = newFigure1;
-            cell2.figure = newFigure2;
-            cell1.rotatedOn = performance.now()
-            cell2.rotatedOn = performance.now()
+        const rect = getCellRect(game, x, y);
+        for (let sx = rect.x; sx < rect.x + rect.cols; sx++) {
+            for (let sy = rect.y; sy < rect.y + rect.rows; sy++) {
+                //console.log("ROTATE: ", sx, sy, atXY(sx, sy).figure.toString(2).padStart(4, "0"), rotateCell(game, sx, sy).toString(2).padStart(4, "0"))
+                atXY(sx, sy).newFigure = rotateCell(game, sx, sy);
+            }
+        }
+        for (let sx = rect.x; sx < rect.x + rect.cols; sx++) {
+            for (let sy = rect.y; sy < rect.y + rect.rows; sy++) {
+                atXY(sx, sy).figure = atXY(sx, sy).newFigure;
+                atXY(sx, sy).rotatedOn = performance.now()
+            }
         }
     }
 
@@ -209,31 +192,19 @@ export function createGame(cols, rows) {
 
     function updateOnStates() {
 
+        const sources = []
         for (let row = 0; row < rows; row++) {
             for (let col = 0; col < cols; col++) {
                 const cell = atXY(col, row);
                 cell.onBefore = cell.on;
                 cell.on = 0;
-                //cell.rotatedOn = performance.now()
-                // cell.connections = 0b0000;
-                // if (game.isConnected(col, row, TOP)) cell.connections |= TOP;
-                // if (game.isConnected(col, row, RIGHT)) cell.connections |= RIGHT;
-                // if (game.isConnected(col, row, BOTTOM)) cell.connections |= BOTTOM;
-                // if (game.isConnected(col, row, LEFT)) cell.connections |= LEFT;
-
                 cell.done = cell.source; // Reset done state
                 cell.on = cell.source ? cell.source : 0;
-
-
+                if (cell.source) sources.push({ col, row })
             }
         }
 
-
-        updateOnFromSource(serverCol, serverRow, 1);
-        updateOnFromSource(serverCol, serverRow + 1, 1);
-        updateOnFromSource(serverCol + 1, serverRow, 2);
-        updateOnFromSource(serverCol + 1, serverRow + 1, 2);
-
+        sources.forEach(({ col, row }) => updateOnFromSource(col, row))
 
         for (let row = 0; row < rows; row++) {
             for (let col = 0; col < cols; col++) {
@@ -260,23 +231,11 @@ export function createGame(cols, rows) {
     const serverCol = Math.floor(cols / 2 - 1);
     const serverRow = Math.floor(rows / 2 - 1);
 
-    atXY(serverCol, serverRow).source = 0b01;
-    atXY(serverCol, serverRow + 1).source = 0b01;
-    atXY(serverCol, serverRow).figure = BOTTOM;
-    atXY(serverCol, serverRow + 1).figure = TOP
-
-    atXY(serverCol + 1, serverRow).source = 0b10;
-    atXY(serverCol + 1, serverRow + 1).source = 0b10;
-    atXY(serverCol + 1, serverRow).figure = BOTTOM;
-    atXY(serverCol + 1, serverRow + 1).figure = TOP
-
-    const ends = [
-        { x: serverCol, y: serverRow },
-        { x: serverCol + 1, y: serverRow },
-        { x: serverCol, y: serverRow + 1 },
-        { x: serverCol + 1, y: serverRow + 1 }
-    ];
-
+    const ends1 = initSource(game, 1, 1, 1, 2, 0b0001);
+    const ends2 = initSource(game, 3, 1, 2, 1, 0b0010);
+    const ends3 = initSource(game, 4, 3, 1, 1, 0b1000);
+    const ends4 = initSource(game, 0, 4, 2, 2, 0b0100);
+    const ends = ends1.concat(ends2).concat(ends3).concat(ends4);
 
 
     for (let i = 0; i < 40 * 40; i++) {
