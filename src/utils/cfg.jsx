@@ -20,7 +20,8 @@ export function COLOR(color) {
         case 8:
             return "#ED6AFF";
         default:
-            return "#f66"; // Default for mix
+            return "#aaa";
+        //return "#f66"; // Default for mix
     }
 }
 

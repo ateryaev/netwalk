@@ -166,10 +166,15 @@ export function getSourceBgImage(color, cols, rows) {
         stroke="${color}"
         fill="#fff"
         viewBox="0 0 ${cols * 100} ${rows * 100}">
-        <rect x="25" y="25" width="${cols * 100 - 50}" stroke-width="0" height="${rows * 100 - 50}" rx="15" ry="15" fill="#444" stroke="none" />
         
-        <rect x="20" y="20" width="${cols * 100 - 40}" stroke-width="15" height="${rows * 100 - 40}" rx="15" ry="15" fill="none" stroke="${color}" />
-        <g opacity="1">
+        
+        <rect x="20" y="20" width="${cols * 100 - 40}" stroke-width="10" height="${rows * 100 - 40}" rx="20" ry="20" fill="#222" stroke="${color}" />
+
+        <rect x="35" y="35" width="${cols * 100 - 70}" stroke-width="15" height="${rows * 100 - 70}" rx="10" ry="10" opacity="0.4" fill="${color}" stroke="none" />
+        
+        
+
+        <g opacity="0">
         ${eyes}
         </g>
         </svg > `;

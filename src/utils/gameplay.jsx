@@ -1,6 +1,6 @@
 import { bymod, rnd } from "./helpers";
 import { TOP, RIGHT, BOTTOM, LEFT, DIRS } from "./cfg";
-import { countProgress, getCellRect, initSource, rotateCell } from "./game";
+import { countProgress, getCellRect, initSource, isEnd, rotateCell, rotateFigure } from "./game";
 // const TOP = 0b1000;
 // const RIGHT = 0b0100;
 // const BOTTOM = 0b0010;
@@ -38,34 +38,34 @@ export function createGame(cols, rows) {
         }
     }
 
-    function countEnds() {
-        let count = 0;
-        for (let row = 0; row < rows; row++) {
-            for (let col = 0; col < cols; col++) {
-                const cell = game.cells[row][col];
-                if (cell.figure === 0) continue;
-                if (cell.source) continue;
-                const dirs = figureToDirs(cell.figure);
-                if (dirs.length === 1) count++;
-            }
-        }
-        return count;
-    }
+    // function countEnds() {
+    //     let count = 0;
+    //     for (let row = 0; row < rows; row++) {
+    //         for (let col = 0; col < cols; col++) {
+    //             const cell = game.cells[row][col];
+    //             if (cell.figure === 0) continue;
+    //             if (cell.source) continue;
+    //             const dirs = figureToDirs(cell.figure);
+    //             if (dirs.length === 1) count++;
+    //         }
+    //     }
+    //     return count;
+    // }
 
-    function countEndsOn() {
-        let count = 0;
-        for (let row = 0; row < rows; row++) {
-            for (let col = 0; col < cols; col++) {
-                const cell = game.cells[row][col];
-                if (cell.figure === 0) continue;
-                if (cell.source) continue;
-                const dirs = figureToDirs(cell.figure);
-                if (dirs.length === 1 && cell.on) count++;
-            }
-        }
-        console.log("ENDS ON", count);
-        return count;
-    }
+    // function countEndsOn() {
+    //     let count = 0;
+    //     for (let row = 0; row < rows; row++) {
+    //         for (let col = 0; col < cols; col++) {
+    //             const cell = game.cells[row][col];
+    //             if (cell.figure === 0) continue;
+    //             if (cell.source) continue;
+    //             const dirs = figureToDirs(cell.figure);
+    //             if (dirs.length === 1 && cell.on) count++;
+    //         }
+    //     }
+    //     console.log("ENDS ON", count);
+    //     return count;
+    // }
 
     function atXY(x, y) {
         x = bymod(x, cols);
@@ -81,11 +81,9 @@ export function createGame(cols, rows) {
     function emptyDirs(x, y) {
         const dirs = [];
         DIRS.forEach((dir) => {
-            if (atXYD(x, y, dir).figure === 0) {
+            if (atXYD(x, y, dir).figure === 0 && !atXYD(x, y, dir).source) {
                 dirs.push(dir);
-
             }
-
         });
         return dirs;
     }
@@ -220,8 +218,8 @@ export function createGame(cols, rows) {
 
             }
         }
-        game.endsOn = countEndsOn();
-        console.log("ENDS ON 1", game.endsOn);
+        //game.endsOn = countEndsOn();
+        //console.log("ENDS ON 1", game.endsOn);
         return;
     }
 
@@ -232,9 +230,9 @@ export function createGame(cols, rows) {
     const serverRow = Math.floor(rows / 2 - 1);
 
     const ends1 = initSource(game, 1, 1, 1, 2, 0b0001);
-    const ends2 = initSource(game, 3, 1, 2, 1, 0b0010);
+    const ends2 = initSource(game, 3, 1, 3, 1, 0b0010);
     const ends3 = initSource(game, 4, 3, 1, 1, 0b1000);
-    const ends4 = initSource(game, 0, 4, 2, 2, 0b0100);
+    const ends4 = initSource(game, 0, 3, 3, 3, 0b0100);
     const ends = ends1.concat(ends2).concat(ends3).concat(ends4);
 
 
@@ -280,7 +278,31 @@ export function createGame(cols, rows) {
     }
 
 
-    game.ends = countEnds();
+    //game.ends = countEnds();
+
+    //remove one end:
+
+    function getAllEnds() {
+        const ends = [];
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                const cell = atXY(col, row);
+                if (isEnd(cell.figure) && !cell.source) {
+                    ends.push({ col, row });
+                }
+            }
+        }
+        return ends;
+    }
+
+    function deleteEnd({ col, row }) {
+        const cell = atXY(col, row);
+        if (!isEnd(cell.figure) || cell.source) return;
+        const ocell = atXYD(col, row, cell.figure);
+        const odir = rotateFigure(rotateFigure(cell.figure));
+        cell.figure = 0;
+        ocell.figure &= ocell.figure & ~odir;
+    }
 
     game.shufle = function () {
         for (let row = 0; row < rows; row++) {
@@ -289,6 +311,14 @@ export function createGame(cols, rows) {
                 for (let i = 0; i < times; i++) rotateAtXY(col, row);
             }
         }
+    }
+
+
+
+    for (let i = 0; i < 5; i++) {
+        const allEnds = getAllEnds();
+        if (allEnds.length > 0)
+            deleteEnd({ ...(allEnds[rnd(allEnds.length - 1)]) })
     }
 
     //game.shufle();

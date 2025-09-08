@@ -49,7 +49,7 @@ function App() {
   }
 
   const [page, setPage] = useState("play");
-  const [game, setGame] = useState(createGame(6, 6)); //load from localStorage or create new
+  const [game, setGame] = useState(createGame(7, 7)); //load from localStorage or create new
 
   if (page === "menu") return (
     <PageMenu onNewGame={handleNewGame} onTest={() => setPage("test")} />

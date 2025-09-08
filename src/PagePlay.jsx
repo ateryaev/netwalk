@@ -2,8 +2,8 @@ import { use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import { cn } from './utils/cn'
 import { rnd, bymod, progress } from './utils/helpers';
-import { BOTTOM, LEFT, RIGHT, SIZE, TOP, TRANS_DURATION } from "./utils/cfg";
-import { atXYD, countProgress, getCellRect, getRtConnections, isOff, isOn } from './utils/game';
+import { BOTTOM, COLOR, LEFT, RIGHT, SIZE, TOP, TRANS_DURATION } from "./utils/cfg";
+import { atXYD, countProgress, getCellRect, getRtConnections, isEnd, isMix, isOff, isOn } from './utils/game';
 import { GameHeader } from './components/GameHeader';
 import { PanZoomView } from './components/PanZoomView';
 import { addXY, distXY, divXY, minmax, mulXY, printXY, subXY, XY } from './utils/vectors';
@@ -149,17 +149,7 @@ export function PagePlay({ game, onGameChange, onBack }) {
     const [smoothScrollTo, setSmoothScrollTo] = useState(null);
 
     function scrollTo(contentXY, smoothly) {
-        if (smoothScrollTo) return;
-
-        const centerScroll = XY(
-            bymod(contentXY.x - viewSize.x / 2, contentWidth) / zoom,
-            bymod(contentXY.y - viewSize.y / 2, contentHeight) / zoom
-        )
-
-        if (!smoothly) {
-            setScroll(centerScroll);
-            return;
-        }
+        //if (smoothScrollTo) return;
 
         function normalizeScroll(scrolXY, contentXY) {
             const newScroll = XY(
@@ -172,10 +162,21 @@ export function PagePlay({ game, onGameChange, onBack }) {
             return newScroll;
         }
 
+        const centerScroll = XY(
+            bymod(contentXY.x - viewSize.x / 2, contentWidth) / zoom,
+            bymod(contentXY.y - viewSize.y / 2, contentHeight) / zoom
+        )
+
+        if (!smoothly) {
+            setScroll(centerScroll);
+            return centerScroll;
+        }
+
         let delta = subXY(centerScroll, scroll);
         delta = normalizeScroll(delta, divXY(contentSize, zoom));
-        setSmoothScrollTo(addXY(scroll, delta));
-        return;
+        const newSmoothScrollTo = addXY(scroll, delta);
+        setSmoothScrollTo(newSmoothScrollTo);
+        return { ...newSmoothScrollTo };
     }
 
     useEffect(() => {
@@ -183,12 +184,20 @@ export function PagePlay({ game, onGameChange, onBack }) {
         if (!smoothScrollTo) return;
 
         requestAnimationFrame(() => {
-            const delta = subXY(smoothScrollTo, scroll);
-            if (distXY(delta, XY(0, 0)) <= 5) {
+            let delta = mulXY(subXY(smoothScrollTo, scroll), 0.15);
+            const dist = distXY(XY(0, 0), delta);
+
+            if (dist > cellSize) {
+                //  delta = mulXY(subXY(smoothScrollTo, scroll), 0.15 / (dist / cellSize));
+            }
+
+
+
+            if (dist <= 1) {
                 setScroll({ ...smoothScrollTo });
                 setSmoothScrollTo(null);
             } else {
-                setScroll((prev) => addXY(prev, mulXY(delta, 0.5)));
+                setScroll((prev) => addXY(prev, delta));
             }
         });
     }, [smoothScrollTo, scroll]);
@@ -246,53 +255,6 @@ export function PagePlay({ game, onGameChange, onBack }) {
 
             ctx.translate(dx, dy)
 
-            //draw bg, selection
-            for (let row = 0; row < viewRows; row++) {
-                for (let col = 0; col < viewCols; col++) {
-                    const x = col * SIZE;
-                    const y = row * SIZE;
-                    const gameCol = bymod(startCol + col, game.cols);
-                    const gameRow = bymod(startRow + row, game.rows);
-                    ctx.save();
-                    ctx.translate(x, y);
-
-                    const cell = game.atXY(gameCol, gameRow);
-
-                    const gap = 4;
-                    const cellRect = getCellRect(game, gameCol, gameRow);
-                    const insideW = SIZE * cellRect.cols - gap * 2;
-                    const insideH = SIZE * cellRect.rows - gap * 2;
-
-                    const skipRenderInside = (gameCol !== cellRect.x || gameRow !== cellRect.y);//has rendered before
-
-                    if (!skipRenderInside) {
-                        const isOdd = (gameCol + gameRow) % 2 === 0;
-                        if (cell.source) ctx.fillStyle = "#111";
-                        else ctx.fillStyle = isOdd ? "#222" : "#333";
-                        ctx.fillRect(gap, gap, insideW, insideH);
-                        const currentLeftIndex = contentLeftIndex + Math.floor((startCol + col) / game.cols)
-                        const currentTopIndex = contentTopIndex + Math.floor((startRow + row) / game.rows);
-
-                        if (selected.leftIndex === currentLeftIndex && selected.topIndex === currentTopIndex) {
-                            const selectedRect = getCellRect(game, selected.col, selected.row);
-                            if (selectedRect.x === cellRect.x && selectedRect.y === cellRect.y) {
-                                const selectChangeDelta = 1 - minmax((now - selected.changedOn), 0, TRANS_DURATION) / TRANS_DURATION;
-                                ctx.fillStyle = "#555";
-                                if (selectChangeDelta < 1 && !selected.active) {
-                                    ctx.globalAlpha = selected.active ? 1 - selectChangeDelta : selectChangeDelta;
-                                    ctx.fillRect(gap, gap, insideW, insideH);
-                                    ctx.globalAlpha = 1;
-                                } else if (selected.active) {
-                                    ctx.fillRect(gap, gap, insideW, insideH);
-                                }
-                            }
-                        }
-                    }
-
-                    ctx.restore();
-                }
-            }
-
             //draw frame around 0,0
             ctx.globalAlpha = 1
             ctx.strokeStyle = "#111";
@@ -320,6 +282,100 @@ export function PagePlay({ game, onGameChange, onBack }) {
             }
             ctx.closePath();
             ctx.stroke();
+
+            //draw bg, selection
+            for (let row = 0; row < viewRows; row++) {
+                for (let col = 0; col < viewCols; col++) {
+                    const x = col * SIZE;
+                    const y = row * SIZE;
+                    const gameCol = bymod(startCol + col, game.cols);
+                    const gameRow = bymod(startRow + row, game.rows);
+                    ctx.save();
+                    ctx.translate(x, y);
+
+                    const cell = game.atXY(gameCol, gameRow);
+
+                    const gap = 4;
+                    const cellRect = getCellRect(game, gameCol, gameRow);
+                    const insideW = SIZE * cellRect.cols - gap * 2;
+                    const insideH = SIZE * cellRect.rows - gap * 2;
+
+                    const skipRenderInside = (gameCol !== cellRect.x || gameRow !== cellRect.y);//has rendered before
+
+                    if (!skipRenderInside) {
+                        const currentLeftIndex = contentLeftIndex + Math.floor((startCol + col) / game.cols)
+                        const currentTopIndex = contentTopIndex + Math.floor((startRow + row) / game.rows);
+
+                        const isOdd = (gameCol + gameRow + currentLeftIndex * game.cols + currentTopIndex * game.rows) % 2 === 0;
+                        if (cell.source) ctx.fillStyle = "#111";
+                        else ctx.fillStyle = isOdd ? "#222" : "#333";
+                        ctx.fillRect(gap, gap, insideW, insideH);
+
+                        if (cell.figure === 0) {
+                            ctx.globalAlpha = 0.75
+
+                            ctx.beginPath();
+
+
+                            ctx.arc(SIZE / 2, SIZE / 2, 30, 0, Math.PI * 2);
+                            ctx.moveTo(SIZE / 2 - 20, SIZE / 2 - 20);
+                            ctx.lineTo(SIZE / 2 + 20, SIZE / 2 + 20);
+                            ctx.moveTo(SIZE / 2 + 20, SIZE / 2 - 20);
+                            ctx.lineTo(SIZE / 2 - 20, SIZE / 2 + 20);
+                            ctx.lineWidth = 4;
+                            ctx.lineJoin = "round";
+                            ctx.lineCap = "round";
+                            ctx.strokeStyle = !isOdd ? "#222" : "#333";
+                            ctx.stroke();
+                            ctx.globalAlpha = 1
+
+                            //ctx.fillRect(gap, gap, insideW, insideH);
+                        }
+
+                        if (selected.leftIndex === currentLeftIndex && selected.topIndex === currentTopIndex) {
+                            const selectedRect = getCellRect(game, selected.col, selected.row);
+                            if (selectedRect.x === cellRect.x && selectedRect.y === cellRect.y) {
+                                const selectProgress = 1 - progress(selected.changedOn, TRANS_DURATION * 1);
+                                //const selectChangeDelta = 1 - minmax((now - selected.changedOn), 0, TRANS_DURATION) / TRANS_DURATION;
+
+                                const phase = performance.now() % 300;
+                                ctx.globalAlpha = phase > 150 ? 0.75 : 0.5
+                                if (!selected.active) ctx.globalAlpha *= selectProgress;
+
+                                const size = gap * 2;
+                                ctx.beginPath();
+                                ctx.moveTo(gap, gap + size);
+                                ctx.lineTo(gap, gap);
+                                ctx.lineTo(gap + size, gap);
+
+                                ctx.moveTo(insideW + gap, gap + size);
+                                ctx.lineTo(insideW + gap, gap);
+                                ctx.lineTo(insideW + gap - size, gap);
+                                ctx.moveTo(gap, insideH + gap - size);
+                                ctx.lineTo(gap, insideH + gap);
+                                ctx.lineTo(gap + size, insideH + gap);
+                                ctx.moveTo(insideW + gap, insideH + gap - size);
+                                ctx.lineTo(insideW + gap, insideH + gap);
+                                ctx.lineTo(insideW + gap - size, insideH + gap);
+
+                                ctx.lineWidth = 6;
+                                ctx.lineJoin = "round";
+                                ctx.lineCap = "round";
+                                ctx.strokeStyle = "#fff";
+                                ctx.stroke();
+
+
+
+                                //}
+                            }
+                        }
+                    }
+
+                    ctx.restore();
+                }
+            }
+
+
 
             ctx.globalAlpha = 1;
 
@@ -390,7 +446,7 @@ export function PagePlay({ game, onGameChange, onBack }) {
 
                     } else if (!cell.source) {
                         const angle = (progress(cell.rotatedOn, TRANS_DURATION * 1) - 1) * Math.PI / 2;
-                        const switchingDelta = progress(cell.switchedOn, TRANS_DURATION * 2);
+                        const switchingDelta = progress(cell.switchedOn, TRANS_DURATION * 1.5);
                         ctx.save();
                         ctx.translate(SIZE / 2, SIZE / 2);       // move origin
                         ctx.rotate(angle);         // rotate (radians)
@@ -414,7 +470,7 @@ export function PagePlay({ game, onGameChange, onBack }) {
                         const showing = minmax(switchingDelta * 2, 1, 2) - 1;
                         const hiding = minmax(switchingDelta * 2, 0, 1);
 
-                        if (isEnd && isOn(cell.on)) {
+                        if (isEnd && !isOff(cell.on)) {
                             ctx.globalAlpha = showing;
                             ctx.beginPath();
                             ctx.moveTo(SIZE / 2, SIZE / 2);
@@ -422,19 +478,21 @@ export function PagePlay({ game, onGameChange, onBack }) {
                             ctx.lineWidth = 20 * showing;
                             ctx.lineJoin = "round";
                             ctx.lineCap = "round";
-                            ctx.strokeStyle = "#fff"
+                            ctx.strokeStyle = isMix(cell.on) ? "#666" : "#fff"
                             ctx.stroke();
-                            ctx.globalAlpha = 1;
+
+                            //ctx.globalAlpha = 1;
                             ctx.beginPath();
                             ctx.moveTo(SIZE / 2, SIZE / 2);
                             ctx.lineTo(SIZE / 2, SIZE / 2)
-                            ctx.lineWidth = 5;// * showing;
+                            ctx.lineWidth = isMix(cell.on) ? 15 * showing : 5;// * showing;
                             ctx.lineJoin = "round";
                             ctx.lineCap = "round";
-                            ctx.strokeStyle = "#111"
+                            ctx.strokeStyle = isMix(cell.on) ? COLOR(cell.on) : "#111"
                             ctx.stroke();
                         }
-                        if (isEnd && isOn(cell.onBefore)) {
+
+                        if (isEnd && !isOff(cell.onBefore)) {
                             ctx.globalAlpha = (1 - hiding);
                             ctx.beginPath();
                             ctx.moveTo(SIZE / 2, SIZE / 2);
@@ -442,21 +500,21 @@ export function PagePlay({ game, onGameChange, onBack }) {
                             ctx.lineWidth = 20 * (1 - hiding);
                             ctx.lineJoin = "round";
                             ctx.lineCap = "round";
-                            ctx.strokeStyle = "#fff"
+                            ctx.strokeStyle = isMix(cell.onBefore) ? "#666" : "#fff"
                             ctx.stroke();
-                            ctx.globalAlpha = hiding < 1 ? 1 : 0;
+                            //ctx.globalAlpha = hiding < 1 ? 1 : 0;
                             ctx.beginPath();
                             ctx.moveTo(SIZE / 2, SIZE / 2);
                             ctx.lineTo(SIZE / 2, SIZE / 2)
-                            ctx.lineWidth = 5;// * (1 - hiding);
+                            ctx.lineWidth = isMix(cell.onBefore) ? 15 * (1 - hiding) : 5;
                             ctx.lineJoin = "round";
                             ctx.lineCap = "round";
-                            ctx.strokeStyle = "#111"
+                            ctx.strokeStyle = isMix(cell.onBefore) ? COLOR(cell.onBefore) : "#111"
                             ctx.stroke();
                         }
 
-                        if (isEnd && !isOn(cell.on)) {
-                            ctx.globalAlpha = 1 - 0.5 * showing
+                        if (isEnd && isOff(cell.on)) {
+                            ctx.globalAlpha = 1 * showing
                             const d = 5 * showing;
                             ctx.beginPath();
                             ctx.moveTo(SIZE / 2 - d, SIZE / 2 - d);
@@ -466,11 +524,11 @@ export function PagePlay({ game, onGameChange, onBack }) {
                             ctx.lineWidth = 2.5;
                             ctx.lineJoin = "round";
                             ctx.lineCap = "round";
-                            ctx.strokeStyle = "#111"
+                            ctx.strokeStyle = "#666"
                             ctx.stroke();
                         }
-                        if (isEnd && !isOn(cell.onBefore)) {
-                            ctx.globalAlpha = 0.5 + hiding * 0.5
+                        if (isEnd && isOff(cell.onBefore)) {
+                            ctx.globalAlpha = 1 - hiding;
                             const d = 5 * (1 - hiding);
                             ctx.beginPath();
                             ctx.moveTo(SIZE / 2 - d, SIZE / 2 - d);
@@ -480,7 +538,7 @@ export function PagePlay({ game, onGameChange, onBack }) {
                             ctx.lineWidth = 2.5;
                             ctx.lineJoin = "round";
                             ctx.lineCap = "round";
-                            ctx.strokeStyle = "#111"
+                            ctx.strokeStyle = "#666"
                             ctx.stroke();
                         }
                     }
@@ -532,11 +590,93 @@ export function PagePlay({ game, onGameChange, onBack }) {
 
         //}, []); 
     }, [viewSize, zoom, scroll, game, selected]);
-    //}, [contentTopIndex, selected, game, contentLeftIndex, viewCols, viewRows, startRow, startCol]);
+
+    function getMiddleColRow() {
+        //what is coor in the middle of scroll view now
+        //return {col, row}
+        const middleCol = Math.floor(scroll.x * zoom / cellSize + viewSize.x / (2 * cellSize));
+        const middleRow = Math.floor(scroll.y * zoom / cellSize + viewSize.y / (2 * cellSize));
+        return { col: bymod(middleCol, game.cols), row: bymod(middleRow, game.rows) };
+    }
+
+    function findClosestColRow(fromCol, fromRow, color) {
+        const visited = new Set();
+        visited.add(`${fromCol},${fromRow}`);
+        const queue = [
+            { col: bymod(fromCol - 1, game.cols), row: fromRow, dist: 1 },
+            { col: bymod(fromCol + 1, game.cols), row: fromRow, dist: 1 },
+            { col: fromCol, row: bymod(fromRow - 1, game.rows), dist: 1 },
+            { col: fromCol, row: bymod(fromRow + 1, game.rows), dist: 1 }
+        ]
+
+        function isThat(cell) {
+            if (cell.on * 1 === color * 1 && !isOn(color) && isEnd(cell.figure)) {
+                return true;
+            }
+            if (cell.on * 1 === color * 1 && isOn(color) && cell.source > 0) {
+                return true;
+            }
+        }
+
+        while (queue.length > 0) {
+            const { col, row, dist } = queue.shift();
+            const key = `${col},${row}`;
+
+            if (visited.has(key)) continue;
+            visited.add(key);
+
+            const cell = game.atXY(col, row);
+            if (isThat(cell)) {
+                return { col, row, dist };
+            }
+
+            const neighbors = [
+                { col: bymod(col - 1, game.cols), row },
+                { col: bymod(col + 1, game.cols), row },
+                { col, row: bymod(row - 1, game.rows) },
+                { col, row: bymod(row + 1, game.rows) }
+            ];
+
+            for (const neighbor of neighbors) {
+                queue.push({ ...neighbor, dist: dist + 1 });
+            }
+        }
+        if (isThat(game.atXY(fromCol, fromRow))) {
+            return { col: fromCol, row: fromRow, dist: 0 };
+        }
+        return null;
+    }
+
+    function scrollToColor(color) {
+        console.log("MID: ", getMiddleColRow())
+        const mid = getMiddleColRow();
+
+        const closest = findClosestColRow(mid.col, mid.row, color);
+        console.log("FIND: ", mid, closest, color)
+        if (!closest) return;
+        const newScroll = scrollTo({ x: closest.col * cellSize + cellSize / 2, y: closest.row * cellSize + cellSize / 2 }, true);
+        const selectedLeftIndex = Math.floor((zoom * newScroll.x + viewSize.x / 2) / contentSize.x);
+        const selectedTopIndex = Math.floor((zoom * newScroll.y + viewSize.y / 2) / contentSize.y);
+
+        setSelected({
+            pointerId: 0,
+            col: closest.col,
+            row: closest.row,
+            leftIndex: selectedLeftIndex,
+            topIndex: selectedTopIndex,
+            active: true,
+            changedOn: performance.now()
+        });
+    }
+
     return (
         <div className="flex flex-col flex-1 bg-black">
 
-            <GameHeader game={game} onBack={onBack} onLevelClick={() => { scrollCenter(true) }} >
+            <GameHeader game={game} onBack={onBack} onLevelClick={() => { scrollCenter(true) }}
+                onScrollTo={(color) => {
+                    scrollToColor(color);
+                }}
+            >
                 {/* S: {msg}
                 <br />
                 Z:{zoom.toFixed(2)} */}
@@ -569,31 +709,10 @@ export function PagePlay({ game, onGameChange, onBack }) {
                         //scale: `${zoom}`
                     }}
                     className='absolute z-20 xbg-green-500 origin-top-left'></canvas>
-                <div
-                    className='absolute bg-red-200/50x origin-top-left'
-                    style={{
-                        xtranslate: `${-startColOffset * SIZE * zoom}px ${-startRowOffset * SIZE * zoom}px`,
-                        width: `${viewSize.x / zoom}px`,
-                        height: `${viewSize.y / zoom}px`,
-                        scale: `${zoom}`
-                    }}
-                >
-
-                    {/* {viewCells} */}
-
-                </div>
-                {/* <div className='absolute z-50 border-8 border-black/30 m-auto top-0 left-0 right-0 bottom-0 pointer-events-none
-                ring-[1000px] ring-neutral-300 /90'
-                    style={{
-                        width: `${game.cols * cellSize + cellSize}px`,
-                        height: `${game.rows * cellSize + cellSize}px`,
-                    }}
-                ></div> */}
 
             </PanZoomView >
             <div className='p-1 text-[10px] font-bold text-center ring-8 ring-black/20 z-40 text-[#aaa] bg-[#eee] font-mono uppercase text-ellipsis whitespace-nowrap overflow-hidden'>
                 Netwalk v0.1 by Anton Teryaev, 2025
-
             </div>
 
         </div >

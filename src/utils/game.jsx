@@ -51,7 +51,9 @@ export function isMix(color) {
 export function isOff(color) {
     return color * 1 === 0;
 }
-
+export function isEnd(figure) {
+    return (figure === 0b1000 || figure === 0b0100 || figure === 0b0010 || figure === 0b0001)
+}
 export function isOn(color) {
     return (color & (color - 1)) === 0 && color > 0;
 }
@@ -61,26 +63,21 @@ export function countProgress(game) {
         total: 0,
         colors: {
             0: 0,
-            1: 0,
-            2: 0,
-            4: 0,
-            8: 0,
-            333: 0
         }
     };
 
     for (let row = 0; row < game.rows; row++) {
         for (let col = 0; col < game.cols; col++) {
             const cell = game.cells[row][col];
-            if (cell.figure === 0) continue;
-            if (cell.source) continue;
-
+            if (cell.source) {
+                if (!counts.colors[cell.source]) counts.colors[cell.source] = 0;
+                continue;
+            }
+            if (!isEnd(cell.figure)) continue;
             counts.total++;
-            const color = isMix(cell.on) ? 333 : cell.on;
-
+            const color = isMix(cell.on) ? 0 : cell.on;
             if (!counts.colors[color]) counts.colors[color] = 0;
             counts.colors[color]++;
-
         }
     }
     console.log("countProgress", counts);
@@ -149,9 +146,13 @@ export function getCellRect(game, x, y) {
 // e.g. if 1x1: cell.figure = (cell.figure >> 1) | (cell.figure << 3) & 0b1111; // Rotate left
 // if 1x2: top figure top goes to top figure right, but top figure right goes to bottom figure right, 
 //e.t.c
+
+export function rotateFigure(figure) {
+    return (figure >> 1) | (figure << 3) & 0b1111;
+}
 export function rotateCell(game, x, y) {
     const cell = atXY(game, x, y);
-    if (!cell.source) return (cell.figure >> 1) | (cell.figure << 3) & 0b1111;
+    if (!cell.source) return rotateFigure(cell.figure);
 
     const cell_l = atXYD(game, x, y, LEFT);
     const cell_t = atXYD(game, x, y, TOP);

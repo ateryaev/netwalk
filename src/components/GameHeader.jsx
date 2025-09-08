@@ -3,47 +3,50 @@ import { cn } from "../utils/cn"
 import { COLOR } from "../utils/cfg";
 import { isMix, isOff, isOn } from "../utils/game";
 
-export function GameHeader({ game, onBack, onLevelClick, children }) {
+export function GameHeader({ game, onBack, onLevelClick, onScrollTo, children }) {
     const [shown, setShown] = useState(false);
     useEffect(() => {
         setShown(true);
     }, []);
 
+    function handleColorClick(color) {
+        console.log("Color click", color);
+        onScrollTo && onScrollTo(color);
+    }
+
     return (
         <>
-            <div className='flex p-0 pb-0 gap-1 bg-[#ddd] z-50
-       justify-center items-stretch xborder-b-4 border-black
-      text-sm select-none cursor-default'>
+            <div className='flex gap-1 bg-[#ddd] z-50
+       justify-center items-stretch border-b border-[#ccc]
+      select-none cursor-default'>
 
-                <div className={cn('text-xl p-3 w-[80px] aspect-square grid place-items-center text-black translate-x-3 opacity-0 transition-all duration-200', shown && "translate-0 opacity-100")}
+                <div className={cn('px-4 py-3 grid place-items-center text-black translate-x-3 opacity-0 transition-all duration-200', shown && "translate-0 opacity-100")}
                     onClick={() => { onBack() }}>
 
                     <svg viewBox={"0 0 80 80"}
+                        className="w-[60px] aspect-square"
                         stroke="currentColor" strokeWidth="18"
                         strokeLinecap="round" strokeLinejoin="round"
                     >
                         <path strokeWidth="80" stroke='#aaa' d="M40 40 l0 0" />
+                        <path strokeWidth="78.5" stroke='#fff' d=" M40 40 l0 0" />
                         <path strokeWidth="55" opacity="0" stroke='#fff' d="M40 40 l0 0" />
                         <path strokeWidth="12" opacity="0.0" stroke='#000' d="M30 40 l20 0 M30 40 l10 -10 M30 40 l10 10" />
-                        <path strokeWidth="5" stroke='#ddd' d="M30 40 l20 0 M30 40 l10 -10 M30 40 l10 10" />
+                        <path strokeWidth="3" stroke='#888' d="M30 40 l20 0 M30 40 l10 -10 M30 40 l10 10" />
                     </svg>
 
                 </div>
 
                 <div className='text-nowrap overflow-hidden text-ellipsis  text-sm uppercasxe text-[#666] grid font-bold text-left p-2 xbg-amber-50 items-end'>
-
                     {children}
-
                 </div>
-                <div className=' flex-1 text-sm uppercasxe text-nowrap overflow-hidden text-ellipsis text-[#666] grid font-bold text-right p-2 items-center'>
 
-                    {/* {(game.endsOn * 100 / game.ends).toFixed(2)} % */}
-
-                    {/* size {game.cols}&times;{game.rows} */}
-                </div>
-                <div className='px-2 overflow-hidden flex h-[80px] xaspect-square xbg-red-50 items-center justify-center
-                 '>
-                    <div className={cn("xbg-red-100 text-[#aaa] text-[90px] font-semibold translate-y-3 opacity-0 transition-all duration-200 delay-200", shown && "translate-y-0 opacity-100")}>129</div>
+                <div className='px-3 flex-1 overflow-hidden flex justify-end items-center'>
+                    <div className={cn("text-[#fff] text-[90px] -my-28 font-semibold translate-y-3 opacity-0 transition-all duration-200 delay-200", shown && "translate-y-0 opacity-100")}
+                    >
+                        <span style={{ position: "absolute" }}>129</span>
+                        <span style={{ WebkitTextStroke: "2px #aaa" }}>129</span>
+                    </div>
                     {/* <div onClick={onLevelClick} className='xw-full text-[#666] text-4xl font-semibold text-right gap-2 ps-1 flex-1 flex justify-end items-center'>
                          <span className='text-[#bbb]'></span>{game.cols}&times;{game.rows}                       
                     </div> */}
@@ -54,11 +57,13 @@ export function GameHeader({ game, onBack, onLevelClick, children }) {
                 <div className={cn('flex flex-row-reverse  gap-2 flex-1 opacity-0 transition-all duration-200 delay-[100ms] translate-x-3 origin-left', shown && "translate-x-0 opacity-100")}>
                     {Object.keys(game.counts.colors).map((color) => (
                         <div key={color}
-                            className={cn('min-w-6 p-2 transition-all rounded-full flex items-center',
-                                ["bg-[#ddd]", "bg-fuchsia-200", "bg-red-200", "bg-red-400"].at(color),
-                                (game.counts.colors[color] === 0 && isMix(color)) && "min-w-0 -ms-6 opacity-10",
-                                (game.counts.colors[color] === 0 && isOff(color)) && "min-w-0 -me-6 opacity-10"
-                            )}
+                            onClick={() => handleColorClick(color)}
+                            className={
+                                cn('min-w-6 p-2 transition-all rounded-full flex items-center',
+
+                                    (game.counts.colors[color] === 0 && isMix(color)) && "min-w-0 -ms-6 opacity-10",
+                                    (game.counts.colors[color] === 0 && isOff(color)) && "min-w-0 -me-6 opacity-10"
+                                )}
                             style={{ flex: game.counts.colors[color], background: COLOR(color * 1) }}
                         >
                             {isOn(color) &&
@@ -74,7 +79,7 @@ export function GameHeader({ game, onBack, onLevelClick, children }) {
                         {game.ends - game.endsOn}&nbsp;eyes</div> */}
                 </div>
 
-            </div>
+            </div >
         </>
     )
 }
