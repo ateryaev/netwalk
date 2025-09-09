@@ -6,35 +6,19 @@ import { PagePlay } from './PagePlay';
 import { PageMenu } from './PageMenu';
 import { PageTest } from './PageTest';
 import { countProgress } from './utils/game';
-
-
-// function restart(cols, rows) {
-
-//     let newGame = createGame(cols, rows);
-//     newGame.shufle();
-//     newGame.updateOnStates();
-//     onGameChange(newGame);
-//     scrollCenter();
-// }
-
-// function shufle() {
-//     game.shufle();
-//     game.updateOnStates();
-//     onGameChange({ ...game })
-// }
-
-// function scrollClamp() {
-//     let newScrollLeft = bymod(scrollLeft, contentWidth);
-//     if (newScrollLeft > contentWidth / 2) newScrollLeft -= contentWidth;
-//     let newScrollTop = bymod(scrollTop, contentHeight);
-//     if (newScrollTop > contentHeight / 2) newScrollTop -= contentHeight;
-
-//     setScrollLeft(newScrollLeft);
-//     setScrollTop(newScrollTop);
-// }
+import { usePageHistory } from './components/PageHistory';
 
 function App() {
 
+
+
+  const PAGE_START = "/";
+  const PAGE_PLAY = "/play";
+  const PAGE_TEST = "/test";
+  const PAGE_PLAY_LEVEL = "/play/128";
+
+
+  const { currentPage, pushPage, replacePage, goBack } = usePageHistory();
   //const GAME_1 = createGame(8, 8);
 
 
@@ -43,24 +27,45 @@ function App() {
     newGame.shufle();
     newGame.updateOnStates();
     newGame.counts = countProgress(newGame);
-
     setGame(newGame);
-    setPage("play");
+    pushPage(PAGE_PLAY);
+
+    //setPage("play");
   }
 
-  const [page, setPage] = useState("play");
+  function handleBack() {
+    goBack()
+  }
+
   const [game, setGame] = useState(createGame(7, 7)); //load from localStorage or create new
 
-  if (page === "menu") return (
-    <PageMenu onNewGame={handleNewGame} onTest={() => setPage("test")} />
-  )
-  if (page === "test") return (
-    <PageTest onBack={() => setPage("menu")} />
-  )
-  if (page === "play")
-    return (
-      <PagePlay game={game} onGameChange={(newGame) => setGame(newGame)} onBack={() => { setPage("menu") }} />
-    )
+  switch (currentPage) {
+    case PAGE_START:
+      return <PageMenu onNewGame={handleNewGame} onTest={() => pushPage(PAGE_TEST)} />
+    case PAGE_PLAY:
+      return <PagePlay game={game} onGameChange={(newGame) => setGame(newGame)} onBack={handleBack} />
+    case PAGE_TEST:
+      return <PageTest onBack={handleBack} />
+    default:
+      return <>NO PATH HANDLER: ({currentPage})</>
+  }
 }
+//   if (currentPage === PAGE_START) return (<PageMenu onNewGame={handleNewGame} onTest={() => setPage("test")} />
+//   return (
+//     { currentPage === PAGE_START && (<PageMenu onNewGame={handleNewGame} onTest={() => setPage("test")} />)}
+//   )
+
+
+// if (page === "menu") return (
+//   <PageMenu onNewGame={handleNewGame} onTest={() => setPage("test")} />
+// )
+// if (page === "test") return (
+//   <PageTest onBack={() => setPage("menu")} />
+// )
+// if (page === "play")
+//   return (
+//     <PagePlay game={game} onGameChange={(newGame) => setGame(newGame)} onBack={() => { setPage("menu") }} />
+//   )
+// }
 
 export default App

@@ -191,9 +191,7 @@ export function PagePlay({ game, onGameChange, onBack }) {
                 //  delta = mulXY(subXY(smoothScrollTo, scroll), 0.15 / (dist / cellSize));
             }
 
-
-
-            if (dist <= 1) {
+            if (dist <= 0.25) {
                 setScroll({ ...smoothScrollTo });
                 setSmoothScrollTo(null);
             } else {
@@ -608,9 +606,8 @@ export function PagePlay({ game, onGameChange, onBack }) {
             { col: fromCol, row: bymod(fromRow - 1, game.rows), dist: 1 },
             { col: fromCol, row: bymod(fromRow + 1, game.rows), dist: 1 }
         ]
-
         function isThat(cell) {
-            if (cell.on * 1 === color * 1 && !isOn(color) && isEnd(cell.figure)) {
+            if (!isOn(cell.on) && !isOn(color) && isEnd(cell.figure)) {
                 return true;
             }
             if (cell.on * 1 === color * 1 && isOn(color) && cell.source > 0) {
