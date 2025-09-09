@@ -1,5 +1,5 @@
 import { BOTTOM, COLOR, LEFT, RADS, RIGHT, SIZE, TOP, TRANS_DURATION } from "./cfg";
-import { rnd } from "./helpers";
+import { rnd } from "./numbers";
 
 function rasterizeSVG(svgTxt, w, h) {
     return new Promise((resolve) => {

@@ -2,15 +2,13 @@ import { use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import { cn } from './utils/cn'
 
-import { GameCell } from './components/GameCell';
-import { rnd, bymod } from './utils/helpers';
+
+import { rnd, bymod } from './utils/numbers';
 import { createGame } from './utils/gameplay';
-import { GameCellBg } from './components/GameCellBg';
-import { GameCellSource } from './components/GameCellSource';
 import { SIZE } from "./utils/cfg";
 import { GameHeader } from './components/GameHeader';
 import { PanZoomView } from './components/PanZoomView';
-import { addXY, divXY, minmax, mulXY, printXY, subXY, XY } from './utils/vectors';
+import { addXY, divXY, mulXY, printXY, subXY, XY } from './utils/xy';
 
 export function PageTest({ onBack }) {
 

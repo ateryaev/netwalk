@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect, Children, useCallback, useMemo, Fragment, use } from "react";
 import { cn } from "../utils/cn";
-import { EventXY, addXY, distXY, distXYArray, divXY, midXYArray, mulXY, printXY, subXY, XY } from "../utils/vectors";
 import { beepButton, beepSwipe, beepSwipeComplete, preBeepButton } from "../utils/beep";
+import { XY, mulXY, subXY, divXY, distXY, addXY, eventToXY, distXYArray, midXYArray } from "../utils/xy";
 
 const CLICK_TOLERNCE = 20;
 
@@ -18,7 +18,7 @@ export function PanZoomView({ ref, className,
 
     function handlePointerDown(event) {
         event.preventDefault();
-        const eventXY = EventXY(event);//XY(event.clientX, event.clientY);
+        const eventXY = eventToXY(event);//XY(event.clientX, event.clientY);
         pointers.set(event.pointerId, { last: eventXY, start: eventXY });
 
         pointers.noClick = false;
@@ -31,8 +31,8 @@ export function PanZoomView({ ref, className,
     const handlePointerMove = (event) => {
         event.preventDefault();
         if (!pointers.has(event.pointerId)) return;
-
-        const eventXY = EventXY(event);
+        const test = { ...event, clientX: event.clientX + "" }
+        const eventXY = eventToXY(test);
         const pointerData = pointers.get(event.pointerId);
         if (!pointerData) return;
 
@@ -64,7 +64,7 @@ export function PanZoomView({ ref, className,
         event.preventDefault();
         const pointerData = pointers.get(event.pointerId);
         if (!pointerData) return;
-        const eventXY = EventXY(event);
+        const eventXY = eventToXY(event);
         pointers.noClick || beepButton();
         onRelease?.(eventXY, event.pointerId, pointers.noClick);
         pointers.delete(event.pointerId);
@@ -113,7 +113,7 @@ export function PanZoomView({ ref, className,
     function handleWheel(e) {
         if (e.ctrlKey) {
             const zoomDelta = 1 - e.deltaY * 0.005;
-            onZoom(zoomDelta, EventXY(e))
+            onZoom(zoomDelta, eventToXY(e))
         } else if (e.shiftKey) {
             onScroll(XY(-e.deltaY, -e.deltaX));
         } else {

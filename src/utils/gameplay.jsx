@@ -1,12 +1,6 @@
-import { bymod, rnd } from "./helpers";
+import { bymod, rnd } from "./numbers";
 import { TOP, RIGHT, BOTTOM, LEFT, DIRS } from "./cfg";
 import { countProgress, getCellRect, initSource, isEnd, rotateCell, rotateFigure } from "./game";
-// const TOP = 0b1000;
-// const RIGHT = 0b0100;
-// const BOTTOM = 0b0010;
-// const LEFT = 0b0001;
-// const DIRS = [TOP, RIGHT, BOTTOM, LEFT];
-
 
 export function createGame(cols, rows) {
     const game = {

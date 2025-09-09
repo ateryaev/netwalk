@@ -1,5 +1,5 @@
 import { BOTTOM, DIRS, LEFT, RIGHT, TOP, TRANS_DURATION } from "./cfg";
-import { bymod } from "./helpers";
+import { bymod } from "./numbers";
 
 function invertDir(dir) {
     return {

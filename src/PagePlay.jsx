@@ -1,13 +1,13 @@
 import { use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import { cn } from './utils/cn'
-import { rnd, bymod, progress } from './utils/helpers';
 import { BOTTOM, COLOR, LEFT, RIGHT, SIZE, TOP, TRANS_DURATION } from "./utils/cfg";
 import { atXYD, countProgress, getCellRect, getRtConnections, isEnd, isMix, isOff, isOn } from './utils/game';
 import { GameHeader } from './components/GameHeader';
 import { PanZoomView } from './components/PanZoomView';
-import { addXY, distXY, divXY, minmax, mulXY, printXY, subXY, XY } from './utils/vectors';
+import { addXY, distXY, divXY, mulXY, subXY, XY } from './utils/xy';
 import { getBgImage, getFigureImage, getSourceBgImage } from './utils/canvas';
+import { minmax, rnd, bymod, progress } from './utils/numbers';
 
 export function PagePlay({ game, onGameChange, onBack }) {
 
