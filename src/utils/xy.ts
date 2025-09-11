@@ -1,10 +1,10 @@
-type TypeXY = {
+export type XY = {
     x: number;
     y: number;
 }
-type RoTypeXY = Readonly<TypeXY>
+type RoXY = Readonly<XY>
 
-export function XY(x: number, y: number): TypeXY {
+export function toXY(x: number, y: number): XY {
     return { x, y };
 }
 
@@ -14,51 +14,51 @@ export function eventToXY(event: Readonly<{
     currentTarget: {
         getBoundingClientRect: () => { left: number, top: number }
     }
-}>): TypeXY {
+}>): XY {
     const rect = event.currentTarget.getBoundingClientRect();
-    return XY(event.clientX - rect.left, event.clientY - rect.top);
+    return toXY(event.clientX - rect.left, event.clientY - rect.top);
 }
 
-export function addXY(a: RoTypeXY, b: RoTypeXY): TypeXY {
-    return XY(a.x + b.x, a.y + b.y);
+export function addXY(a: RoXY, b: RoXY): XY {
+    return toXY(a.x + b.x, a.y + b.y);
 }
 
-export function mulXY(a: RoTypeXY, k: number): TypeXY {
-    return XY(a.x * k, a.y * k);
+export function mulXY(a: RoXY, k: number): XY {
+    return toXY(a.x * k, a.y * k);
 }
 
-export function lenXY(xy: RoTypeXY): number {
+export function lenXY(xy: RoXY): number {
     return Math.sqrt(xy.x * xy.x + xy.y * xy.y);
 }
 
-export function distXY(a: RoTypeXY, b: RoTypeXY): number {
+export function distXY(a: RoXY, b: RoXY): number {
     return lenXY(addXY(a, mulXY(b, -1)));
 }
 
-export function midXY(a: RoTypeXY, b: RoTypeXY): TypeXY {
+export function midXY(a: RoXY, b: RoXY): XY {
     return mulXY(addXY(a, b), 0.5);
 }
 
-export function subXY(a: RoTypeXY, b: RoTypeXY): TypeXY {
-    return XY(a.x - b.x, a.y - b.y);
+export function subXY(a: RoXY, b: RoXY): XY {
+    return toXY(a.x - b.x, a.y - b.y);
 }
 
-export function divXY(a: RoTypeXY, k: number): TypeXY {
-    return XY(a.x / k, a.y / k);
+export function divXY(a: RoXY, k: number): XY {
+    return toXY(a.x / k, a.y / k);
 }
 
-export function midXYArray(arr: RoTypeXY[]): TypeXY {
-    if (arr.length === 0) return XY(0, 0);
+export function midXYArray(arr: RoXY[]): XY {
+    if (arr.length === 0) return toXY(0, 0);
     let sumX = 0;
     let sumY = 0;
     for (let i = 0; i < arr.length; i++) {
         sumX += arr[i].x;
         sumY += arr[i].y;
     }
-    return XY(sumX / arr.length, sumY / arr.length);
+    return toXY(sumX / arr.length, sumY / arr.length);
 }
 
-export function distXYArray(arr: RoTypeXY[]): number {
+export function distXYArray(arr: RoXY[]): number {
     const center = midXYArray(arr);
     let totalDistance = 0;
     for (let i = 0; i < arr.length; i++) {
@@ -67,6 +67,6 @@ export function distXYArray(arr: RoTypeXY[]): number {
     return totalDistance / arr.length;
 }
 
-export function printXY(title: string, xy: RoTypeXY, ...args: any) {
+export function printXY(title: string, xy: RoXY, ...args: any) {
     console.log(`${title}: ${xy.x.toFixed(2)} x ${xy.y.toFixed(2)}`, ...args)
 }

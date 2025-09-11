@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect, Children, useCallback, useMemo, Fragment, use } from "react";
-import { cn } from "../utils/cn";
 import { beepButton, beepSwipe, beepSwipeComplete, preBeepButton } from "../utils/beep";
-import { XY, mulXY, subXY, divXY, distXY, addXY, eventToXY, distXYArray, midXYArray } from "../utils/xy";
+import { toXY, mulXY, subXY, divXY, distXY, addXY, eventToXY, distXYArray, midXYArray } from "../utils/xy";
+import { cn } from "../utils/cn.ts";
 
 const CLICK_TOLERNCE = 20;
 
@@ -103,8 +103,8 @@ export function PanZoomView({ ref, className,
             if (!viewRef.current) return;
             //console.log("RESIZE", e)
             const rect = viewRef.current.getBoundingClientRect();
-            setViewSize(XY(rect.width, rect.height));
-            onResize && onResize(XY(rect.width, rect.height));
+            setViewSize(toXY(rect.width, rect.height));
+            onResize && onResize(toXY(rect.width, rect.height));
         });
         resizeObserver.observe(viewRef.current);
         return () => { viewRef.current && resizeObserver.unobserve(viewRef.current) };
@@ -115,9 +115,9 @@ export function PanZoomView({ ref, className,
             const zoomDelta = 1 - e.deltaY * 0.005;
             onZoom(zoomDelta, eventToXY(e))
         } else if (e.shiftKey) {
-            onScroll(XY(-e.deltaY, -e.deltaX));
+            onScroll(toXY(-e.deltaY, -e.deltaX));
         } else {
-            onScroll(XY(-e.deltaX, -e.deltaY));
+            onScroll(toXY(-e.deltaX, -e.deltaY));
         }
     }
 

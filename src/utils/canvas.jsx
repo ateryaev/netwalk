@@ -1,4 +1,5 @@
-import { BOTTOM, COLOR, LEFT, RADS, RIGHT, SIZE, TOP, TRANS_DURATION } from "./cfg";
+import { COLOR, SIZE } from "./cfg";
+import { BOTTOM, LEFT, RIGHT, TOP } from "./gamedata";
 import { rnd } from "./numbers";
 
 function rasterizeSVG(svgTxt, w, h) {

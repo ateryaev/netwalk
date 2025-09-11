@@ -1,12 +1,11 @@
 import { use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
-import { cn } from './utils/cn'
-import { createGame } from './utils/gameplay';
+import { cn } from './utils/cn.ts'
 import { PagePlay } from './PagePlay';
 import { PageMenu } from './PageMenu';
 import { PageTest } from './PageTest';
-import { countProgress } from './utils/game';
 import { usePageHistory } from './components/PageHistory';
+import { createGame } from './utils/gamecreate';
 
 function App() {
 
@@ -19,28 +18,23 @@ function App() {
 
 
   const { currentPage, pushPage, replacePage, goBack } = usePageHistory();
-  //const GAME_1 = createGame(8, 8);
 
 
   function handleNewGame(cols, rows) {
     let newGame = createGame(cols, rows);
-    newGame.shufle();
-    newGame.updateOnStates();
-    newGame.counts = countProgress(newGame);
     setGame(newGame);
     pushPage(PAGE_PLAY);
-
-    //setPage("play");
   }
 
   function handleBack() {
     goBack()
   }
 
-  const [game, setGame] = useState(createGame(7, 7)); //load from localStorage or create new
+  const [game, setGame] = useState(createGame(5, 5)); //load from localStorage or create new
 
   switch (currentPage) {
     case PAGE_START:
+      //  return <PagePlay game={game} onGameChange={(newGame) => setGame(newGame)} onBack={handleBack} />
       return <PageMenu onNewGame={handleNewGame} onTest={() => pushPage(PAGE_TEST)} />
     case PAGE_PLAY:
       return <PagePlay game={game} onGameChange={(newGame) => setGame(newGame)} onBack={handleBack} />

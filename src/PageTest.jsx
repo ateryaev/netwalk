@@ -4,11 +4,10 @@ import { cn } from './utils/cn'
 
 
 import { rnd, bymod } from './utils/numbers';
-import { createGame } from './utils/gameplay';
 import { SIZE } from "./utils/cfg";
 import { GameHeader } from './components/GameHeader';
 import { PanZoomView } from './components/PanZoomView';
-import { addXY, divXY, mulXY, printXY, subXY, XY } from './utils/xy';
+import { addXY, divXY, mulXY, printXY, subXY, toXY } from './utils/xy';
 
 export function PageTest({ onBack }) {
 

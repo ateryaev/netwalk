@@ -1,16 +1,17 @@
 import { use, useEffect, useState } from "react";
 import { cn } from "../utils/cn"
 import { COLOR } from "../utils/cfg";
-import { isMix, isOff, isOn } from "../utils/game";
+import { isMix, isOff, isOn } from "../utils/gamedata";
 
-export function GameHeader({ game, onBack, onLevelClick, onScrollTo, children }) {
+
+export function GameHeader({ counter, onBack, onLevelClick, onScrollTo, children }) {
     const [shown, setShown] = useState(false);
     useEffect(() => {
         setShown(true);
     }, []);
 
     function handleColorClick(color) {
-        console.log("Color click", color);
+        console.log("Color click", color, color + 1);
         onScrollTo && onScrollTo(color);
     }
 
@@ -55,16 +56,15 @@ export function GameHeader({ game, onBack, onLevelClick, onScrollTo, children })
 
             <div className={cn('p-2 bg-[#fff]/100 flex gap-1 items-stretch ring-8 ring-black/20 z-40')}>
                 <div className={cn('flex flex-row-reverse  gap-2 flex-1 opacity-0 transition-all duration-200 delay-[100ms] translate-x-3 origin-left', shown && "translate-x-0 opacity-100")}>
-                    {Object.keys(game.counts.colors).map((color) => (
+                    {Object.keys(counter).map((color) => (
                         <div key={color}
-                            onClick={() => handleColorClick(color)}
+                            onClick={() => handleColorClick(color * 1)}
                             className={
                                 cn('min-w-6 p-2 transition-all rounded-full flex items-center',
-
-                                    (game.counts.colors[color] === 0 && isMix(color)) && "min-w-0 -ms-6 opacity-10",
-                                    (game.counts.colors[color] === 0 && isOff(color)) && "min-w-0 -me-6 opacity-10"
+                                    (counter[color] === 0 && isMix(color)) && "min-w-0 -ms-6 opacity-10",
+                                    (counter[color] === 0 && isOff(color)) && "min-w-0 -me-6 opacity-10"
                                 )}
-                            style={{ flex: game.counts.colors[color], background: COLOR(color * 1) }}
+                            style={{ flex: counter[color], background: COLOR(color * 1) }}
                         >
                             {isOn(color) &&
                                 <div className="w-2 rounded-full aspect-square bg-[#fff]"></div>}
