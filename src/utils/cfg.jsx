@@ -16,4 +16,4 @@ export function COLOR(color) {
     }
 }
 
-export const TRANS_DURATION = 250;
+export const TRANS_DURATION = 200;

@@ -1,6 +1,6 @@
 import type { Cell, GameData } from "./gamedata";
 import { BOTTOM, LEFT, moveXY, RIGHT, rotateFigure, TOP, type DIR } from "./gamedata";
-import { toXY, type XY } from "./xy";
+import { bymodXY, isSameXY, toXY, type XY } from "./xy";
 
 export class GameManager {
     private game: GameData;
@@ -9,6 +9,9 @@ export class GameManager {
         this.game = game;
     }
 
+    size(): Readonly<XY> {
+        return this.game.size
+    }
     cellAt(x: number, y: number): Cell;
     cellAt(xy: { x: number; y: number }): Cell;
 
@@ -41,9 +44,29 @@ export class GameManager {
         };
     }
 
+    getCellRect2(xy: XY) {
+
+        const cell = this.cellAt(xy);
+        let left = xy.x, right = xy.x, top = xy.y, bottom = xy.y;
+
+        if (cell.source > 0) {
+            while (this.cellAt(left - 1, xy.y).source === cell.source) left--;
+            while (this.cellAt(right + 1, xy.y).source === cell.source) right++;
+            while (this.cellAt(xy.x, top - 1).source === cell.source) top--;
+            while (this.cellAt(xy.x, bottom + 1).source === cell.source) bottom++;
+        }
+
+        return {
+            at: bymodXY(toXY(left, top), this.game.size),
+            size: toXY(right - left + 1, bottom - top + 1)
+        };
+    }
+
     isSameCell(xy1: XY, xy2: XY): boolean {
-        const rect2 = this.getCellRect(xy2.x, xy2.y);
-        return xy1.x >= rect2.x && xy1.x < rect2.x + rect2.cols && xy1.y >= rect2.y && xy1.y < rect2.y + rect2.rows;
+        const rect2 = this.getCellRect2(xy2);
+        const rect1 = this.getCellRect2(xy1);
+        return isSameXY(rect1.at, rect2.at);
+        //return xy1.x >= rect2.x && xy1.x < rect2.x + rect2.cols && xy1.y >= rect2.y && xy1.y < rect2.y + rect2.rows;
     }
 
     findAllSources(): XY[] {

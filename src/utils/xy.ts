@@ -70,3 +70,25 @@ export function distXYArray(arr: RoXY[]): number {
 export function printXY(title: string, xy: RoXY, ...args: any) {
     console.log(`${title}: ${xy.x.toFixed(2)} x ${xy.y.toFixed(2)}`, ...args)
 }
+
+export function loopXY(range: XY, callback: (item: XY) => void) {
+    for (let x = 0; x < range.x; x++) {
+        for (let y = 0; y < range.y; y++) {
+            callback({ x, y });
+        }
+    }
+}
+
+export function bymodXY(value: XY, mod: XY): XY {
+    const x = ((value.x % mod.x) + mod.x) % mod.x;
+    const y = ((value.y % mod.y) + mod.y) % mod.y;
+    return { x, y };
+}
+
+export function isSameXY(xy1: XY, xy2: XY): boolean {
+    return xy1.x === xy2.x && xy1.y === xy2.y;
+}
+
+export function operXY(func: (arg: number) => number, xy: XY) {
+    return toXY(func(xy.x), func(xy.y));
+}

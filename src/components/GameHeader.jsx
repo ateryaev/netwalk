@@ -43,7 +43,9 @@ export function GameHeader({ counter, onBack, onLevelClick, onScrollTo, children
                 </div>
 
                 <div className='px-3 flex-1 overflow-hidden flex justify-end items-center'>
-                    <div className={cn("text-[#fff] text-[90px] -my-28 font-semibold translate-y-3 opacity-0 transition-all duration-200 delay-200", shown && "translate-y-0 opacity-100")}
+                    <div
+                        onClick={onLevelClick}
+                        className={cn("text-[#fff]  text-[90px] -my-28 font-semibold translate-y-3 opacity-0 transition-all duration-200 delay-200", shown && "translate-y-0 opacity-100")}
                     >
                         <span style={{ position: "absolute" }}>129</span>
                         <span style={{ WebkitTextStroke: "2px #aaa" }}>129</span>
