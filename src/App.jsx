@@ -4,12 +4,10 @@ import { cn } from './utils/cn.ts'
 import { PagePlay } from './PagePlay';
 import { PageMenu } from './PageMenu';
 import { PageTest } from './PageTest';
-import { usePageHistory } from './components/PageHistory';
 import { createGame } from './utils/gamecreate';
+import { usePageHistory } from './components/PageHistory.tsx';
 
 function App() {
-
-
 
   const PAGE_START = "/";
   const PAGE_PLAY = "/play";
