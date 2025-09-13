@@ -13,16 +13,25 @@ export function renderGameBg(ctx: any, manager: GameManager, viewGridSize: XY, s
         const viewCellXY = addXY(startingCell, viewXY);
         const cellXY = bymodXY(viewCellXY, manager.size());
 
+        const isOuterCell = (manager.bordered()) &&
+            (viewCellXY.x < 0 || viewCellXY.y < 0 ||
+                viewCellXY.x >= manager.size().x || viewCellXY.y >= manager.size().y);
+
         ctx.save();
         ctx.translate(viewXY.x * SIZE, viewXY.y * SIZE);
+        const isOdd = ((cellXY.x + cellXY.y) % 2) === 0;
+        if (isOuterCell) {
+            //drawBgCell(ctx, isOdd, false, false, toXY(1, 1));
+        } else {
+            const cell = manager.cellAt(cellXY);
+            const cellRect = manager.getCellRect(cellXY);
+            const skipRenderInside = !isSameXY(cellXY, cellRect.at);
 
-        const cell = manager.cellAt(cellXY);
-        const cellRect = manager.getCellRect2(cellXY);
-        const skipRenderInside = !isSameXY(cellXY, cellRect.at);
+            if (!skipRenderInside) {
+                //const isOdd = ((viewCellXY.x + viewCellXY.y) % 2) === 0;
 
-        if (!skipRenderInside) {
-            const isOdd = ((viewCellXY.x + viewCellXY.y) % 2) === 0;
-            drawBgCell(ctx, isOdd, cell.source > 0, cell.figure === 0, cellRect.size);
+                drawBgCell(ctx, isOdd, cell.source > 0, cell.figure === 0, cellRect.size);
+            }
         }
         ctx.restore();
     });
@@ -33,7 +42,7 @@ export function renderSelect(ctx: any, selected: any, manager: GameManager, star
     const selectProgress = progress(selected.when, TRANS_DURATION);
     if (selectProgress > 0) {
         ctx.save();
-        const cellRect = manager.getCellRect2(selected.at);
+        const cellRect = manager.getCellRect(selected.at);
         const gameXY = bymodXY(selected.at, manager.size());
         const pos = subXY(selected.at, startViewCell);
         const delta = subXY(cellRect.at, gameXY);
@@ -48,11 +57,16 @@ export function renderSourceFgs(ctx: any, manager: GameManager, viewGridSize: XY
     // Draw all sources foreground
 
     loopXY(viewGridSize, (viewXY) => {
+
         const viewCellXY = addXY(startViewCell, viewXY);
+        if (manager.bordered()) {
+            if (viewCellXY.x < 0 || viewCellXY.y < 0) return;
+            if (viewCellXY.x >= manager.size().x || viewCellXY.y >= manager.size().y) return;
+        }
         const cellXY = bymodXY(viewCellXY, manager.size());
         const cell = manager.cellAt(cellXY);
         if (cell.source === 0) return;
-        const rect = manager.getCellRect2(cellXY);
+        const rect = manager.getCellRect(cellXY);
         const delta = subXY(rect.at, cellXY);
         const rectStartPos = addXY(viewXY, delta);
         const rectDelta = toXY(Math.min(0, rectStartPos.x), Math.min(0, rectStartPos.y));

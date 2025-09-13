@@ -1,6 +1,6 @@
 import type { Cell, GameData } from "./gamedata";
 import { BOTTOM, LEFT, moveXY, RIGHT, rotateFigure, TOP, type DIR } from "./gamedata";
-import { bymodXY, isSameXY, toXY, type XY } from "./xy";
+import { addXY, bymodXY, isSameXY, loopXY, toXY, type RectXY, type XY } from "./xy";
 
 export class GameManager {
     private game: GameData;
@@ -11,6 +11,9 @@ export class GameManager {
 
     size(): Readonly<XY> {
         return this.game.size
+    }
+    bordered(): boolean {
+        return this.game.bordered;
     }
     cellAt(x: number, y: number): Cell;
     cellAt(xy: { x: number; y: number }): Cell;
@@ -26,25 +29,7 @@ export class GameManager {
         return this.cellAt(moveXY(xy, dir));
     }
 
-    getCellRect(x: number, y: number) {
-        const cell = this.cellAt(x, y);
-        let left = x, right = x, top = y, bottom = y;
-        if (cell.source > 0) {
-            while (this.cellAt(left - 1, y).source === cell.source) left--;
-            while (this.cellAt(right + 1, y).source === cell.source) right++;
-            while (this.cellAt(x, top - 1).source === cell.source) top--;
-            while (this.cellAt(x, bottom + 1).source === cell.source) bottom++;
-        }
-
-        return {
-            x: left,
-            y: top,
-            cols: right - left + 1,
-            rows: bottom - top + 1
-        };
-    }
-
-    getCellRect2(xy: XY) {
+    getCellRect(xy: XY): RectXY {
 
         const cell = this.cellAt(xy);
         let left = xy.x, right = xy.x, top = xy.y, bottom = xy.y;
@@ -63,8 +48,8 @@ export class GameManager {
     }
 
     isSameCell(xy1: XY, xy2: XY): boolean {
-        const rect2 = this.getCellRect2(xy2);
-        const rect1 = this.getCellRect2(xy1);
+        const rect2 = this.getCellRect(xy2);
+        const rect1 = this.getCellRect(xy1);
         return isSameXY(rect1.at, rect2.at);
         //return xy1.x >= rect2.x && xy1.x < rect2.x + rect2.cols && xy1.y >= rect2.y && xy1.y < rect2.y + rect2.rows;
     }
@@ -99,18 +84,17 @@ export class GameManager {
         return newFigure;
     }
 
-    rotateAtXY(x: number, y: number) {
-        const rect = this.getCellRect(x, y);
+    rotateAtXY(xy: XY) {
+        const rect = this.getCellRect(xy);
 
-        const newFigures = [];
-        for (let sx = rect.x; sx < rect.x + rect.cols; sx++) {
-            for (let sy = rect.y; sy < rect.y + rect.rows; sy++) {
-                newFigures.push({ x: sx, y: sy, figure: this.getRotatedFigureAt(sx, sy) })
-            }
-        }
+        const newFigures: any[] = [];
+        loopXY(rect.size, (dxy: XY) => {
+            const cellXY = addXY(dxy, rect.at);
+            newFigures.push({ xy: cellXY, figure: this.getRotatedFigureAt(cellXY.x, cellXY.y) })
+        });
 
-        newFigures.forEach((item) => {
-            this.cellAt(item.x, item.y).figure = item.figure;
-        })
+        newFigures.forEach((item: any) => {
+            this.cellAt(item.xy).figure = item.figure;
+        });
     }
 }

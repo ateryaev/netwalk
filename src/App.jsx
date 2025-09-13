@@ -18,8 +18,8 @@ function App() {
   const { currentPage, pushPage, replacePage, goBack } = usePageHistory();
 
 
-  function handleNewGame(cols, rows) {
-    let newGame = createGame(cols, rows);
+  function handleNewGame(cols, rows, bordered) {
+    let newGame = createGame(cols, rows, bordered);
     setGame(newGame);
     pushPage(PAGE_PLAY);
   }

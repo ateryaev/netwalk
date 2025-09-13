@@ -15,13 +15,9 @@ export type Cell = {
     source: COLOR;
 }
 
-export type GameData = Array2d<Cell>;
-
-// export type GameData = {
-//     cells: Cell[];
-//     cols: number;
-//     rows: number;
-// }
+export interface GameData extends Array2d<Cell> {
+    bordered: boolean
+}
 
 export function isMix(color: number): boolean {
     return (color & (color - 1)) !== 0;

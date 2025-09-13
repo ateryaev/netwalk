@@ -2,8 +2,16 @@ export type XY = {
     x: number;
     y: number;
 }
+export type RectXY = {
+    at: XY;
+    size: XY;
+}
+
 type RoXY = Readonly<XY>
 
+export function toRectXY(at: XY, size: XY): RectXY {
+    return { at, size }
+}
 export function toXY(x: number, y: number): XY {
     return { x, y };
 }
@@ -89,6 +97,9 @@ export function isSameXY(xy1: XY, xy2: XY): boolean {
     return xy1.x === xy2.x && xy1.y === xy2.y;
 }
 
-export function operXY(func: (arg: number) => number, xy: XY) {
-    return toXY(func(xy.x), func(xy.y));
+export function operXY(func: (...args: number[]) => number, ...xys: XY[]) {
+
+    const xx = xys.map((xy) => xy.x);
+    const yy = xys.map((xy) => xy.y);
+    return toXY(func(...xx), func(...yy));
 }

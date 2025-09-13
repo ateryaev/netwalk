@@ -1,34 +1,35 @@
 import { GameManager } from "./gamemanager";
 import { BOTTOM, invertFigure, isEnd, LEFT, moveXY, RIGHT, rotateFigure, TOP, type DIR, type GameData } from "./gamedata";
 import { rnd } from "./numbers";
-import { toXY, type XY } from "./xy";
+import { addXY, bymodXY, isSameXY, loopXY, toXY, type RectXY, type XY } from "./xy";
 import { createArray2d } from "./array2d";
 
-function initSource(manager: GameManager, x: number, y: number, cols: number, rows: number, color: number) {
-    //loop rect area
-    const ends: XY[] = [];
+function initSource(manager: GameManager, cellRect: RectXY, color: number) {
 
-    for (let row = y; row < y + rows; row++) {
-        for (let col = x; col < x + cols; col++) {
-            const cell = manager.cellAt(col, row);
-            cell.source = color;
-            if (row > y) cell.figure |= TOP;
-            if (col > x) cell.figure |= LEFT;
-            if (row < y + rows - 1) cell.figure |= BOTTOM;
-            if (col < x + cols - 1) cell.figure |= RIGHT;
-            //cell.on = color;
-            ends.push(toXY(col, row))
-        }
-    }
+    const ends: XY[] = [];
+    loopXY(cellRect.size, (xy) => {
+        const cellXY = addXY(cellRect.at, xy);
+        const cell = manager.cellAt(cellXY);
+        cell.source = color;
+
+        if (cellXY.y > cellRect.at.y) cell.figure |= TOP;
+        if (cellXY.x > cellRect.at.x) cell.figure |= LEFT;
+        if (cellXY.y < cellRect.at.y + cellRect.size.y - 1) cell.figure |= BOTTOM;
+        if (cellXY.x < cellRect.at.x + cellRect.size.x - 1) cell.figure |= RIGHT;
+        ends.push(cellXY)
+    });
+
     return ends;
 }
 
-function emptyDirs(manager: GameManager, x: number, y: number): DIR[] {
-    const xy = toXY(x, y);
+function emptyDirs(manager: GameManager, cellXY: XY, hasBorders: boolean = true): DIR[] {
     const dirs: DIR[] = [TOP, RIGHT, BOTTOM, LEFT];
     const available: DIR[] = [];
     dirs.forEach((dir) => {
-        const neib = manager.cellAtDir(xy, dir);
+        const newXY = moveXY(cellXY, dir);
+        if (hasBorders && !isSameXY(newXY, bymodXY(newXY, manager.size()))) return;
+        const neib = manager.cellAt(newXY);
+
         if (neib.figure === 0 && !neib.source) {
             available.push(dir);
         }
@@ -36,14 +37,15 @@ function emptyDirs(manager: GameManager, x: number, y: number): DIR[] {
     return available;
 }
 
-export function createGame(cols: number, rows: number): GameData {
+export function createGame(cols: number, rows: number, bordered: boolean = true): GameData {
 
-    const game: GameData = createArray2d(toXY(cols, rows));
+    const game: GameData = { bordered, ...createArray2d(toXY(cols, rows)) };
+
     game.forEach((_, index) => { game.set(index, { figure: 0, source: 0 }) })
 
     const manager = new GameManager(game);
-    const ends1 = initSource(manager, 2, 1, 1, 1, 0b0001);
-    const ends2 = initSource(manager, 2, 3, 2, 2, 0b0010);
+    const ends1 = initSource(manager, { at: toXY(2, 1), size: toXY(1, 1) }, 0b0001);
+    const ends2 = initSource(manager, { at: toXY(2, 3), size: toXY(2, 2) }, 0b0010);
     const ends = ends1.concat(ends2);
 
     //TODO: make sure all sources having at least one exit
@@ -53,7 +55,7 @@ export function createGame(cols: number, rows: number): GameData {
         const fromIdx = rnd(ends.length - 1);
         const end = ends[fromIdx];
         const cell = manager.cellAt(end);
-        const canGoTo = emptyDirs(manager, end.x, end.y);
+        const canGoTo = emptyDirs(manager, end, bordered);
 
         if (canGoTo.length > 0) {
             const dir = canGoTo[rnd(canGoTo.length - 1)];
@@ -96,10 +98,10 @@ export function createGame(cols: number, rows: number): GameData {
 
     //SHUFLE:
 
-    game.forEach((_, { x, y }) => {
-        const times = rnd(3);//0, 1, 2, 3
-        for (let i = 0; i < times; i++) manager.rotateAtXY(x, y);
-    })
+    // game.forEach((_, xy) => {
+    //     const times = rnd(3);//0, 1, 2, 3
+    //     for (let i = 0; i < times; i++) manager.rotateAtXY(xy);
+    // })
 
     console.log("GAME CREATED2:", game.data()[0].figure.toString(2).padStart(4, "0"))
 
