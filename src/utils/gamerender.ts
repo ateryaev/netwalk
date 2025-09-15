@@ -21,7 +21,7 @@ export function renderGameBg(ctx: any, manager: GameManager, viewGridSize: XY, s
         ctx.translate(viewXY.x * SIZE, viewXY.y * SIZE);
         const isOdd = ((cellXY.x + cellXY.y) % 2) === 0;
         if (isOuterCell) {
-            //drawBgCell(ctx, isOdd, false, false, toXY(1, 1));
+            // drawBgCell(ctx, isOdd, false, true, toXY(1, 1));
         } else {
             const cell = manager.cellAt(cellXY);
             const cellRect = manager.getCellRect(cellXY);

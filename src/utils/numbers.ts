@@ -1,4 +1,5 @@
 export function minmax(value: number, min: number, max: number): number {
+    if (min > max) [min, max] = [max, min];
     return Math.max(min, Math.min(max, value));
 }
 
@@ -24,4 +25,10 @@ export function indexToXy(index: number, width: number): { x: number, y: number 
         x: index % width,
         y: Math.floor(index / width)
     };
+}
+
+export function fromto(from: number, to: number, progress: number): number {
+    //done - if from-to is very small
+    const result = (from + (to - from) * progress);
+    return (Math.abs(result - to) < 0.1) ? to : result;
 }

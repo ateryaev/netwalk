@@ -7,7 +7,7 @@ import { rnd, bymod } from './utils/numbers';
 import { SIZE } from "./utils/cfg";
 import { GameHeader } from './components/GameHeader';
 import { PanZoomView } from './components/PanZoomView';
-import { addXY, divXY, mulXY, printXY, subXY, toXY } from './utils/xy';
+import { addXY, distXY, divXY, mulXY, printXY, subXY, toXY } from './utils/xy';
 
 export function PageTest({ onBack }) {
 
@@ -39,30 +39,53 @@ export function PageTest({ onBack }) {
     //     }
     // }, [zoom])
 
+
+
+    const [centerXY, setCenterXY] = useState({ x: 0, y: 0 });
+    //const [centerXYto, setCenterXYto] = useState({ x: 0, y: 0 });
+    const [zooom, setZooom] = useState(2);
+
+    const [panZoom, setPanZoom] = useState({ center: toXY(200, 200), zoom: 1 });
+    const [panZoomTo, setPanZoomTo] = useState({ center: toXY(0, 0), zoom: 1 });
+
+    useEffect(() => {
+        if (!panZoomTo) return;
+        requestAnimationFrame(() => {
+            let delta = mulXY(subXY(panZoomTo.center, panZoom.center), 0.25);
+            //printXY("DELTa", panZoomTo.center, panZoom.center)
+            const dist = distXY(toXY(0, 0), delta);
+            setPanZoom({ zoom: panZoom.zoom + (panZoomTo.zoom - panZoom.zoom) * 0.25, center: addXY(panZoom.center, delta) })
+        });
+    }, [panZoomTo, panZoom]);
+
+    function test() {
+        // setPanZoomTo({ center: toXY(50, 50), zoom: 1 });
+    }
+
     return (
         <div className="flex flex-1 flex-col p-0 gap-2 bg-black">
 
 
             <PanZoomView
+                panZoom={panZoom}
+                onPanZoomChange={({ center, zoom }) => {
+                    //printXY("DELTa", panZoomTo.center, panZoom)
+                    setPanZoom({ center, zoom });
+                }}
+
                 className={cn("flex-1 bg-white")}
 
-                onScroll={(scrollDelta) => {
-                    setScroll((prev) => addXY(prev, divXY(scrollDelta, zoom)));
-                }}
-
-                onZoom={(zoomDelta, coors) => {
-                    const scrollDelta = mulXY(coors, (1 - zoomDelta) / (zoomDelta * zoom));
-                    setScroll((prev) => addXY(prev, scrollDelta));
-                    setZoom((prev) => prev * zoomDelta);
-                }}
-
                 onPress={(coords) => {
-                    printXY("PRESS", coords);
-                    printXY("SCROLL/ZOOM", scroll, zoom);
-                    printXY("PRESS_IN", subXY(divXY(coords, zoom), scroll));
+                    setPanZoomTo(null)
+                    printXY("PRESS2", coords);
+                    // printXY("SCROLL/ZOOM", scroll, zoom);
+                    // printXY("PRESS_IN", subXY(divXY(coords, zoom), scroll));
                 }}
                 onRelease={(coords, buttons, noClick) => {
                     printXY("RELEASE", coords, buttons, noClick);
+                }}
+                onClick={(coords) => {
+                    printXY("CLICK", coords);
                 }}
 
                 onResize={(size) => {
@@ -70,25 +93,30 @@ export function PageTest({ onBack }) {
                 }}
             >
 
+                {/* {viewSize.x > 0 &&
                 <div
                     style={{
-                        translate: `${scroll.x * zoom}px ${scroll.y * zoom}px`, transformOrigin: '0 0',
+                        //translate: `${scroll.x * zoom}px ${scroll.y * zoom}px`, transformOrigin: '0 0',
+                        translate: `${-contentRect.at.x * panZoom.zoom}px ${-contentRect.at.y * panZoom.zoom}px`, transformOrigin: '0 0',
                         //scale: `${zoom}`,
-                        width: `${fieldSize.w * zoom}px`,
-                        height: `${fieldSize.h * zoom}px`,
-                        borderWidth: `${25 * zoom}px`
+                        width: `${100 * panZoom.zoom}px`,
+                        height: `${100 * panZoom.zoom}px`,
+                        borderWidth: `${25 * panZoom.zoom}px`
                     }}
                     className='bg-red-500 absolute grid content-center justify-center border-white/60'>
-                    123
+                    <span style={{ scale: panZoom.zoom }}>OPP=</span>
                 </div>
+            } */}
 
             </PanZoomView>
 
-            <div className='p-4 text-lg flex items-center font-mono bg-gray-200 overflow-hidden'>
+
+            <div className='p-4 text-lg flex gap-4 items-center font-mono bg-gray-200 overflow-hidden'>
+                <button className='p-2 bg-black text-white' onClick={test}>test</button>
                 <div className='flex-1'>
-                    SCROLL: {scroll.x.toFixed(2)}:{scroll.y.toFixed(2)}
+                    SCROLL: {panZoom.center.x.toFixed(2)}:{panZoom.center.y.toFixed(2)}
                     <br />
-                    ZOOM: {zoom.toFixed(2)}
+                    ZOOM: {panZoom.zoom.toFixed(2)}
                 </div>
                 <button className='p-2 bg-black text-white' onClick={onBack}>back</button>
             </div>

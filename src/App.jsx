@@ -28,7 +28,7 @@ function App() {
     goBack()
   }
 
-  const [game, setGame] = useState(createGame(5, 5)); //load from localStorage or create new
+  const [game, setGame] = useState(createGame(5, 5, true)); //load from localStorage or create new
 
   switch (currentPage) {
     case PAGE_START:

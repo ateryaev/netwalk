@@ -29,8 +29,8 @@ export function GameHeader({ counter, onBack, onLevelClick, onScrollTo, children
                         stroke="currentColor" strokeWidth="18"
                         strokeLinecap="round" strokeLinejoin="round"
                     >
-                        <path strokeWidth="80" stroke='#aaa' d="M40 40 l0 0" />
-                        <path strokeWidth="78.5" stroke='#fff' d=" M40 40 l0 0" />
+                        <path strokeWidth="80" stroke='#ccc' d="M40 40 l0 0" />
+                        <path strokeWidth="72" stroke='#fff' d=" M40 40 l0 0" />
                         <path strokeWidth="55" opacity="0" stroke='#fff' d="M40 40 l0 0" />
                         <path strokeWidth="12" opacity="0.0" stroke='#000' d="M30 40 l20 0 M30 40 l10 -10 M30 40 l10 10" />
                         <path strokeWidth="3" stroke='#888' d="M30 40 l20 0 M30 40 l10 -10 M30 40 l10 10" />
@@ -45,7 +45,7 @@ export function GameHeader({ counter, onBack, onLevelClick, onScrollTo, children
                 <div className='px-3 flex-1 overflow-hidden flex justify-end items-center'>
                     <div
                         onClick={onLevelClick}
-                        className={cn("text-[#fff]  text-[90px] -my-28 font-semibold translate-y-3 opacity-0 transition-all duration-200 delay-200", shown && "translate-y-0 opacity-100")}
+                        className={cn("text-[#fff]  text-[60px] -my-28 font-semibold translate-y-3 opacity-0 transition-all duration-200 delay-200", shown && "translate-y-0 opacity-100")}
                     >
                         <span style={{ position: "absolute" }}>129</span>
                         <span style={{ WebkitTextStroke: "2px #aaa" }}>129</span>

@@ -6,7 +6,7 @@ import { BOTTOM, LEFT, RIGHT, TOP } from './utils/gamedata';
 import { isEnd, isMix, isOff, isOn } from './utils/gamedata';
 import { GameHeader } from './components/GameHeader';
 import { PanZoomView } from './components/PanZoomView';
-import { addXY, bymodXY, distXY, divXY, isSameXY, loopXY, mulXY, operXY, printXY, subXY, toXY } from './utils/xy';
+import { addXY, bymodXY, distXY, divXY, fromtoXY, isSameXY, loopXY, mulXY, operXY, printXY, subXY, toRectXY, toXY, XY05, XY1 } from './utils/xy';
 import { getBgImage, getFigureImage, getSourceBgImage } from './utils/canvas';
 import { minmax, rnd, bymod, progress, xyToIndex } from './utils/numbers';
 import { GameManager } from './utils/gamemanager';
@@ -18,8 +18,14 @@ import { renderGameBg, renderSelect, renderSourceFgs } from './utils/gamerender'
 
 export function PagePlay({ game, onGameChange, onBack }) {
 
-    const [scroll, setScroll] = useState({ x: 0, y: 0 });
-    const [zoom, setZoom] = useState(1);
+    const manager = useMemo(() => new GameManager(game), [game]);
+
+    const bygmodXY = (xy) => bymodXY(xy, manager.size());
+    const [panZoom, setPanZoom] = useState({ center: mulXY(manager.size(), SIZE / 2), zoom: 1 });
+
+    const center = panZoom.center;
+    const zoom = panZoom.zoom;
+
     const [msg, setMsg] = useState("NA");
     const cellSize = useMemo(() => (SIZE * zoom), [zoom]);
 
@@ -28,30 +34,40 @@ export function PagePlay({ game, onGameChange, onBack }) {
 
     const [viewSize, setViewSize] = useState(toXY(0, 0));
 
-    const defaultZoom = useMemo(() => Math.max(Math.min(viewSize.x / (5 * SIZE), 1.25), 0.5), [viewSize])
+    const [isViewSizeReady, setIsViewSizeReady] = useState(false);
+
+    const contentRect = useMemo(() => {
+        const size = divXY(viewSize, panZoom.zoom);
+        const at = subXY(panZoom.center, divXY(size, 2));
+        //console.log("RECT:", toRectXY(at, size));
+        //setPanZoomNow(panZoom)
+        return toRectXY(at, size);
+    }, [viewSize, panZoom]);
+
+    const contentSize = useMemo(() => mulXY(game.size, cellSize), [game.size, cellSize]);
+    const viewGridSize = useMemo(() => operXY(Math.ceil, addXY(divXY(viewSize, cellSize), XY1)), [viewSize, cellSize]);
+
+    const startViewCell2 = useMemo(() => divXY(contentRect.at, SIZE), [contentRect]);
+    const startViewCell = useMemo(() => operXY(Math.floor, startViewCell2), [startViewCell2]);
+
+    const startGameCell = useMemo(() => bymodXY(startViewCell, game.size), [startViewCell, game]);
+    const startCellOffset = useMemo(() => subXY(startViewCell2, startViewCell), [startViewCell, contentRect]);
+
     const zoomRange = useMemo(() => {
-        // const longestSize = Math.max(viewSize.x, viewSize.y);
-        // const shortestSize = Math.min(viewSize.x, viewSize.y);
-        // //max 12 cells for longest size
-        // //min 6 cells  for longest size
-        // const minZoom = longestSize / (12 * SIZE);
-        // // const maxZoom = longestSize / (6 * SIZE);
-        // const maxZoom = viewSize.x / (5 * SIZE);
-        // console.log("MAXZOOM:", maxZoom)
-        //const defaultZoom = Math.max(Math.min(viewSize.x / (5 * SIZE), 1.25), 0.5);
-        return { min: Math.max(defaultZoom - 0.5, 0.5), max: defaultZoom + 0.5 };
-    }, [defaultZoom]);
+        //to see at leas 6x3 field!
+        const defaultZoomX = Math.max(Math.min(viewSize.x / (6 * SIZE), 1.25), 0.5);
+        const defaultZoomY = Math.max(Math.min(viewSize.y / (3 * SIZE), 1.25), 0.5);
+        const defaultZoom = Math.min(defaultZoomX, defaultZoomY)
+        console.log("defaultZoom", defaultZoom);
+        setPanZoom((prev) => { return { ...prev, zoom: defaultZoom } });
+        return { min: Math.max(defaultZoom / 1.5, 0.25), max: defaultZoom * 1.25 };
+    }, [viewSize]);
 
-    useEffect(() => {
-        //if (viewSize.x < 10) return;
-
-        //const newZoom = Math.max(Math.min(viewSize.x / (5 * SIZE), 1.25), 0.5);
-
-        setZoom(defaultZoom)
-        //console.log("MEW ZOOM:", newZoom)
-    }, [defaultZoom])
-
-    const manager = useMemo(() => new GameManager(game), [game]);
+    function handlePanZoomChange(newPanZoom) {
+        // if (newPanZoom.zoom < zoomRange.min) newPanZoom.zoom = zoomRange.min
+        // if (newPanZoom.zoom > zoomRange.max) newPanZoom.zoom = zoomRange.max
+        setPanZoom(newPanZoom);
+    }
 
     const preColorsRef = useRef(null);
 
@@ -82,7 +98,7 @@ export function PagePlay({ game, onGameChange, onBack }) {
                 });
             }
         });
-        console.log("COLORS UPDATED!", newColors)
+        //console.log("COLORS UPDATED!", newColors)
         return newColors;
     }, [manager]);
 
@@ -125,28 +141,10 @@ export function PagePlay({ game, onGameChange, onBack }) {
         return conns;
     }
 
-    const contentSize = useMemo(() => mulXY(game.size, cellSize), [game.size, cellSize]);
-    const viewGridSize = useMemo(() => operXY(Math.ceil, addXY(divXY(viewSize, cellSize), toXY(1, 1))), [viewSize, cellSize]);
-    const startViewCell = useMemo(() => toXY(Math.floor(scroll.x / SIZE), Math.floor(scroll.y / SIZE)), [scroll]);
-    const startGameCell = useMemo(() => bymodXY(startViewCell, game.size), [startViewCell, game]);
-    const startCellOffset = useMemo(() => subXY(divXY(scroll, SIZE), startViewCell), [startViewCell, scroll]);
-
-    const [isViewSizeReady, setIsViewSizeReady] = useState(false);
-
-    useEffect(() => {
-        setIsViewSizeReady(!!(viewSize?.x && viewSize?.y));
-    }, [viewSize]);
-
-    useEffect(() => {
-        if (isViewSizeReady) {
-            scrollCenter(false);
-            console.log("VIEW SIZE READY!", viewSize);
-        }
-    }, [isViewSizeReady]);
-
     function handleDown(xy, pointerId) {
-        xy = addXY(xy, mulXY(scroll, zoom));
-        const cellXY = operXY(Math.floor, divXY(xy, cellSize));
+        console.log("DOWN AT:", xy, pointerId);
+        const cellXY = operXY(Math.floor, divXY(xy, SIZE));
+
         console.log("DOWN AT:", xy, pointerId);
 
         setSmoothScrollTo(null);
@@ -164,13 +162,13 @@ export function PagePlay({ game, onGameChange, onBack }) {
     function handleUp(_, pointerId, noClick) {
         setMsg("UP:" + pointerId + ":" + noClick);
         if (selected.pointerId !== pointerId) return;
-
         setSelected({ ...selected, active: false, when: performance.now() })
+    }
 
-        if (noClick) return;
-
-        const cellXY = bymodXY(selected.at, game.size);
-        if (manager.bordered() && !isSameXY(cellXY, selected.at)) return;
+    function handleClick(xy) {
+        const cellXY = operXY(Math.floor, divXY(xy, SIZE));
+        setMsg("CLICK:" + cellXY.x + ":" + cellXY.y + ":" + manager.bordered());
+        if (manager.bordered() && !isSameXY(cellXY, bygmodXY(cellXY))) return;
 
         preColorsRef.current = colors;
         manager.rotateAtXY(cellXY);
@@ -180,129 +178,74 @@ export function PagePlay({ game, onGameChange, onBack }) {
 
     const [smoothScrollTo, setSmoothScrollTo] = useState(null);
 
-    function scrollCenter(smoothly) {
-        const cellXY = mulXY(manager.size(), 0.5);
-        //setZoom(defaultZoom)
-        scrollToCell(cellXY, smoothly);
+    function calcDelta(xy1, xy2, size) {
+        xy1 = bymodXY(xy1, size);
+        xy2 = bymodXY(xy2, size);
+        return subXY(xy2, xy1)
     }
 
-    function scrollToCell(cellXY, smoothly) {
-        cellXY = bymodXY(cellXY, manager.size());
+    function scrollToCenter(smoothly) {
+        const nowXY = getMiddleColRow();
+        const needCellXY = mulXY(manager.size(), 0.5);
+        const deltaXY = calcDelta(nowXY, needCellXY, manager.size())
+        const newXY = addXY(nowXY, deltaXY);
+        scrollToCell(newXY);
+    }
 
-        const gamePos = mulXY(cellXY, cellSize);
-        const viewPos = mulXY(viewSize, 0.5);
-        const targerScroll = subXY(gamePos, viewPos);
-
-        let targetCellXY = null;
-
-        if (!smoothly) {
-            setScroll(divXY(targerScroll, zoom));
-        } else if (manager.bordered()) {
-            const newScroll = clampScroll(divXY(targerScroll, zoom));
-            setSmoothScrollTo(newScroll);
-            targetCellXY = operXY(Math.floor, cellXY);
-        } else {
-            const mod = mulXY(manager.size(), cellSize);
-            const modTargerScroll = bymodXY(targerScroll, mod);
-            const modCurrentScroll = bymodXY(mulXY(scroll, zoom), mod);
-            //let delta = operXY(Math.abs, subXY(modTargerScroll, modCurrentScroll));
-            const delta = subXY(modTargerScroll, modCurrentScroll);
-            if (delta.x > mod.x / 2) modTargerScroll.x -= mod.x;
-            if (delta.y > mod.y / 2) modTargerScroll.y -= mod.y;
-            if (delta.x < -mod.x / 2) modTargerScroll.x += mod.x;
-            if (delta.y < -mod.y / 2) modTargerScroll.y += mod.y;
-
-            setScroll(divXY(modCurrentScroll, zoom));
-            setSmoothScrollTo(divXY(modTargerScroll, zoom));
-
-            targetCellXY = addXY(mulXY(viewSize, 0.5), mulXY(divXY(modTargerScroll, zoom), zoom));
-            targetCellXY = operXY(Math.floor, divXY(targetCellXY, cellSize));
-
-        }
-        return targetCellXY;
+    function scrollToCell(cellXY) {
+        if (manager.bordered()) cellXY = bymodXY(cellXY, manager.size());
+        setSmoothScrollTo(mulXY(cellXY, SIZE));
     }
 
     useEffect(() => {
         //scroll graduadly to smoothScroll position
         if (!smoothScrollTo) return;
+        if (isSameXY(panZoom.center, smoothScrollTo)) {
+            setSmoothScrollTo(null);
+            return;
+        }
         requestAnimationFrame(() => {
-            let delta = mulXY(subXY(smoothScrollTo, scroll), 0.15);
-            const dist = distXY(toXY(0, 0), delta);
-            if (dist <= 0.1) {
-                setScroll({ ...smoothScrollTo });
-                setSmoothScrollTo(null);
-            } else {
-                setScroll((prev) => addXY(prev, delta));
-            }
+            setPanZoom({ ...panZoom, center: fromtoXY(panZoom.center, smoothScrollTo, 0.25) })
         });
-    }, [smoothScrollTo, scroll, selected]);
+    }, [smoothScrollTo, panZoom, selected]);
 
-    function clampScroll(targetScroll) {
+    // function clampScroll(targetScroll) {
 
-        const borders = divXY(subXY(contentSize, viewSize), zoom);
-        const bordersMin = operXY(Math.max, toXY(0, 0), borders);
-        const bordersMax = operXY(Math.min, toXY(0, 0), borders);
+    //     if (!manager.bordered()) return targetScroll;
+    //     const borders = divXY(subXY(contentSize, viewSize), zoom);
+    //     const bordersMin = operXY(Math.max, toXY(0, 0), borders);
+    //     const bordersMax = operXY(Math.min, toXY(0, 0), borders);
 
-        let newScroll = targetScroll;
-        newScroll = operXY(Math.max, bordersMax, newScroll);
-        newScroll = operXY(Math.min, bordersMin, newScroll);
+    //     let newScroll = targetScroll;
+    //     newScroll = operXY(Math.max, bordersMax, newScroll);
+    //     newScroll = operXY(Math.min, bordersMin, newScroll);
 
-        if (contentSize.x <= viewSize.x) {
-            newScroll.x = (contentSize.x - viewSize.x) / 2 / zoom;
-        }
-        if (contentSize.y <= viewSize.y) {
-            newScroll.y = (contentSize.y - viewSize.y) / 2 / zoom;
-        }
-        return newScroll;
-    }
+    //     if (contentSize.x <= viewSize.x) {
+    //         newScroll.x = (contentSize.x - viewSize.x) / 2 / zoom;
+    //     }
+    //     if (contentSize.y <= viewSize.y) {
+    //         newScroll.y = (contentSize.y - viewSize.y) / 2 / zoom;
+    //     }
+    //     return newScroll;
+    // }
 
-    useEffect(() => {
-        //return
-        //scroll content smoothly back to view
-        if (!manager.bordered()) return;
-        if (selected.active) return;
-        //console.log("CLAMP")
-        const newScroll = clampScroll(scroll);
-        if (isSameXY(scroll, newScroll)) return;
-        setSmoothScrollTo(clampScroll(scroll));
+    // useEffect(() => {
+    //     return
+    //     //scroll content smoothly back to view
+    //     if (!manager.bordered()) return;
+    //     if (selected.active) return;
+    //     //console.log("CLAMP")
+    //     const to = setTimeout(() => {
+    //         const newScroll = clampScroll(scroll);
+    //         if (isSameXY(scroll, newScroll)) return;
+    //         // printXY("SCROLL back", scroll)
+    //         // printXY("SCROLL back", clampScroll(scroll))
+    //         setSmoothScrollTo(clampScroll(scroll));
+    //     }, 100);
+    //     return () => clearTimeout(to);
 
-        // //scroll content smoothly back to view
-        // const borders = divXY(subXY(contentSize, viewSize), zoom);
-        // const bordersMin = operXY(Math.max, toXY(0, 0), borders);
-        // const bordersMax = operXY(Math.min, toXY(0, 0), borders);
+    // }, [scroll, manager, selected, zoom, contentSize, viewSize]);
 
-
-        // let newScroll = scroll;
-        // newScroll = operXY(Math.max, bordersMax, newScroll);
-        // newScroll = operXY(Math.min, bordersMin, newScroll);
-
-        // if (contentSize.x <= viewSize.x) {
-        //     newScroll.x = (contentSize.x - viewSize.x) / 2 / zoom;
-        // }
-        // if (contentSize.y <= viewSize.y) {
-        //     newScroll.y = (contentSize.y - viewSize.y) / 2 / zoom;
-        // }
-
-        // if (isSameXY(scroll, newScroll)) return;
-        // setSmoothScrollTo(newScroll);
-    }, [scroll, manager, selected, zoom, viewSize, contentSize]);
-
-
-    function handleScroll(scrollDelta) {
-
-        setSmoothScrollTo(null);
-        setScroll((prev) => addXY(prev, divXY(scrollDelta, -zoom)));
-    }
-
-    function handleZoom(zoomDelta, coors) {
-        //console.log("ZOOM")
-        setSmoothScrollTo(null);
-        let newZoom = minmax(zoomDelta * zoom, zoomRange.min, zoomRange.max);
-        zoomDelta = newZoom / zoom;
-        const scrollDelta = mulXY(coors, -(1 - zoomDelta) / (zoomDelta * zoom));
-        setScroll((prev) => addXY(prev, scrollDelta));
-        setZoom((prev) => minmax(prev * zoomDelta, zoomRange.min, zoomRange.max));
-    }
 
     function handleResize(newSize) {
         setSmoothScrollTo(null);
@@ -328,6 +271,10 @@ export function PagePlay({ game, onGameChange, onBack }) {
             let dy = -startCellOffset.y * SIZE;
 
             ctx.scale(zoom, zoom);
+
+            let start = contentRect.at;
+            let size = contentRect.size;
+
             ctx.translate(dx, dy)
 
             renderGameBg(ctx, manager, viewGridSize, startViewCell)
@@ -429,11 +376,11 @@ export function PagePlay({ game, onGameChange, onBack }) {
 
         return () => { cancelAnimationFrame(animationFrame); }
 
-    }, [viewSize, zoom, scroll, game, selected, colors, rotation]);
+    }, [viewSize, zoom, center, game, selected, colors, rotation]);
 
     function getMiddleColRow() {
-        const x = Math.floor(scroll.x * zoom / cellSize + viewSize.x / (2 * cellSize));
-        const y = Math.floor(scroll.y * zoom / cellSize + viewSize.y / (2 * cellSize));
+        const x = Math.floor(center.x / SIZE);
+        const y = Math.floor(center.y / SIZE);
         return { x, y };
     }
 
@@ -477,11 +424,11 @@ export function PagePlay({ game, onGameChange, onBack }) {
 
         const closest = findClosestColRow(mid, color);
 
-        //console.log("SCROLLTOCOLOR:", closest)
-        const cellXY = scrollToCell(addXY(closest, toXY(0.5, 0.5)), true);
+        console.log("SCROLLTOCOLOR:", closest)
+        scrollToCell(addXY(closest, XY05), true);
         setSelected({
             pointerId: 0,
-            at: cellXY,
+            at: manager.bordered() ? bymodXY(closest, manager.size()) : closest,
             active: true,
             when: performance.now()
         });
@@ -491,19 +438,24 @@ export function PagePlay({ game, onGameChange, onBack }) {
     return (
         <div className="flex flex-col flex-1 bg-black">
 
-            <GameHeader counter={counters} onBack={onBack} onLevelClick={() => { scrollCenter(true) }}
+            <GameHeader counter={counters} onBack={onBack} onLevelClick={() => { scrollToCenter(true) }}
                 onScrollTo={(color) => {
                     scrollToColor(color);
                 }}
             >
             </GameHeader>
             <PanZoomView
-                className={cn("relative bg-black flex-1 opacity-0 transition-opacity delay-75 duration-500", isViewSizeReady && "opacity-100")}
+                className={cn("relative bg-black flex-1 opacity-0 transition-opacity delay-75 duration-500", (true || isViewSizeReady) && "opacity-100")}
+                panZoom={panZoom}
+                zoomRange={zoomRange}
+                contentSize={manager.bordered() ? mulXY(manager.size(), SIZE) : null}
                 onPress={handleDown}
                 onRelease={handleUp}
+                onClick={handleClick}
                 onResize={handleResize}
-                onScroll={handleScroll}
-                onZoom={handleZoom}
+                onPanZoomChange={handlePanZoomChange}
+            // onScroll={handleScroll}
+            // onZoom={handleZoom}
             >
 
                 <canvas ref={canvasRef} className='absolute z-20 xbg-green-500 origin-top-left'></canvas>

@@ -9,6 +9,10 @@ export type RectXY = {
 
 type RoXY = Readonly<XY>
 
+export const XY0: RoXY = { x: 0, y: 0 };
+export const XY05: RoXY = { x: 0.5, y: 0.5 };
+export const XY1: RoXY = { x: 1, y: 1 };
+
 export function toRectXY(at: XY, size: XY): RectXY {
     return { at, size }
 }
@@ -57,13 +61,14 @@ export function divXY(a: RoXY, k: number): XY {
 
 export function midXYArray(arr: RoXY[]): XY {
     if (arr.length === 0) return toXY(0, 0);
-    let sumX = 0;
-    let sumY = 0;
+    let sumX = 0.0;
+    let sumY = 0.0;
     for (let i = 0; i < arr.length; i++) {
         sumX += arr[i].x;
         sumY += arr[i].y;
     }
     return toXY(sumX / arr.length, sumY / arr.length);
+    //return toXY(sumX, sumY);
 }
 
 export function distXYArray(arr: RoXY[]): number {
@@ -103,3 +108,14 @@ export function operXY(func: (...args: number[]) => number, ...xys: XY[]) {
     const yy = xys.map((xy) => xy.y);
     return toXY(func(...xx), func(...yy));
 }
+
+
+export function fromtoXY(from: XY, to: XY, progress: number): XY {
+    //done - if from-to is very small
+    const result = toXY(
+        from.x + (to.x - from.x) * progress,
+        from.y + (to.y - from.y) * progress
+    );
+    return (Math.abs(result.x - to.x) < 0.1 && Math.abs(result.y - to.y) < 0.1) ? to : result;
+}
+
