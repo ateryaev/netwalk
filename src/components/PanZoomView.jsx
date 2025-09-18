@@ -6,6 +6,20 @@ import { minmax } from "../utils/numbers.ts";
 
 const CLICK_TOLERNCE = 20;
 
+export function clampPanZoomCenter(center, contentSize, viewSize, zoom) {
+
+    if (!contentSize || !viewSize) return center;
+
+    const clamp = {
+        x: minmax(center.x, contentSize.x - viewSize.x / zoom / 2, viewSize.x / zoom / 2),
+        y: minmax(center.y, contentSize.y - viewSize.y / zoom / 2, viewSize.y / zoom / 2),
+    }
+    if (viewSize.x / zoom >= contentSize.x) clamp.x = contentSize.x / 2;
+    if (viewSize.y / zoom >= contentSize.y) clamp.y = contentSize.y / 2;
+    return clamp;
+}
+
+
 export function PanZoomView({ ref, className,
     panZoom,  // {center, zoom }
     zoomRange,
@@ -18,14 +32,14 @@ export function PanZoomView({ ref, className,
     children, ...props }) {
 
     const [viewSize, setViewSize] = useState(toXY(0, 0));
-    const [panZoomNow, setPanZoomNow] = useState(panZoom);
-    const [interacted, setInteracted] = useState(false);
+    //const [panZoomNow, setPanZoomNow] = useState(panZoom);
+    //const [interacted, setInteracted] = useState(false);
 
     const contentRect = useMemo(() => {
         const size = divXY(viewSize, panZoom.zoom);
         const at = subXY(panZoom.center, divXY(size, 2));
         //console.log("RECT:", toRectXY(at, size));
-        setPanZoomNow(panZoom)
+        //setPanZoomNow(panZoom)
         return toRectXY(at, size);
     }, [viewSize, panZoom]);
 
@@ -38,40 +52,40 @@ export function PanZoomView({ ref, className,
     }
 
     function clampCenter(center) {
-        if (!contentSize) return center;
-        const clamp = {
-            x: minmax(center.x, contentSize.x - viewSize.x / panZoom.zoom / 2, viewSize.x / panZoom.zoom / 2),
-            y: minmax(center.y, contentSize.y - viewSize.y / panZoom.zoom / 2, viewSize.y / panZoom.zoom / 2),
-        }
-        if (viewSize.x / panZoom.zoom >= contentSize.x) clamp.x = contentSize.x / 2;
-        if (viewSize.y / panZoom.zoom >= contentSize.y) clamp.y = contentSize.y / 2;
-        return clamp;
+        return clampPanZoomCenter(center, contentSize, viewSize, panZoom.zoom);
     }
 
-    useEffect(() => {
-        //console.log("interacted", interacted)
-        //if (isSameXY(panZoomNow.center, panZoom.center) && panZoomNow.zoom === panZoom.zoom) return;
-        //onPanZoomChange(panZoomNow);
-        onPanZoomChange(panZoomNow);
-        if (interacted) {
 
-            return;
-        }
-        requestAnimationFrame(() => {
-            const newCenter = { ...panZoomNow.center }
-            const clamp = clampPanZoom(panZoomNow);
+    // useEffect(() => {
+    //     setPanZoomNow(panZoom)
+    // }, [panZoom]);
 
-            setPanZoomNow({ ...panZoomNow, center: fromtoXY(panZoomNow.center, clamp.center, 0.25) })
-            onPanZoomChange(panZoomNow);
-        });
-    }, [panZoomNow, interacted, panZoom]);
+    // useEffect(() => {
+    //console.log("interacted", interacted)
+    //if (isSameXY(panZoomNow.center, panZoom.center) && panZoomNow.zoom === panZoom.zoom) return;
+    //onPanZoomChange(panZoomNow);
+
+
+    // if (interacted) {
+    //onPanZoomChange(panZoomNow);
+    //return;
+    //}
+    // requestAnimationFrame(() => {
+    //     if (interacted) return;
+
+    //     const newCenter = { ...panZoomNow.center }
+    //     const clamp = clampPanZoom(panZoomNow);
+
+    //     setPanZoomNow({ ...panZoomNow, center: fromtoXY(panZoomNow.center, clamp.center, 0.25) })
+    //     onPanZoomChange(panZoomNow);
+    // });
+    // }, [panZoomNow, interacted]);
 
     const viewRef = useRef(null);
     const pointersRef = useRef(new Map());
     const pointers = pointersRef.current;
 
     function handlePointerDown(event) {
-        setInteracted(true);
         console.log("ZOOM:", panZoom.zoom)
         event.preventDefault();
         const eventXY = eventToXY(event);//XY(event.clientX, event.clientY);
@@ -87,7 +101,7 @@ export function PanZoomView({ ref, className,
 
     const handlePointerMove = (event) => {
 
-        setInteracted(true);
+        //setInteracted(true);
         event.preventDefault();
         if (!pointers.has(event.pointerId)) return;
         //const test = { ...event, clientX: event.clientX + "" }
@@ -123,7 +137,39 @@ export function PanZoomView({ ref, className,
         const deltaZoom = (lastDist > 0 && nowDist > 0) ? nowDist / lastDist : 1;
         //const newZoom = 
 
-        setPanZoomNow((prev) => {
+        // setPanZoomNow((prev) => {
+        //     let newZoom = prev.zoom * deltaZoom;
+
+        //     if (newZoom < zoomRange.min) newZoom = zoomRange.min;
+        //     if (newZoom > zoomRange.max) newZoom = zoomRange.max;
+
+        //     const midView = mulXY(viewSize, 0.5);
+        //     const zoomXY = nowMidPoint;
+        //     const dxy1 = divXY(subXY(zoomXY, midView), prev.zoom);
+        //     const dxy2 = divXY(subXY(zoomXY, midView), newZoom);
+        //     const dScrollZoom = subXY(dxy1, dxy2);
+
+        //     const dScrollPanZoom = subXY(dScrollZoom, divXY(deltaXY, prev.zoom));
+        //     const newCenter1 = addXY(prev.center, dScrollPanZoom);
+        //     const newCenter2 = clampCenter(newCenter1);
+        //     const dist = distXY(newCenter2, newCenter1);
+        //     const dFactor = 1 + dist / 50;// //0 => 1, 100=> 2, 200=> 4
+
+        //     const dScrollPanZoom2 = divXY(dScrollPanZoom, dFactor);
+        //     const newCenter = addXY(prev.center, dScrollPanZoom2);
+
+
+        //     // printXY("MOVE: ", deltaXY, divXY(deltaXY, prev.zoom))
+
+        //     // printXY("DEL: ", zoomXY, dxy1, dxy2)
+        //     // printXY("DELDELDEL: ", dScroll)
+        //     return {
+        //         center: newCenter,
+        //         zoom: newZoom
+        //     }
+        // });
+
+        const test = (prev) => {
             let newZoom = prev.zoom * deltaZoom;
 
             if (newZoom < zoomRange.min) newZoom = zoomRange.min;
@@ -153,23 +199,25 @@ export function PanZoomView({ ref, className,
                 center: newCenter,
                 zoom: newZoom
             }
-        });
+        };
+
+        const newPanZoom = test(panZoom);
+        onPanZoomChange(newPanZoom)
 
         return;
     }
 
     const handlePointerUp = (event) => {
-        setInteracted(false);
         event.preventDefault();
         const pointerData = pointers.get(event.pointerId);
         if (!pointerData) return;
         const eventXY = eventToXY(event);
         pointers.noClick || beepButton();
         const containerXY = addXY(divXY(eventXY, panZoom.zoom), contentRect.at);
-        onRelease?.(containerXY, event.pointerId, pointers.noClick);
+        const isLastTouch = (pointers.size === 1);
+        onRelease?.(containerXY, event.pointerId, isLastTouch);
         if (!pointers.noClick) onClick?.(containerXY);
         pointers.delete(event.pointerId);
-        //if (pointers.size === 0) setInteracted(false);
         return;
     }
 
@@ -201,32 +249,32 @@ export function PanZoomView({ ref, className,
 
         if (e.ctrlKey) {
             const deltaZoom = 1 - e.deltaY * 0.005;
-            setPanZoomNow((prev) => {
-                const midView = mulXY(viewSize, 0.5);
-                e.currentTarget = viewRef.current
-                const zoomXY = eventToXY(e);
-                const dxy1 = divXY(subXY(zoomXY, midView), prev.zoom);
-                const dxy2 = divXY(subXY(zoomXY, midView), prev.zoom * deltaZoom);
-                const dScrollZoom = subXY(dxy1, dxy2);
-                return {
-                    center: addXY(prev.center, dScrollZoom),
-                    zoom: prev.zoom * deltaZoom
-                }
-            });
+            // setPanZoomNow((prev) => {
+            //     const midView = mulXY(viewSize, 0.5);
+            //     e.currentTarget = viewRef.current
+            //     const zoomXY = eventToXY(e);
+            //     const dxy1 = divXY(subXY(zoomXY, midView), prev.zoom);
+            //     const dxy2 = divXY(subXY(zoomXY, midView), prev.zoom * deltaZoom);
+            //     const dScrollZoom = subXY(dxy1, dxy2);
+            //     return {
+            //         center: addXY(prev.center, dScrollZoom),
+            //         zoom: prev.zoom * deltaZoom
+            //     }
+            // });
         } else if (e.shiftKey) {
-            setPanZoomNow((prev) => {
-                return {
-                    center: addXY(prev.center, toXY(e.deltaY, e.deltaX)),
-                    zoom: prev.zoom
-                }
-            });
+            // setPanZoomNow((prev) => {
+            //     return {
+            //         center: addXY(prev.center, toXY(e.deltaY, e.deltaX)),
+            //         zoom: prev.zoom
+            //     }
+            // });
         } else {
-            setPanZoomNow((prev) => {
-                return {
-                    center: addXY(prev.center, toXY(e.deltaX, e.deltaY)),
-                    zoom: prev.zoom
-                }
-            });
+            // setPanZoomNow((prev) => {
+            //     return {
+            //         center: addXY(prev.center, toXY(e.deltaX, e.deltaY)),
+            //         zoom: prev.zoom
+            //     }
+            // });
         }
     }
 
@@ -235,7 +283,7 @@ export function PanZoomView({ ref, className,
             ref={viewRef}
             {...props}
 
-            className={cn("relative cursor-default overflow-hidden select-none", className)}
+            className={cn("cursor-default overflow-hidden select-none", className)}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}

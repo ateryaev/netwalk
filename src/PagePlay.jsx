@@ -5,7 +5,7 @@ import { COLOR, SIZE, TRANS_DURATION } from "./utils/cfg";
 import { BOTTOM, LEFT, RIGHT, TOP } from './utils/gamedata';
 import { isEnd, isMix, isOff, isOn } from './utils/gamedata';
 import { GameHeader } from './components/GameHeader';
-import { PanZoomView } from './components/PanZoomView';
+import { clampPanZoomCenter, PanZoomView } from './components/PanZoomView';
 import { addXY, bymodXY, distXY, divXY, fromtoXY, isSameXY, loopXY, mulXY, operXY, printXY, subXY, toRectXY, toXY, XY05, XY1 } from './utils/xy';
 import { getBgImage, getFigureImage, getSourceBgImage } from './utils/canvas';
 import { minmax, rnd, bymod, progress, xyToIndex } from './utils/numbers';
@@ -14,6 +14,7 @@ import { invertFigure, moveXY, toDirs } from './utils/gamedata';
 import { createArray2d } from './utils/array2d';
 import { drawActiveEnd, drawBG, drawBgCell, drawEmptyCell, drawFigure, drawMixEnd, drawOffEnd, drawRotated, drawSelection, drawSourceFg, drawTransform } from './utils/gamedraw';
 import { renderGameBg, renderSelect, renderSourceFgs } from './utils/gamerender';
+import { Button } from './components/Button';
 //import { renderGame } from './utils/gamerender';
 
 export function PagePlay({ game, onGameChange, onBack }) {
@@ -44,7 +45,7 @@ export function PagePlay({ game, onGameChange, onBack }) {
         return toRectXY(at, size);
     }, [viewSize, panZoom]);
 
-    const contentSize = useMemo(() => mulXY(game.size, cellSize), [game.size, cellSize]);
+    const contentSize = useMemo(() => mulXY(game.size, cellSize), [game.size, SIZE]);
     const viewGridSize = useMemo(() => operXY(Math.ceil, addXY(divXY(viewSize, cellSize), XY1)), [viewSize, cellSize]);
 
     const startViewCell2 = useMemo(() => divXY(contentRect.at, SIZE), [contentRect]);
@@ -53,12 +54,21 @@ export function PagePlay({ game, onGameChange, onBack }) {
     const startGameCell = useMemo(() => bymodXY(startViewCell, game.size), [startViewCell, game]);
     const startCellOffset = useMemo(() => subXY(startViewCell2, startViewCell), [startViewCell, contentRect]);
 
+    const defaultZoomRef = useRef(0);
+
     const zoomRange = useMemo(() => {
         //to see at leas 6x3 field!
-        const defaultZoomX = Math.max(Math.min(viewSize.x / (6 * SIZE), 1.25), 0.5);
-        const defaultZoomY = Math.max(Math.min(viewSize.y / (3 * SIZE), 1.25), 0.5);
-        const defaultZoom = Math.min(defaultZoomX, defaultZoomY)
-        console.log("defaultZoom", defaultZoom);
+        let defaultZoom = defaultZoomRef.current;
+        if (defaultZoom < 0.1) {
+            const defaultZoomX = viewSize.x / (6 * SIZE);
+            const defaultZoomY = viewSize.y / (3 * SIZE);
+            defaultZoom = Math.min(defaultZoomX, defaultZoomY);
+            defaultZoomRef.current = defaultZoom;
+            console.log("defaultZoom", defaultZoom, viewSize.x);
+        }
+
+        defaultZoom = minmax(defaultZoom, 0.5, 1.25)
+
         setPanZoom((prev) => { return { ...prev, zoom: defaultZoom } });
         return { min: Math.max(defaultZoom / 1.5, 0.25), max: defaultZoom * 1.25 };
     }, [viewSize]);
@@ -159,8 +169,12 @@ export function PagePlay({ game, onGameChange, onBack }) {
         setMsg("DOWN:" + pointerId);
     }
 
-    function handleUp(_, pointerId, noClick) {
-        setMsg("UP:" + pointerId + ":" + noClick);
+    function handleUp(_, pointerId, isLast) {
+        console.log("UP:" + isLast);
+        if (isLast && manager.bordered()) {
+            const newSmoothScrollTo = clampPanZoomCenter(panZoom.center, contentSize, viewSize, zoom);
+            setSmoothScrollTo(newSmoothScrollTo);
+        }
         if (selected.pointerId !== pointerId) return;
         setSelected({ ...selected, active: false, when: performance.now() })
     }
@@ -193,8 +207,12 @@ export function PagePlay({ game, onGameChange, onBack }) {
     }
 
     function scrollToCell(cellXY) {
-        if (manager.bordered()) cellXY = bymodXY(cellXY, manager.size());
-        setSmoothScrollTo(mulXY(cellXY, SIZE));
+        let newSmoothScrollTo = mulXY(cellXY, SIZE);
+        if (manager.bordered()) {
+            cellXY = bymodXY(cellXY, manager.size());
+            newSmoothScrollTo = clampPanZoomCenter(newSmoothScrollTo, contentSize, viewSize, zoom);
+        }
+        setSmoothScrollTo(newSmoothScrollTo);
     }
 
     useEffect(() => {
@@ -209,46 +227,12 @@ export function PagePlay({ game, onGameChange, onBack }) {
         });
     }, [smoothScrollTo, panZoom, selected]);
 
-    // function clampScroll(targetScroll) {
-
-    //     if (!manager.bordered()) return targetScroll;
-    //     const borders = divXY(subXY(contentSize, viewSize), zoom);
-    //     const bordersMin = operXY(Math.max, toXY(0, 0), borders);
-    //     const bordersMax = operXY(Math.min, toXY(0, 0), borders);
-
-    //     let newScroll = targetScroll;
-    //     newScroll = operXY(Math.max, bordersMax, newScroll);
-    //     newScroll = operXY(Math.min, bordersMin, newScroll);
-
-    //     if (contentSize.x <= viewSize.x) {
-    //         newScroll.x = (contentSize.x - viewSize.x) / 2 / zoom;
-    //     }
-    //     if (contentSize.y <= viewSize.y) {
-    //         newScroll.y = (contentSize.y - viewSize.y) / 2 / zoom;
-    //     }
-    //     return newScroll;
-    // }
-
-    // useEffect(() => {
-    //     return
-    //     //scroll content smoothly back to view
-    //     if (!manager.bordered()) return;
-    //     if (selected.active) return;
-    //     //console.log("CLAMP")
-    //     const to = setTimeout(() => {
-    //         const newScroll = clampScroll(scroll);
-    //         if (isSameXY(scroll, newScroll)) return;
-    //         // printXY("SCROLL back", scroll)
-    //         // printXY("SCROLL back", clampScroll(scroll))
-    //         setSmoothScrollTo(clampScroll(scroll));
-    //     }, 100);
-    //     return () => clearTimeout(to);
-
-    // }, [scroll, manager, selected, zoom, contentSize, viewSize]);
-
-
     function handleResize(newSize) {
         setSmoothScrollTo(null);
+        if (manager.bordered()) {
+            const newCenter = clampPanZoomCenter(panZoom.center, contentSize, newSize, zoom);
+            setPanZoom({ zoom, center: newCenter })
+        }
         setViewSize({ ...newSize });
     }
 
@@ -275,14 +259,16 @@ export function PagePlay({ game, onGameChange, onBack }) {
             let start = contentRect.at;
             let size = contentRect.size;
 
-            ctx.translate(dx, dy)
+
+
+
+            ctx.translate(dx, dy);
 
             renderGameBg(ctx, manager, viewGridSize, startViewCell)
 
             if (!manager.bordered() || isSameXY(selected.at, bymodXY(selected.at, manager.size()))) {
                 renderSelect(ctx, selected, manager, startViewCell);
             }
-
             //draw cells
             loopXY(viewGridSize, (viewXY) => {
                 const viewCellXY = addXY(startViewCell, viewXY);
@@ -436,36 +422,99 @@ export function PagePlay({ game, onGameChange, onBack }) {
     }
 
     return (
-        <div className="flex flex-col flex-1 bg-black">
-
+        <>
             <GameHeader counter={counters} onBack={onBack} onLevelClick={() => { scrollToCenter(true) }}
                 onScrollTo={(color) => {
                     scrollToColor(color);
                 }}
             >
             </GameHeader>
+            {counters[0] === 0 &&
+                <div className='h-0 relative top-0 xpx-6 hue-rotate-180'>
+                    <div className='bg-black/80 xhue-rotate-90 p-3
+                text-sm font-semibold text-puzzle rounded-mdx  xring-6 ring-black/10
+                flex gap-3 items-center overflow-clip text-ellipsis'>
+
+                        <div className="flex-1 text-white uppercase text-ellipsis  whitespace-nowrap overflow-clip">level solved</div>
+
+                        <button className=" flex items-center uppercase text-sm font-semibold gap-2 p-1 pr-4 aspect-squarex rounded-full xborder-8 
+                    border-puzzle bg-white text-puzzle ">
+                            <svg
+                                className='bg-puzzle text-white rounded-full border-6 border-puzzle w-6 h-6 aspect-square'
+                                width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" ><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" /><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" /></svg>
+                            restart
+                        </button>
+
+                        <button className=" flex items-center uppercase text-sm font-semibold  gap-2 p-1  pr-4 aspect-squarex rounded-full xborder-8 
+                    border-puzzle bg-white text-puzzle whitespace-nowrap text-ellipsis overflow-clip">
+
+                            <svg
+                                className=' bg-puzzle text-white rounded-full border-6 border-puzzle w-6 h-6 aspect-square'
+                                width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 5v14l8 -7z" /><path d="M14 5v14l8 -7z" />
+                            </svg>
+                            next
+                        </button>
+                    </div>
+                </div >
+            }
+
             <PanZoomView
-                className={cn("relative bg-black flex-1 opacity-0 transition-opacity delay-75 duration-500", (true || isViewSizeReady) && "opacity-100")}
+                className={cn("bg-black grid justify-stretch items-stretch flex-1 opacity-0 transition-opacity delay-75 duration-500", (true || isViewSizeReady) && "opacity-100")}
                 panZoom={panZoom}
                 zoomRange={zoomRange}
-                contentSize={manager.bordered() ? mulXY(manager.size(), SIZE) : null}
+                contentSize={manager.bordered() ? contentSize : null}
                 onPress={handleDown}
                 onRelease={handleUp}
                 onClick={handleClick}
                 onResize={handleResize}
                 onPanZoomChange={handlePanZoomChange}
-            // onScroll={handleScroll}
-            // onZoom={handleZoom}
             >
-
-                <canvas ref={canvasRef} className='absolute z-20 xbg-green-500 origin-top-left'></canvas>
+                <canvas ref={canvasRef} className='contain-size'></canvas>
 
             </PanZoomView >
-            <div className='p-1 text-[10px] font-bold text-center ring-8 ring-black/20 z-40 text-[#aaa] bg-[#eee] font-mono uppercase text-ellipsis whitespace-nowrap overflow-hidden'>
-                {/* Netwalk v0.1 by Anton Teryaev, 2025 */}
-                {msg}
-            </div>
+            {/* <div className='w-[500px] h-[200px] bg-[#eff] p-6 fixed inset-x-0 inset-y-0 m-auto'>test</div> */}
+            <div className='text-sm p-2 gap-2 text-[#296]/80
+                flex font-semibold px-3 items-center justify-center
+              bg-[#eff] uppercase whitespace-nowrap'>
 
-        </div >
+
+
+                <div>{manager.bordered() ? "bordered" : "looped"}</div>
+                <div className='flex items-center'> {manager.size().x}
+                    <svg className='opacity-50 ' width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-x"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg>
+
+                    {manager.size().y}</div>
+                <div><span className='hue-rotate-180'>UNSOLVED</span></div>
+                {/* <div>&bull;</div>
+                <div> {manager.size().x} &times; {manager.size().y}</div>
+                <div>&bull;</div> */}
+
+
+                <div className=' flex-1'></div>
+                <div className='lowercase flex gap-1 items-center'>
+                    123
+                    <svg className='opacity-80 animate-pulse' width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    >
+                        <path d="M8 13v-8.5a1.5 1.5 0 0 1 3 0v7.5" /><path d="M11 11.5v-2a1.5 1.5 0 1 1 3 0v2.5" /><path d="M14 10.5a1.5 1.5 0 0 1 3 0v1.5" /><path d="M17 11.5a1.5 1.5 0 0 1 3 0v4.5a6 6 0 0 1 -6 6h-2h.208a6 6 0 0 1 -5.012 -2.7a69.74 69.74 0 0 1 -.196 -.3c-.312 -.479 -1.407 -2.388 -3.286 -5.728a1.5 1.5 0 0 1 .536 -2.022a1.867 1.867 0 0 1 2.28 .28l1.47 1.47" />
+                    </svg>
+                    {/* &times; */}
+                </div>
+            </div>
+            {/* {counters[0] === 0 &&
+                <div className='text-[12px] p-2 gap-2 text-[#296]/80
+                flex flex-col font-semibold px-0 items-center justify-center
+              bg-[#eff] uppercase whitespace-nowrap'>
+
+                    <div className='p-2 flex-1'></div>
+
+                    <div className=''>level solved</div>
+
+
+                    <div className='p-2 flex-1'></div>
+                </div>} */}
+
+
+        </ >
     )
 }

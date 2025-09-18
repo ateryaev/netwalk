@@ -1,8 +1,10 @@
 export function Button({ onClick, children }) {
     return (
-        <button onClick={onClick} className='rounded-xs outline-none 
+        <button onClick={onClick} className='rounded-full
+        outline-none 
         focus:ring-4 focus:ring-blue-300/50 select-none
-        p-2 bg-blue-600 text-white cursor-pointer border-blue-50 '>
+        text-puzzle xhue-rotate-180 uppercase
+        px-6 py-1 bg-[#fff] tcursor-pointer border-puzzle border-8 '>
             {children}
         </button>
     )

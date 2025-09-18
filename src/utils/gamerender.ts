@@ -6,7 +6,7 @@ import { addXY, bymodXY, isSameXY, loopXY, mulXY, subXY, toXY, type XY } from ".
 
 //renderGame(ctx, manager, game.size, viewGridSize, startViewCell)
 export function renderGameBg(ctx: any, manager: GameManager, viewGridSize: XY, startingCell: XY) {
-    drawBG(ctx, manager.size(), viewGridSize, startingCell);
+
 
     // draw bg chees grid
     loopXY(viewGridSize, (viewXY) => {
@@ -35,6 +35,7 @@ export function renderGameBg(ctx: any, manager: GameManager, viewGridSize: XY, s
         }
         ctx.restore();
     });
+    drawBG(ctx, manager.size(), viewGridSize, startingCell);
 }
 
 export function renderSelect(ctx: any, selected: any, manager: GameManager, startViewCell: XY) {

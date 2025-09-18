@@ -8,7 +8,7 @@ export function drawBG(ctx: any, gameGridSize: XY, viewGridSize: XY, startCell: 
     const startRow = startCell.y;
 
     ctx.fillStyle = "#181818";
-    ctx.fillRect(0, 0, viewGridSize.x * SIZE, viewGridSize.y * SIZE);
+    //ctx.fillRect(0, 0, viewGridSize.x * SIZE, viewGridSize.y * SIZE);
 
     ctx.globalAlpha = 1
     ctx.strokeStyle = "#000";
@@ -39,7 +39,7 @@ export function drawBG(ctx: any, gameGridSize: XY, viewGridSize: XY, startCell: 
 }
 
 export function drawBgCell(ctx: any, isOdd: boolean, isSource: boolean, isEmpty: boolean, cellSize: XY) {
-    const gap = 4;
+    const gap = 0;
     //const cellRect = manager.getCellRect(gameCol, gameRow);
     const insideW = SIZE * cellSize.x - gap * 2;
     const insideH = SIZE * cellSize.y - gap * 2;
@@ -56,7 +56,7 @@ export function drawBgCell(ctx: any, isOdd: boolean, isSource: boolean, isEmpty:
 
 export function drawEmptyCell(ctx: any, isOdd: boolean) {
     const alpha = ctx.globalAlpha;
-    ctx.globalAlpha = 0.75
+    ctx.globalAlpha = 0.5
 
     ctx.beginPath();
     ctx.arc(SIZE / 2, SIZE / 2, 30, 0, Math.PI * 2);
@@ -64,7 +64,7 @@ export function drawEmptyCell(ctx: any, isOdd: boolean) {
     ctx.lineTo(SIZE / 2 + 20, SIZE / 2 + 20);
     ctx.moveTo(SIZE / 2 + 20, SIZE / 2 - 20);
     ctx.lineTo(SIZE / 2 - 20, SIZE / 2 + 20);
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 6;
     ctx.lineJoin = "round";
     ctx.lineCap = "round";
     ctx.strokeStyle = !isOdd ? "#222" : "#333";

@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@theme {
+    --color-puzzle: #296;
+    --color-white: #eefffc;
+}
+
 path {
     xtransition: all 0.2s;
 }
