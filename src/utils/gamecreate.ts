@@ -4,6 +4,10 @@ import { rnd } from "./numbers";
 import { addXY, bymodXY, isSameXY, loopXY, toXY, type RectXY, type XY } from "./xy";
 import { createArray2d } from "./array2d";
 
+//type initSource = (manager: GameManager, cellRect: RectXY, color: number) => XY[];
+//function emptyDirs(manager: GameManager, cellXY: XY, hasBorders: boolean): DIR[];
+
+
 function initSource(manager: GameManager, cellRect: RectXY, color: number) {
 
     const ends: XY[] = [];
@@ -39,7 +43,7 @@ function emptyDirs(manager: GameManager, cellXY: XY, hasBorders: boolean = true)
 
 export function createGame(cols: number, rows: number, bordered: boolean = true): GameData {
 
-    const game: GameData = { bordered, ...createArray2d(toXY(cols, rows)) };
+    const game: GameData = { bordered, taps: 10, mode: 1, level: 99, ...createArray2d(toXY(cols, rows)) };
 
     game.forEach((_, index) => { game.set(index, { figure: 0, source: 0 }) })
 
@@ -69,7 +73,7 @@ export function createGame(cols: number, rows: number, bordered: boolean = true)
         }
     }
 
-    console.log("GAME CREATED1:", game.data()[0].figure.toString(2).padStart(4, "0"))
+    //console.log("GAME CREATED1:", game.data()[0].figure.toString(2).padStart(4, "0"))
 
     //REMOVE SOME ENDS:
 
@@ -103,8 +107,16 @@ export function createGame(cols: number, rows: number, bordered: boolean = true)
     //     for (let i = 0; i < times; i++) manager.rotateAtXY(xy);
     // })
 
-    console.log("GAME CREATED2:", game.data()[0].figure.toString(2).padStart(4, "0"))
+    //console.log("GAME CREATED2:", game.data()[0].figure.toString(2).padStart(4, "0"))
 
 
     return game;
+}
+
+export function shufleGame(game: GameData) {
+    const manager = new GameManager(game);
+    game.forEach((_, xy) => {
+        const times = rnd(3);//0, 1, 2, 3
+        for (let i = 0; i < times; i++) manager.rotateAtXY(xy);
+    })
 }

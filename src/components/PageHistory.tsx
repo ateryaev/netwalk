@@ -42,8 +42,8 @@ export const usePageHistory = () => {
         setCurrentData(data);
     }, []);
 
-    const goBack = useCallback(() => {
-        window.history.back();
+    const goBack = useCallback((delta = 1) => {
+        window.history.go(-delta);
     }, []);
 
 

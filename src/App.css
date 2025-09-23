@@ -1,14 +1,21 @@
 @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=WDXL+Lubrifont+TC&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Onest:wght@100..900&family=Sofia+Sans:ital,wght@0,1..1000;1,1..1000&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
+
 
 body {
 
   text-size-adjust: none;
-  font-family: fredoka, "WDXL Lubrifont TC", sans-serif, Roboto Mono, fredoka, Verdana, Geneva, Tahoma, sans-serif;
+  xxfont-family: "Onest", sfredoka, "WDXL Lubrifont TC", sans-serif, Roboto Mono, fredoka, Verdana, Geneva, Tahoma, sans-serif;
   touch-action: manipulation;
   margin: 0;
   padding: 0;
+
+  font-style: normal;
+  font-weight: 600;
+  font-family: "Onest", Verdana, Geneva, Tahoma, sans-serif;
   font-size: 14px;
-  font-weight: 400;
+  letter-spacing: 0.5px;
 
 }
