@@ -49,7 +49,7 @@ const Modal = ({ shown, onBack, onClose, title, actionName, onAction, isbottom, 
     return (
         <dialog ref={dialogRef} onCancel={handleCancel}
 
-            className="backdrop:bg-black/0 z-10 bg-white/0 select-none p-0
+            className="backdrop:bg-black/0 z-10 bg-white/0 select-none p-0 xtext-[16px]
              grid min-w-svw  min-h-svh max-h-svh  justify-center items-center ">
 
             {/* <div ref={backdropRef} className="grid [view-transition-namexxx:dialog-backdrop] h-dvh bg-black/0"
@@ -63,7 +63,7 @@ const Modal = ({ shown, onBack, onClose, title, actionName, onAction, isbottom, 
             )} tabIndex={0}>
                 <div className="bg-puzzle flex items-center justify-between p-2 text-white uppercase">
                     <BackButton onClick={onClose || onBack} />
-                    <span className='overflow-hidden text-ellipsis whitespace-nowrap'>{title}</span>
+                    <span className='overflow-hidden text-ellipsis  whitespace-nowrap'>{title}</span>
                     <CloseButton disabled={true} onClick={onClose} />
 
                 </div>

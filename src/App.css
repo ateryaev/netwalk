@@ -7,14 +7,12 @@
 body {
 
   text-size-adjust: none;
-  xxfont-family: "Onest", sfredoka, "WDXL Lubrifont TC", sans-serif, Roboto Mono, fredoka, Verdana, Geneva, Tahoma, sans-serif;
+  font-family: Fredoka, Tahoma, Fredoka, "WDXL Lubrifont TC", sans-serif, Roboto Mono, fredoka, Verdana, Geneva, Tahoma, sans-serif;
   touch-action: manipulation;
   margin: 0;
   padding: 0;
-
   font-style: normal;
   font-weight: 600;
-  font-family: "Onest", Verdana, Geneva, Tahoma, sans-serif;
   font-size: 14px;
   letter-spacing: 0.5px;
 

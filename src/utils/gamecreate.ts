@@ -3,6 +3,7 @@ import { BOTTOM, invertFigure, isEnd, LEFT, moveXY, RIGHT, rotateFigure, TOP, ty
 import { rnd } from "./numbers";
 import { addXY, bymodXY, isSameXY, loopXY, toXY, type RectXY, type XY } from "./xy";
 import { createArray2d } from "./array2d";
+import { GAME_LEVEL_SIZE, GAME_MODE_BORDERED } from "./gameconstants";
 
 //type initSource = (manager: GameManager, cellRect: RectXY, color: number) => XY[];
 //function emptyDirs(manager: GameManager, cellXY: XY, hasBorders: boolean): DIR[];
@@ -41,9 +42,13 @@ function emptyDirs(manager: GameManager, cellXY: XY, hasBorders: boolean = true)
     return available;
 }
 
-export function createGame(cols: number, rows: number, bordered: boolean = true): GameData {
+export function createGame(mode: number, level: number): GameData {
 
-    const game: GameData = { bordered, taps: 10, mode: 1, level: 99, ...createArray2d(toXY(cols, rows)) };
+    const size = GAME_LEVEL_SIZE(mode, level)
+    const cols = size.x;
+    const rows = size.y;
+    const bordered = GAME_MODE_BORDERED[mode];
+    const game: GameData = { bordered, taps: 0, mode, level, ...createArray2d(size) };
 
     game.forEach((_, index) => { game.set(index, { figure: 0, source: 0 }) })
 

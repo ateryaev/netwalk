@@ -19,7 +19,7 @@ export interface GameData extends Array2d<Cell> {
     bordered: boolean,
     mode: number,
     level: number,
-    taps: number,
+    taps: number
 }
 
 export function isMix(color: number): boolean {

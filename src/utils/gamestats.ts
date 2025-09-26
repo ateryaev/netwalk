@@ -1,7 +1,7 @@
 
 //const STORAGE_KEY = "netwalker_gamestats";
 const DATA = {
-    solved: [70, 22, 1, 0, 0],
+    solved: [70, 22, 2, 0, 0],
     current: { mode: 0, level: 70, moves: 0, cells: [] as number[] }
 };
 

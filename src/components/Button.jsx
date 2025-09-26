@@ -1,4 +1,6 @@
+import { useEffect, useRef, useState } from "react";
 import { cn } from "../utils/cn"
+import { Blink } from "./UI";
 
 export function Button({ onClick, children }) {
     return (
@@ -63,9 +65,18 @@ export function CloseButton({ onClick, ...props }) {
     )
 }
 
-export function PinkButton({ Svg, className, children, ...props }) {
+export function PinkButton({ Svg, className, blink, children, ...props }) {
+    const [off, setOff] = useState(false);
+
+    useEffect(() => {
+        if (!blink) return;
+        const interval = setInterval(() => {
+            setOff((prev) => !prev);
+        }, 500);
+        return () => clearInterval(interval);
+    }, [blink]);
     return (
-        <button className={cn("flex items-center uppercase text-sm font-semibold  p-1.5 gap-0  rounded-full",
+        <button className={cn("flex items-center uppercase font-semibold  p-1.5 gap-0  rounded-full",
             "bg-white text-puzzle whitespace-nowrap cursor-pointer select-none",
             "focus:ring-6 focus:ring-puzzle/40 outline-none",
             "active:bg-puzzle active:text-white active:transition-none",
@@ -74,7 +85,7 @@ export function PinkButton({ Svg, className, children, ...props }) {
             className)}
             {...props}>
 
-            {Svg && <div className="bg-puzzle text-white rounded-full p-1.5"><Svg /></div>}
+            {Svg && <div className={cn("bg-puzzle text-white rounded-full p-1.5", off && "text-white/20")}><Svg /></div>}
             {children && <div className="flex justify-between gap-1.5 text-ellipsis px-2 py-0.5 overflow-hidden text-center flex-1">
                 {children}
             </div>}
@@ -87,18 +98,59 @@ export function MenuButton({ Svg, children, className, ...props }) {
     return (
         <button className={cn("items-center uppercase p-6 flex gap-2 justify-center xcapitalize",
             "text-darkpuzzle whitespace-nowrap cursor-pointer select-none outline-none",
-            "active:bg-puzzle/10",
-            "focus:bg-puzzle/10 xfocus:hue-rotate-180 disabled:cursor-default disabled:opacity-50",
-            className)} {...props}>
+            "active:not-disabled:bg-puzzle/20",
+            "focus:ring-2 ring-puzzle/20 focus:xhue-rotate-180",
+            "focus:bg-puzzle/10 disabled:cursor-default disabled:opacity-50",
+            className)}
+            {...props}>
             {children}
         </button>
     )
 }
 
-export function DetailedButton({ children, className, subtitle, value, subvalue, ...props }) {
-    return (
-        <MenuButton onClick={null} className={cn("p-4 flex-col gap-0 items-stretch", className)} {...props} >
+export function ConfirmButton({ Svg, children, className, ...props }) {
+    const [isFocused, setIsFocused] = useState(false);
+    const buttonRef = useRef(null);
+    const handleBlur = () => {
+        setIsFocused(false);
+    };
+    function handleClick(e) {
 
+        if (isFocused) {
+            //props.onClick && props.onClick();
+            console.log("FOCUS! MenuButton clicked!");
+        } else {
+            console.log("BLUR! MenuButton clicked!");
+        }
+        setIsFocused(true);
+    }
+    return (
+        <MenuButton className={cn("", className)}
+            {...props}
+            onBlur={handleBlur}
+            onClick={handleClick} >
+            {children}
+        </MenuButton>
+    )
+}
+
+export function DetailedButton({ children, safe, className, subtitle, value, subvalue, ...props }) {
+    const [isFocused, setIsFocused] = useState(false);
+    const buttonRef = useRef(null);
+    const handleBlur = () => {
+        setIsFocused(false);
+    };
+    function handleClick(e) {
+        if (isFocused || !safe) {
+            props.onClick && props.onClick();
+        }
+        setIsFocused(true);
+    }
+    return (
+        <MenuButton className={cn("p-4 flex-col gap-0 items-stretch", className)}
+            {...props}
+            onBlur={handleBlur}
+            onClick={handleClick}  >
             <div className="flex items-center justify-between">
                 <div className="text-ellipsis overflow-hidden">
                     {children}
@@ -108,16 +160,15 @@ export function DetailedButton({ children, className, subtitle, value, subvalue,
                     {value}
                 </div>
             </div>
-
-            <div className="flex items-center justify-between opacity-80 text-[10px] gap-2">
+            <div className="flex items-center justify-between text-[80%] gap-2 opacity-60">
                 <div className="text-ellipsis overflow-hidden gap-1 flex items-center">
                     {subtitle}
                 </div>
                 <div dir="rtl" className="overflow-hiddenx xtext-ellipsis">
+
                     {subvalue}
                 </div>
             </div>
-
         </MenuButton>
     )
 }

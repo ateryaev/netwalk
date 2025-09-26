@@ -202,6 +202,7 @@ export function PanZoomView({ ref, className,
         };
 
         const newPanZoom = test(panZoom);
+        //printXY("contentSize", contentSize);
         onPanZoomChange(newPanZoom)
 
         return;

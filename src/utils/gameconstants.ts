@@ -47,6 +47,14 @@ export function GAME_LEVEL_SIZE(mode: number, level: number): XY {
     return { x, y };
 }
 
+export function GAME_LEVEL_RANDOM(mode: number, level: number): boolean {
+    mode;
+    const startSize = 5;
+    const clampLevel = startSize * startSize + level;
+    const x = Math.floor(Math.sqrt(clampLevel));
+    return x === Math.sqrt(clampLevel);
+}
+
 export function GAME_LEVEL_COLORS(mode: number, level: number): number {
     const rndFunc = createRnd(mode * 1000 + level + 100);
     let maxColors = 1;

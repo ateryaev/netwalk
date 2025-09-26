@@ -1,15 +1,13 @@
 import { use, useEffect, useState } from "react";
 import { DetailedButton, MenuButton, PinkButton, SvgNext, SvgPlay, SvgRestart } from "./components/Button";
 import Modal from "./components/Modal";
-import { Inv } from "./components/UI";
+import { Inv, LabelNew } from "./components/UI";
 import { cn } from "./utils/cn";
-import { GAME_LEVEL_COLORS, GAME_LEVEL_EMPTY, GAME_LEVEL_SIZE, GAME_MODE_AVAILABLE, GAME_MODE_BORDERED, GAME_MODE_EMPTIES, GAME_MODE_SCORE, GAME_MODE_TO_UNLOCK, GAME_MODE_TUTORIALS, GAME_MODES } from "./utils/gameconstants";
+import { GAME_LEVEL_COLORS, GAME_LEVEL_EMPTY, GAME_LEVEL_RANDOM, GAME_LEVEL_SIZE, GAME_MODE_AVAILABLE, GAME_MODE_BORDERED, GAME_MODE_EMPTIES, GAME_MODE_SCORE, GAME_MODE_TO_UNLOCK, GAME_MODE_TUTORIALS, GAME_MODES } from "./utils/gameconstants";
 import { GetLevelsSolved } from "./utils/gamestats";
 import { rnd } from "./utils/numbers";
 
-function LabelNew() {
-    return <div className="bg-puzzle text-[#fff] px-1 ring-puzzle rounded-xs lowercase hue-rotate-180">new</div>
-}
+
 export function PageMenu({ shown, onBack, onAbout, onSettings, onStory, onCustom }) {
     return (
         <Modal shown={shown} title={"Netwalk"} onClose={onBack}>
@@ -99,7 +97,7 @@ export function PageStoryLevels({ shown, onLevelSelect, onBack, mode = 0 }) {
         if (!shown) return;
         setCurrentMode(mode);
     }, [mode, shown]);
-    function LevelButton({ level, disabled, size, colors, empties, times, isRandom, ...props }) {
+    function LevelButton({ level, disabled, size, colors, empties, times, isRandom, isLastRandom, ...props }) {
         //<svg className='hue-rotate-180 -mx-1' width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" ><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg>
         let subvalue;
         if (times === 0 && !disabled) subvalue = <LabelNew />
@@ -111,7 +109,7 @@ export function PageStoryLevels({ shown, onLevelSelect, onBack, mode = 0 }) {
 
         let subtitle;
         if (disabled) subtitle = "solve previous to unlock";
-        else if (isRandom) subtitle = <>size:{size.x}<Inv className={"-m-1 lowercase"}>x</Inv>{size.y},&nbsp;every time new</>;
+        else if (isRandom) subtitle = <>size:{size.x}<Inv className={"-m-1 lowercase"}>x</Inv>{size.y},&nbsp;<Inv>every time new</Inv></>;
         else subtitle = <>
             size:{size.x}<Inv className={"-m-1 lowercase"}>x</Inv>{size.y},&nbsp;
             colors: <Inv>{colors}</Inv>,
@@ -122,13 +120,17 @@ export function PageStoryLevels({ shown, onLevelSelect, onBack, mode = 0 }) {
 
         //let subtitle="solve previous to unlock";
         return (
-            <DetailedButton className={cn("xpy-0.5", isRandom && "ring-puzzle/30 ring-2 bg-puzzle/10")}
+            <DetailedButton className={cn("xpy-0.5",
+                //isRandom && "ring-darkpuzzle/20 ring-0  xshadow-md  xpx-6 -xmx-2  bg-puzzle/10 puzzle/10",
+                //isLastRandom && "xsticky xtop-2 xz-20"
+            )}
+                safe={true}
                 subtitle={subtitle}
                 value={isRandom && times > 0 && times}
                 subvalue={subvalue}
                 disabled={disabled}
                 {...props}>
-                {level === 0 && "Tutorial"}
+                {level === 0 && "Begin"}
                 {isRandom && "Random " + level}
                 {!isRandom && level > 0 && "Level " + level}
 
@@ -149,7 +151,8 @@ export function PageStoryLevels({ shown, onLevelSelect, onBack, mode = 0 }) {
                         colors={GAME_LEVEL_COLORS(0, index)}
                         empties={GAME_LEVEL_EMPTY(0, index)}
                         times={index === solved ? 0 : 1}
-                        isRandom={index % 5 === 0 && index > 0}
+                        isRandom={GAME_LEVEL_RANDOM(mode, index)}
+                        isLastRandom={index === 20}
                         onClick={() => onLevelSelect && onLevelSelect(currentMode, index)}
                     />
                 ))}

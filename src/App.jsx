@@ -40,23 +40,35 @@ function App() {
     pushPage(PAGE_MENU);
   }
 
-  const [game, setGame] = useState(createGame(5, 6, true)); //load from localStorage or create new
+  const [game, setGame] = useState(createGame(2, 0)); //load from localStorage or create new
 
-  // return (
-  //   <Window>
-  //     content
-  //   </Window>)
   function handleLevelSelect(mode, level) {
     console.log("handleLevelSelect", mode, level);
     goBack(3); //close levels
-    const size = GAME_LEVEL_SIZE(mode, level);
-    const bordered = GAME_MODE_BORDERED[mode];
-    setGame(createGame(size.x, size.y, bordered));
+    setRestarting(true);
+    setTimeout(() => {
+      const g = createGame(mode, level);
+      setGame(g);
+      setRestarting(false);
+    }, 500);
     //TODO: pushPage with new level, so we could back to prev
   }
+
+  const [restarting, setRestarting] = useState(false);
+  function handleNext() {
+    setRestarting(true);
+    setTimeout(() => {
+      const g = createGame(game.mode, game.level + 1);
+      setGame(g);
+      setRestarting(false);
+    }, 500);
+  }
+
   return (
     <>
       <PagePlay game={game} onGameChange={(newGame) => setGame(newGame)}
+        erased={restarting}
+        onNext={handleNext}
         className={cn("transition-all", (currentPage !== PAGE_START) && "brightness-50 contrast-75 grayscale-50")} onBack={handleBack} />
 
       {/* <div className='fixed inset-0 bg-black/50 z-50'></div> */}

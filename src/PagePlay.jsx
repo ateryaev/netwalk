@@ -21,10 +21,11 @@ import { GameFooter } from './components/GameFooter';
 import { GameSubHeader } from './components/GameSubHeader';
 import { GameOverBar } from './components/GameOverBar';
 import Modal from './components/Modal';
-import { GAME_MODES } from './utils/gameconstants';
+import { GAME_LEVEL_RANDOM, GAME_MODE_TUTORIALS, GAME_MODES } from './utils/gameconstants';
+import { GetLevelsSolved } from './utils/gamestats';
 //import { renderGame } from './utils/gamerender';
 
-export function PagePlay({ game, onGameChange, onBack, className }) {
+export function PagePlay({ game, onGameChange, onBack, onNext, className, ...props }) {
 
     const manager = useMemo(() => new GameManager(game), [game]);
 
@@ -52,7 +53,7 @@ export function PagePlay({ game, onGameChange, onBack, className }) {
         return toRectXY(at, size);
     }, [viewSize, panZoom]);
 
-    const contentSize = useMemo(() => mulXY(game.size, cellSize), [game.size, SIZE]);
+    const contentSize = useMemo(() => mulXY(game.size, SIZE), [game.size, SIZE]);
     const viewGridSize = useMemo(() => operXY(Math.ceil, addXY(divXY(viewSize, cellSize), XY1)), [viewSize, cellSize]);
 
     const startViewCell2 = useMemo(() => divXY(contentRect.at, SIZE), [contentRect]);
@@ -77,7 +78,7 @@ export function PagePlay({ game, onGameChange, onBack, className }) {
         defaultZoom = minmax(defaultZoom, 0.5, 1.0)
 
         setPanZoom((prev) => { return { ...prev, zoom: defaultZoom } });
-        return { min: Math.max(defaultZoom / 1.5, 0.25), max: defaultZoom * 1.25 };
+        return { min: Math.max(defaultZoom / 1.5, 0.25), max: defaultZoom * 1.5 };
     }, [viewSize]);
 
     function handlePanZoomChange(newPanZoom) {
@@ -194,6 +195,7 @@ export function PagePlay({ game, onGameChange, onBack, className }) {
         preColorsRef.current = colors;
         manager.rotateAtXY(cellXY);
         setRotation({ at: cellXY, when: performance.now() });
+        game.taps++;
         onGameChange({ ...game });
     }
 
@@ -210,17 +212,22 @@ export function PagePlay({ game, onGameChange, onBack, className }) {
         const needCellXY = mulXY(manager.size(), 0.5);
         const deltaXY = calcDelta(nowXY, needCellXY, manager.size())
         const newXY = addXY(nowXY, deltaXY);
-        scrollToCell(newXY);
+        scrollToCell(newXY, smoothly);
     }
 
-    function scrollToCell(cellXY) {
+    function scrollToCell(cellXY, smoothly) {
         let newSmoothScrollTo = mulXY(cellXY, SIZE);
         if (manager.bordered()) {
             cellXY = bymodXY(cellXY, manager.size());
             newSmoothScrollTo = clampPanZoomCenter(newSmoothScrollTo, contentSize, viewSize, zoom);
         }
-        setSmoothScrollTo(newSmoothScrollTo);
+        smoothly && setSmoothScrollTo(newSmoothScrollTo);
+        smoothly || setPanZoom({ ...panZoom, zoom: minmax(defaultZoomRef.current, 0.5, 1.0), center: newSmoothScrollTo });
     }
+
+    useEffect(() => {
+        scrollToCenter(false);
+    }, [game.level, game.mode, contentSize]);
 
     useEffect(() => {
         //scroll graduadly to smoothScroll position
@@ -430,16 +437,21 @@ export function PagePlay({ game, onGameChange, onBack, className }) {
 
     const [menu, setMenu] = useState(false);
     return (
-        <Window title={<span className=''>{game.level}</span>}
+        <Window title={game.level > 0 ? game.level : "BEGIN"}
             subtitle={GAME_MODES[game.mode]}
             onBack={onBack}
             className={className}
-            footer={<GameFooter manager={manager} />}
-            infobar={counters[0] === 0 && <GameOverBar onRestart={() => { shufleGame(game); onGameChange({ ...game }); }} />}
+            footer={<GameFooter
+                size={manager.size()}
+                tutorial={game.level === 0 ? GAME_MODE_TUTORIALS[game.mode] : null}
+                solved={game.level < GetLevelsSolved(game.mode)}
+                random={GAME_LEVEL_RANDOM(game.mode, game.level)}
+                taps={game.taps}
+                manager={manager} />}
+            infobar={counters[0] === 0 && <GameOverBar onNext={onNext} onRestart={() => { shufleGame(game); onGameChange({ ...game }); }} />}
             subheader={<GameSubHeader counters={counters}
-                onClickColor={scrollToColor} />}>
-
-
+                onClickColor={scrollToColor} />}
+            {...props}>
 
             <PanZoomView
                 className={cn("grid justify-stretch items-stretch size-full")}
