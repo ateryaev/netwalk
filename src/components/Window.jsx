@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { cn } from "../utils/cn"
 import { BackButton, MenuButton, ShowMenuButton } from "./Button"
+import { Blink } from "./UI";
 
 export function WindowHeader({ children, ...props }) {
     return (
@@ -43,15 +44,26 @@ export function Window({ onBack, title, subtitle, footer, subheader, className, 
                 </div>
             </div>}
 
-            <div className={cn("transition-all flex-1 bg-[#333] overflow-y-auto overflow-x-hidden grid",
+            <div className={cn("transition-all flex flex-col flex-1 bg-[#33f] overflow-y-auto overflow-hidden",
                 erased && "opacity-0")}>
-                {infoCurrent && <div
-                    className={cn('transition-all p-3 pr-2 flex gap-3 justify-between items-center hue-rotate-180 bg-black/80 absolute w-full',
-                        infoOn ? "opacity-100 -translate-y-0" : "opacity-0 -translate-y-full",
-                        erased && "scale-y-0 opacity-0"
+
+                <div className="h-0">
+                    <div className={cn("transition-all p-3 pr-2 flex gap-3 justify-between items-center hue-rotate-180 bg-black/80",
+                        !erased && infoOn ? "translate-y-0 opacity-100" : "opacity-0 -translate-y-full"
                     )}>
-                    {infoCurrent}</div>}
+                        {infoCurrent}
+                    </div>
+                </div>
+
                 {children}
+
+                <div className="h-0">
+                    <div className={cn(" transition-all bg-black/80 text-center hue-rotate-180 text-white p-4 select-none",
+                        !erased && infoOn ? "-translate-y-full opacity-100" : "opacity-0 -translate-y-0"
+                    )}>
+                        <span className="animate-pulse">CONGRATULATION</span>
+                    </div>
+                </div>
             </div>
 
             {!!footer && <div className='text-puzzle  font-semibold  bg-white uppercase whitespace-nowrap'>

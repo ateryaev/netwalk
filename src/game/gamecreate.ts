@@ -1,9 +1,11 @@
 import { GameManager } from "./gamemanager";
 import { BOTTOM, invertFigure, isEnd, LEFT, moveXY, RIGHT, rotateFigure, TOP, type DIR, type GameData } from "./gamedata";
-import { rnd } from "./numbers";
-import { addXY, bymodXY, isSameXY, loopXY, toXY, type RectXY, type XY } from "./xy";
-import { createArray2d } from "./array2d";
-import { GAME_LEVEL_SIZE, GAME_MODE_BORDERED } from "./gameconstants";
+import { rnd } from "../utils/numbers";
+import { addXY, bymodXY, isSameXY, loopXY, operXY, toXY, type RectXY, type XY } from "../utils/xy";
+import { createArray2d } from "../utils/array2d";
+import { GAME_LEVEL_COLORS, GAME_LEVEL_EMPTY, GAME_LEVEL_SIZE, GAME_MODE_BORDERED } from "./gameconstants";
+import { createRnd } from "../utils/rnd";
+import { createGameTutorial } from "./gametutorials";
 
 //type initSource = (manager: GameManager, cellRect: RectXY, color: number) => XY[];
 //function emptyDirs(manager: GameManager, cellXY: XY, hasBorders: boolean): DIR[];
@@ -44,30 +46,59 @@ function emptyDirs(manager: GameManager, cellXY: XY, hasBorders: boolean = true)
 
 export function createGame(mode: number, level: number): GameData {
 
-    const size = GAME_LEVEL_SIZE(mode, level)
+    if (mode === 0 && level === 0) {
+        return createGameTutorial();
+    }
+    const rndFunc = createRnd(mode * 995 + level * 13 + 23);
+    console.log("CREATE GAME", rndFunc(2), rndFunc(2), rndFunc(2), rndFunc(2), rndFunc(2));
+
+    const size = GAME_LEVEL_SIZE(mode, level);
+    const empty = GAME_LEVEL_EMPTY(mode, level); //not used now
+    const colors = GAME_LEVEL_COLORS(mode, level); //not used now
+    console.log("CREATE GAME", { mode, level, size, empty, colors });
     const cols = size.x;
     const rows = size.y;
     const bordered = GAME_MODE_BORDERED[mode];
-    const game: GameData = { bordered, taps: 0, mode, level, ...createArray2d(size) };
+    const game: GameData = { bordered, taps: 0, mode, level, hintText: undefined, hintXY: undefined, ...createArray2d(size) };
 
     game.forEach((_, index) => { game.set(index, { figure: 0, source: 0 }) })
 
     const manager = new GameManager(game);
-    const ends1 = initSource(manager, { at: toXY(2, 1), size: toXY(1, 1) }, 0b0001);
-    const ends2 = initSource(manager, { at: toXY(2, 3), size: toXY(2, 2) }, 0b0010);
-    const ends = ends1.concat(ends2);
+
+    const source = rnd(1);
+
+    const sourceXY1 = operXY(Math.floor, toXY((cols - 1) / 2, (rows - 0) / 2));
+    const sourceXY2 = operXY(Math.floor, toXY((cols - 1) / 2, (rows - 0) / 4));
+    const sourceXY3 = operXY(Math.floor, toXY((cols - 1) / 2, (rows - 0) * 3 / 4));
+
+    let ends: XY[] = [];
+
+    if (colors === 1) {
+        const ends1 = initSource(manager, { at: sourceXY1, size: toXY(1, 1) }, 0b0001 << source);
+        ends = ends.concat(ends1);
+    } else if (colors === 2) {
+        const ends2 = initSource(manager, { at: sourceXY2, size: toXY(1, 1) }, (0b0001 << (source + 1) % 4));
+        const ends3 = initSource(manager, { at: sourceXY3, size: toXY(1, 1) }, (0b0001 << (source + 2) % 4));
+        ends = ends.concat(ends2).concat(ends3);
+    } else {
+        const ends1 = initSource(manager, { at: sourceXY1, size: toXY(1, 1) }, 0b0001 << source);
+        const ends2 = initSource(manager, { at: sourceXY2, size: toXY(1, 1) }, (0b0001 << (source + 1) % 4));
+        const ends3 = initSource(manager, { at: sourceXY3, size: toXY(1, 1) }, (0b0001 << (source + 2) % 4));
+        ends = ends.concat(ends1).concat(ends2).concat(ends3);
+    }
+
 
     //TODO: make sure all sources having at least one exit
     //TODO: make sure no sources using all exits
 
     for (let i = 0; i < cols * rows * 2 && ends.length > 0; i++) {
-        const fromIdx = rnd(ends.length - 1);
+        const fromIdx = rndFunc(ends.length - 1);
         const end = ends[fromIdx];
         const cell = manager.cellAt(end);
         const canGoTo = emptyDirs(manager, end, bordered);
 
         if (canGoTo.length > 0) {
-            const dir = canGoTo[rnd(canGoTo.length - 1)];
+            const dir = canGoTo[rndFunc(canGoTo.length - 1)];
             cell.figure |= dir;
             const opXy = moveXY(end, dir);
             const opCell = manager.cellAt(opXy);
@@ -99,10 +130,10 @@ export function createGame(mode: number, level: number): GameData {
         ocell.figure &= ~odir;
     }
 
-    for (let i = 0; i < game.size.x * game.size.y * 0.1; i++) {
+    for (let i = 0; i < empty; i++) {
         const allEnds = getAllEnds();
         if (allEnds.length > 0)
-            deleteEnd(allEnds[rnd(allEnds.length - 1)])
+            deleteEnd(allEnds[rndFunc(allEnds.length - 1)])
     }
 
     //SHUFLE:
@@ -114,7 +145,7 @@ export function createGame(mode: number, level: number): GameData {
 
     //console.log("GAME CREATED2:", game.data()[0].figure.toString(2).padStart(4, "0"))
 
-
+    shufleGame(game);
     return game;
 }
 

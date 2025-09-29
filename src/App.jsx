@@ -4,13 +4,14 @@ import { cn } from './utils/cn.ts'
 import { PagePlay } from './PagePlay';
 import { PageMenu, PageSettings, PageStory, PageStoryLevels } from './PageMenu';
 import { PageTest } from './PageTest';
-import { createGame } from './utils/gamecreate';
+import { createGame } from './game/gamecreate.ts';
 import { usePageHistory } from './components/PageHistory.tsx';
 import { Window } from './components/Window.jsx';
 import Modal from './components/Modal.jsx';
 import { MenuButton } from './components/Button.jsx';
 import { PageAbout } from './PageAbout.jsx';
-import { GAME_LEVEL_SIZE, GAME_MODE_BORDERED } from './utils/gameconstants.ts';
+import { GAME_LEVEL_SIZE, GAME_MODE_BORDERED } from './game/gameconstants.ts';
+import { createGameTutorial } from './game/gametutorials.ts';
 
 function App() {
 
@@ -35,12 +36,25 @@ function App() {
     pushPage(PAGE_PLAY);
   }
 
+  function handleRestart() {
+    setRestarting(true);
+    setTimeout(() => {
+      const g = createGame(game.mode, game.level);
+      setGame(g);
+      setRestarting(false);
+    }, 500);
+
+    // shufleGame(game);
+    // onGameChange({ ...game });
+  }
+
   function handleBack() {
     //goBack()
     pushPage(PAGE_MENU);
   }
 
-  const [game, setGame] = useState(createGame(2, 0)); //load from localStorage or create new
+  //const [game, setGame] = useState(createGame(1, 6)); //load from localStorage or create new
+  const [game, setGame] = useState(createGameTutorial()); //load from localStorage or create new
 
   function handleLevelSelect(mode, level) {
     console.log("handleLevelSelect", mode, level);
@@ -58,7 +72,7 @@ function App() {
   function handleNext() {
     setRestarting(true);
     setTimeout(() => {
-      const g = createGame(game.mode, game.level + 1);
+      const g = createGame(game.mode, game.level + 11);
       setGame(g);
       setRestarting(false);
     }, 500);
@@ -69,6 +83,7 @@ function App() {
       <PagePlay game={game} onGameChange={(newGame) => setGame(newGame)}
         erased={restarting}
         onNext={handleNext}
+        onRestart={handleRestart}
         className={cn("transition-all", (currentPage !== PAGE_START) && "brightness-50 contrast-75 grayscale-50")} onBack={handleBack} />
 
       {/* <div className='fixed inset-0 bg-black/50 z-50'></div> */}

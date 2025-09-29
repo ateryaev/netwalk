@@ -13,10 +13,7 @@ export function GameFooter({ manager, taps, bordered, random, solved, tutorial, 
     );
 
     return (
-
-
         <>
-
             <div>
                 {bordered ? "bordered" : "looped"}
             </div>

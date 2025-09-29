@@ -3,14 +3,14 @@ import { DetailedButton, MenuButton, PinkButton, SvgNext, SvgPlay, SvgRestart } 
 import Modal from "./components/Modal";
 import { Inv, LabelNew } from "./components/UI";
 import { cn } from "./utils/cn";
-import { GAME_LEVEL_COLORS, GAME_LEVEL_EMPTY, GAME_LEVEL_RANDOM, GAME_LEVEL_SIZE, GAME_MODE_AVAILABLE, GAME_MODE_BORDERED, GAME_MODE_EMPTIES, GAME_MODE_SCORE, GAME_MODE_TO_UNLOCK, GAME_MODE_TUTORIALS, GAME_MODES } from "./utils/gameconstants";
-import { GetLevelsSolved } from "./utils/gamestats";
+import { GAME_LEVEL_COLORS, GAME_LEVEL_EMPTY, GAME_LEVEL_RANDOM, GAME_LEVEL_SIZE, GAME_MODE_AVAILABLE, GAME_MODE_BORDERED, GAME_MODE_EMPTIES, GAME_MODE_SCORE, GAME_MODE_TO_UNLOCK, GAME_MODE_TUTORIALS, GAME_MODES } from "./game/gameconstants";
+import { GetLevelsSolved } from "./game/gamestats";
 import { rnd } from "./utils/numbers";
 
 
 export function PageMenu({ shown, onBack, onAbout, onSettings, onStory, onCustom }) {
     return (
-        <Modal shown={shown} title={"Netwalk"} onClose={onBack}>
+        <Modal shown={shown} title={"Netwalk"} onBack={onBack}>
             <div className='flex flex-col gap-0 items-stretch p-2'>
                 <DetailedButton onClick={onStory}
                     value={""}
@@ -148,8 +148,8 @@ export function PageStoryLevels({ shown, onLevelSelect, onBack, mode = 0 }) {
 
                     <LevelButton key={index} level={index}
                         size={GAME_LEVEL_SIZE(currentMode, index)}
-                        colors={GAME_LEVEL_COLORS(0, index)}
-                        empties={GAME_LEVEL_EMPTY(0, index)}
+                        colors={GAME_LEVEL_COLORS(mode, index)}
+                        empties={GAME_LEVEL_EMPTY(mode, index)}
                         times={index === solved ? 0 : 1}
                         isRandom={GAME_LEVEL_RANDOM(mode, index)}
                         isLastRandom={index === 20}

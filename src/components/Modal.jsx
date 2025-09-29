@@ -2,58 +2,43 @@ import { useEffect, useRef, useState } from 'react';
 import { BackButton, Button, CloseButton, MenuButton, PinkButton, SvgBack } from './Button';
 import { cn } from '../utils/cn';
 
-
-const Modal = ({ shown, onBack, onClose, title, actionName, onAction, isbottom, children }) => {
-
+const Modal = ({ shown, onBack, title, children }) => {
     const dialogRef = useRef(null);
     const scrollRef = useRef(null);
-    const backdropRef = useRef(null);
 
     const [reallyShown, setReallyShown] = useState(shown);
 
     useEffect(() => {
-        if (shown) {
-            setTimeout(() => {
-                setReallyShown(true);
-            }, 100);
-        } else {
-            setTimeout(() => {
-                setReallyShown(false);
-            }, 200);
-        }
-
+        const to = setTimeout(() => {
+            setReallyShown(shown);
+        }, shown ? 100 : 200);
+        return () => clearTimeout(to);
     }, [shown]);
 
     useEffect(() => {
-        if (reallyShown) {
-            dialogRef.current?.showModal();
-        } else {
-            dialogRef.current?.close();
-        }
+        reallyShown && (scrollRef.current.scrollTop = 0);
+        reallyShown && dialogRef.current?.showModal();
+        reallyShown || dialogRef.current?.close();
     }, [reallyShown]);
 
     function handleCancel(e) {
-        //Prevent dialog closing on escape or back button, for hiding animation
         e.preventDefault();
-        onClose && onClose();
-        !onClose && onBack && onBack();
+        onBack && onBack();
     }
 
     function handleBackdropClick(e) {
-        if (e.target === backdropRef.current) {
-            onCancel();
+        if (e.target === dialogRef.current) {
+            onBack && onBack();
         }
     }
     if (!reallyShown && !shown) return null;
 
     return (
         <dialog ref={dialogRef} onCancel={handleCancel}
-
+            onClick={handleBackdropClick}
             className="backdrop:bg-black/0 z-10 bg-white/0 select-none p-0 xtext-[16px]
              grid min-w-svw  min-h-svh max-h-svh  justify-center items-center ">
 
-            {/* <div ref={backdropRef} className="grid [view-transition-namexxx:dialog-backdrop] h-dvh bg-black/0"
-                onClick={handleBackdropClick}></div>  */}
             <div className={cn("flex-1 ring-2 ring-black/10 scale-90",
                 "opacity-10 duration-200 transition-all",
                 "flex flex-col bg-white max-h-[min(600px,90svh)] max-w-[90svw] w-xl",
@@ -62,24 +47,18 @@ const Modal = ({ shown, onBack, onClose, title, actionName, onAction, isbottom, 
                 "outline-none xhue-rotate-180 "
             )} tabIndex={0}>
                 <div className="bg-puzzle flex items-center justify-between p-2 text-white uppercase">
-                    <BackButton onClick={onClose || onBack} />
-                    <span className='overflow-hidden text-ellipsis  whitespace-nowrap'>{title}</span>
-                    <CloseButton disabled={true} onClick={onClose} />
+                    <BackButton onClick={onBack} />
+                    <span className='overflow-hidden text-ellipsis  whitespace-nowrap flex-1 text-center pe-12'>{title}</span>
+
 
                 </div>
 
                 <div ref={scrollRef}
-                    className={cn("flex-1 bg-white items-stretch w-full overflow-y-auto flex flex-col",
-                        isbottom && "flex-col-reverse",
-                    )}>
+                    className={cn("flex-1 bg-white items-stretch w-full overflow-y-auto flex flex-col-reverse")}>
                     {children}
                 </div>
 
                 <div className=" bg-puzzle/20 p-2 flex items-stretch justify-stretch flex-col">
-
-
-                    {/* <MenuButton onClick={onClose || onBack}>back</MenuButton> */}
-
                 </div>
 
             </div>

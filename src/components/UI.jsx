@@ -29,7 +29,7 @@ export function LabelNew() {
 
 
     return (
-        <div className="bg-puzzle text-white xpuzzle px-1 -m-1 xring-puzzle rounded-xs xlowercase hue-rotate-180">
+        <div className="bg-puzzle text-white xpuzzle px-1 py-px -m-1 xring-puzzle rounded-fullx lowercase hue-rotate-180">
             <Blink>
                 new
             </Blink>

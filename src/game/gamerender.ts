@@ -1,12 +1,13 @@
-import { SIZE, TRANS_DURATION } from "./cfg";
-import { drawBG, drawBgCell, drawSelection, drawSourceFg, drawTransform } from "./gamedraw";
+import { SIZE, TRANS_DURATION } from "../utils/cfg";
+import { drawBG, drawBgCell, drawHint, drawSelection, drawSourceFg, drawTransform } from "./gamedraw";
 import type { GameManager } from "./gamemanager";
-import { progress } from "./numbers";
-import { addXY, bymodXY, isSameXY, loopXY, mulXY, subXY, toXY, type XY } from "./xy";
+import { progress } from "../utils/numbers";
+import { addXY, bymodXY, isSameXY, loopXY, mulXY, subXY, toXY, type XY } from "../utils/xy";
 
 //renderGame(ctx, manager, game.size, viewGridSize, startViewCell)
 export function renderGameBg(ctx: any, manager: GameManager, viewGridSize: XY, startingCell: XY) {
 
+    ctx.clearRect(0, 0, viewGridSize.x * SIZE, viewGridSize.y * SIZE);
 
     // draw bg chees grid
     loopXY(viewGridSize, (viewXY) => {
@@ -21,7 +22,9 @@ export function renderGameBg(ctx: any, manager: GameManager, viewGridSize: XY, s
         ctx.translate(viewXY.x * SIZE, viewXY.y * SIZE);
         const isOdd = ((cellXY.x + cellXY.y) % 2) === 0;
         if (isOuterCell) {
-            // drawBgCell(ctx, isOdd, false, true, toXY(1, 1));
+            ctx.globalAlpha = 0.4;
+            drawBgCell(ctx, isOdd, false, false, toXY(1, 1));
+            ctx.globalAlpha = 1;
         } else {
             const cell = manager.cellAt(cellXY);
             const cellRect = manager.getCellRect(cellXY);
@@ -35,7 +38,7 @@ export function renderGameBg(ctx: any, manager: GameManager, viewGridSize: XY, s
         }
         ctx.restore();
     });
-    drawBG(ctx, manager.size(), viewGridSize, startingCell);
+    false && drawBG(ctx, manager.size(), viewGridSize, startingCell);
 }
 
 export function renderSelect(ctx: any, selected: any, manager: GameManager, startViewCell: XY) {
@@ -52,6 +55,19 @@ export function renderSelect(ctx: any, selected: any, manager: GameManager, star
         drawSelection(ctx, selected.active ? selectProgress : 1 - selectProgress, cellRect.size);
         ctx.restore();
     }
+}
+
+export function renderHint(ctx: any, gameXY: any, startViewCell: XY) {
+    //draw selection
+    ctx.save();
+
+    const pos = subXY(gameXY, startViewCell);
+    const delta = subXY(gameXY, gameXY);
+    const trans = mulXY(addXY(pos, delta), SIZE);
+    ctx.translate(trans.x, trans.y);
+    drawHint(ctx);
+    ctx.restore();
+
 }
 
 export function renderSourceFgs(ctx: any, manager: GameManager, viewGridSize: XY, startViewCell: XY) {

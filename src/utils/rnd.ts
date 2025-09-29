@@ -8,7 +8,7 @@ export function createRnd(seed: number) {
         t = t ^ t >>> 15;
         t = Math.imul(t, 0x735a2d97);
         const value01 = ((t = t ^ t >>> 15) >>> 0) / 4294967296;
-        return max ? Math.floor(value01 * max) : value01;
+        return Math.min(max, Math.floor(value01 * (max + 1)));
     }
 }
 

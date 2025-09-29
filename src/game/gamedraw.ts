@@ -1,7 +1,7 @@
-import { getFigureImage, getSourceBgImage } from "./canvas";
-import { SIZE } from "./cfg";
-import { bymod } from "./numbers";
-import type { XY } from "./xy";
+import { getFigureImage, getSourceBgImage } from "../utils/canvas";
+import { SIZE } from "../utils/cfg";
+import { bymod } from "../utils/numbers";
+import type { XY } from "../utils/xy";
 
 export function drawBG(ctx: any, gameGridSize: XY, viewGridSize: XY, startCell: XY) {
     const startCol = startCell.x;
@@ -56,7 +56,7 @@ export function drawBgCell(ctx: any, isOdd: boolean, isSource: boolean, isEmpty:
 
 export function drawEmptyCell(ctx: any, isOdd: boolean) {
     const alpha = ctx.globalAlpha;
-    ctx.globalAlpha = 0.5
+    ctx.globalAlpha = 0.3
 
     ctx.beginPath();
     ctx.arc(SIZE / 2, SIZE / 2, 30, 0, Math.PI * 2);
@@ -71,6 +71,14 @@ export function drawEmptyCell(ctx: any, isOdd: boolean) {
     ctx.stroke();
 
     ctx.globalAlpha = alpha
+}
+
+export function drawHint(ctx: any) {
+    const dur = 900;
+    const phase = (performance.now() % dur);
+    ctx.globalAlpha = (phase > dur / 2 ? 0.1 : 0.0);
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, SIZE, SIZE);
 }
 
 export function drawSelection(ctx: any, progress: number, cellSize: XY) {

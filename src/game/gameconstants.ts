@@ -1,5 +1,5 @@
-import { createRnd } from "./rnd";
-import { type XY } from "./xy";
+import { createRnd } from "../utils/rnd";
+import { type XY } from "../utils/xy";
 
 export const GAME_MODES = [
     "Too young to loose", //only one color, many empties, bordered (basic tutorial), 5x5+
@@ -49,6 +49,7 @@ export function GAME_LEVEL_SIZE(mode: number, level: number): XY {
 
 export function GAME_LEVEL_RANDOM(mode: number, level: number): boolean {
     mode;
+    if (level === 0) return false;
     const startSize = 5;
     const clampLevel = startSize * startSize + level;
     const x = Math.floor(Math.sqrt(clampLevel));

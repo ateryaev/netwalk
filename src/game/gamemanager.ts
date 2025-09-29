@@ -1,6 +1,6 @@
 import type { Cell, GameData } from "./gamedata";
 import { BOTTOM, LEFT, moveXY, RIGHT, rotateFigure, TOP, type DIR } from "./gamedata";
-import { addXY, bymodXY, isSameXY, loopXY, toXY, type RectXY, type XY } from "./xy";
+import { addXY, bymodXY, isSameXY, loopXY, toXY, type RectXY, type XY } from "../utils/xy";
 
 export class GameManager {
     private game: GameData;
@@ -25,7 +25,15 @@ export class GameManager {
         return this.game.get({ x, y }) || { figure: 0, source: 0 };
     }
 
-    cellAtDir(xy: { x: number; y: number }, dir: DIR): Cell {
+    cellAtDir(xy: XY, dir: DIR): Cell {
+        const { x, y } = xy;
+        if (this.game.bordered) {
+            const emptyCell = { figure: 0, source: 0 };
+            if (x === 0 && dir === LEFT) return emptyCell;
+            if (y === 0 && dir === TOP) return emptyCell;
+            if (x === this.game.size.x - 1 && dir === RIGHT) return emptyCell;
+            if (y === this.game.size.y - 1 && dir === BOTTOM) return emptyCell;
+        }
         return this.cellAt(moveXY(xy, dir));
     }
 

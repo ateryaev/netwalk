@@ -1,6 +1,6 @@
 import { COLOR } from "../utils/cfg";
 import { cn } from "../utils/cn";
-import { isMix, isOff, isOn } from "../utils/gamedata";
+import { isMix, isOff, isOn } from "../game/gamedata";
 
 export function GameSubHeader({ counters, onClickColor, ...props }) {
     return (

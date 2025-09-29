@@ -2,30 +2,29 @@ import { use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import { cn } from './utils/cn'
 import { COLOR, SIZE, TRANS_DURATION } from "./utils/cfg";
-import { BOTTOM, LEFT, RIGHT, TOP } from './utils/gamedata';
-import { isEnd, isMix, isOff, isOn } from './utils/gamedata';
+import { BOTTOM, LEFT, RIGHT, TOP } from './game/gamedata';
+import { isEnd, isMix, isOff, isOn } from './game/gamedata';
 import { GameHeader } from './components/GameHeader';
 import { clampPanZoomCenter, PanZoomView } from './components/PanZoomView';
 import { addXY, bymodXY, distXY, divXY, fromtoXY, isSameXY, loopXY, mulXY, operXY, printXY, subXY, toRectXY, toXY, XY05, XY1 } from './utils/xy';
 import { getBgImage, getFigureImage, getSourceBgImage } from './utils/canvas';
 import { minmax, rnd, bymod, progress, xyToIndex } from './utils/numbers';
-import { GameManager } from './utils/gamemanager';
-import { invertFigure, moveXY, toDirs } from './utils/gamedata';
+import { GameManager } from './game/gamemanager';
+import { invertFigure, moveXY, toDirs } from './game/gamedata';
 import { createArray2d } from './utils/array2d';
-import { drawActiveEnd, drawBG, drawBgCell, drawEmptyCell, drawFigure, drawMixEnd, drawOffEnd, drawRotated, drawSelection, drawSourceFg, drawTransform } from './utils/gamedraw';
-import { renderGameBg, renderSelect, renderSourceFgs } from './utils/gamerender';
+import { drawActiveEnd, drawBG, drawBgCell, drawEmptyCell, drawFigure, drawMixEnd, drawOffEnd, drawRotated, drawSelection, drawSourceFg, drawTransform } from './game/gamedraw';
+import { renderGameBg, renderHint, renderSelect, renderSourceFgs } from './game/gamerender';
 import { Button, MenuButton, PinkButton, SvgNext, SvgRestart } from './components/Button';
-import { shufleGame } from './utils/gamecreate';
+import { shufleGame } from './game/gamecreate';
 import { Window } from './components/Window';
 import { GameFooter } from './components/GameFooter';
 import { GameSubHeader } from './components/GameSubHeader';
 import { GameOverBar } from './components/GameOverBar';
 import Modal from './components/Modal';
-import { GAME_LEVEL_RANDOM, GAME_MODE_TUTORIALS, GAME_MODES } from './utils/gameconstants';
-import { GetLevelsSolved } from './utils/gamestats';
-//import { renderGame } from './utils/gamerender';
+import { GAME_LEVEL_RANDOM, GAME_MODE_TUTORIALS, GAME_MODES } from './game/gameconstants';
+import { GetLevelsSolved } from './game/gamestats';
 
-export function PagePlay({ game, onGameChange, onBack, onNext, className, ...props }) {
+export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, className, ...props }) {
 
     const manager = useMemo(() => new GameManager(game), [game]);
 
@@ -192,6 +191,14 @@ export function PagePlay({ game, onGameChange, onBack, onNext, className, ...pro
         setMsg("CLICK:" + cellXY.x + ":" + cellXY.y + ":" + manager.bordered());
         if (manager.bordered() && !isSameXY(cellXY, bygmodXY(cellXY))) return;
 
+        if (game.hintXY && !game.hintXY.find((hxy) => isSameXY(hxy, cellXY))) {
+            return;
+        }
+        if (game.hintXY) {
+            //remove first occurance of cellXY from hints
+            game.hintXY = game.hintXY.filter((hxy) => !isSameXY(hxy, cellXY));
+        }
+
         preColorsRef.current = colors;
         manager.rotateAtXY(cellXY);
         setRotation({ at: cellXY, when: performance.now() });
@@ -280,9 +287,15 @@ export function PagePlay({ game, onGameChange, onBack, onNext, className, ...pro
 
             renderGameBg(ctx, manager, viewGridSize, startViewCell)
 
+            game.hintXY?.[0] && renderHint(ctx, game.hintXY[0], startViewCell);
             if (!manager.bordered() || isSameXY(selected.at, bymodXY(selected.at, manager.size()))) {
                 renderSelect(ctx, selected, manager, startViewCell);
+                //             }
+                // if ( game.hintXY[0]|| isSameXY(game.hintXY[0], bymodXY(selected.at, manager.size()))) {
+                //                 renderSelect(ctx, selected, manager, startViewCell);
             }
+
+
             //draw cells
             loopXY(viewGridSize, (viewXY) => {
                 const viewCellXY = addXY(startViewCell, viewXY);
@@ -448,8 +461,8 @@ export function PagePlay({ game, onGameChange, onBack, onNext, className, ...pro
                 random={GAME_LEVEL_RANDOM(game.mode, game.level)}
                 taps={game.taps}
                 manager={manager} />}
-            infobar={counters[0] === 0 && <GameOverBar onNext={onNext} onRestart={() => { shufleGame(game); onGameChange({ ...game }); }} />}
-            subheader={<GameSubHeader counters={counters}
+            infobar={counters[0] === 0 && <GameOverBar onNext={onNext} onRestart={onRestart} />}
+            subheader={< GameSubHeader counters={counters}
                 onClickColor={scrollToColor} />}
             {...props}>
 
@@ -467,32 +480,15 @@ export function PagePlay({ game, onGameChange, onBack, onNext, className, ...pro
                 <canvas ref={canvasRef} className='contain-size'></canvas>
 
             </PanZoomView >
-            {/* <div className='p-2 bg-white/90 absolute w-full'>123</div> */}
-            {/*             
-            <div className='text-sm p-2 gap-2 text-[#296]/80
-                flex font-semibold px-3 pe-2 items-center justify-center
-              bg-[#eff] uppercase whitespace-nowrap'>
-
-
-
-                <div>{manager.bordered() ? "bordered" : "looped"}</div>
-                <div className='flex items-center'> {manager.size().x}
-                    <svg className='opacity-50 ' width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-x"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg>
-                    {manager.size().y}</div>
-                <div><span className='hue-rotate-180'>UNSOLVED</span></div>
-
-                <div className=' flex-1'></div>
-                <div className='lowercase flex gap-1 items-center bg-puzzle/80 text-white p-2 -m-2 xhue-rotate-90'>
-                    123
+            <div className="h-0">
+                <div className={cn("uppercase -translate-y-full transition-all bg-black/80 text-center hue-rotate-180 text-white p-4 select-none",
+                    (!game.hintText || counters[0] === 0) && "opacity-0 -translate-y-0",
+                )}>
+                    <span>{game.hintText}</span>
                 </div>
-                <div className='lowercase flex gap-1 text-lg items-center ps-2 xhue-rotate-90'>
-                    <div className='bg-whitxe xtext-puzzle xtext-lg -xm-1 rounded-full xp-1'>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-pointer"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7.904 17.563a1.2 1.2 0 0 0 2.228 .308l2.09 -3.093l4.907 4.907a1.067 1.067 0 0 0 1.509 0l1.047 -1.047a1.067 1.067 0 0 0 0 -1.509l-4.907 -4.907l3.113 -2.09a1.2 1.2 0 0 0 -.309 -2.228l-13.582 -3.904l3.904 13.563z" /></svg>
-                    </div>
-                </div>
-            </div> */}
+            </div>
 
 
-        </Window>
+        </Window >
     )
 }

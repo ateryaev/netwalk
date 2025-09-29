@@ -1,5 +1,5 @@
-import type { Array2d } from "./array2d";
-import { toXY, type XY } from "./xy";
+import type { Array2d } from "../utils/array2d";
+import { toXY, type XY } from "../utils/xy";
 
 export const TOP = 0b1000;
 export const RIGHT = 0b0100;
@@ -19,7 +19,9 @@ export interface GameData extends Array2d<Cell> {
     bordered: boolean,
     mode: number,
     level: number,
-    taps: number
+    taps: number,
+    hintText: string | undefined,
+    hintXY: XY[] | undefined,
 }
 
 export function isMix(color: number): boolean {
