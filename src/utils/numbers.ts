@@ -16,6 +16,17 @@ export function progress(when: number, duration: number): number {
     return minmax((now - when) / duration, 0.0, 1.0);
 }
 
+export function progressToCurve(progress: number, curve: number[]): number {
+    if (progress <= 0) return curve[0];
+    if (progress >= 1) return curve[curve.length - 1];
+    const idx = progress * (curve.length - 1);
+    const idx0 = Math.floor(idx);
+    const idx1 = Math.ceil(idx);
+    if (idx0 === idx1) return curve[idx0];
+    const p = idx - idx0;
+    return curve[idx0] + (curve[idx1] - curve[idx0]) * p;
+}
+
 export function xyToIndex(xy: Readonly<{ x: number, y: number }>, width: number): number {
     return xy.y * width + xy.x;
 }

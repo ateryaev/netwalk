@@ -1,4 +1,4 @@
-import { getFigureImage, getSourceBgImage } from "../utils/canvas";
+import { drawCircle, getFigureImage, getSourceBgImage } from "../utils/canvas";
 import { SIZE } from "../utils/cfg";
 import { bymod } from "../utils/numbers";
 import type { XY } from "../utils/xy";
@@ -10,7 +10,7 @@ export function drawBG(ctx: any, gameGridSize: XY, viewGridSize: XY, startCell: 
     ctx.fillStyle = "#181818";
     //ctx.fillRect(0, 0, viewGridSize.x * SIZE, viewGridSize.y * SIZE);
 
-    ctx.globalAlpha = 1
+    ctx.globalAlpha = 0.5
     ctx.strokeStyle = "#000";
     ctx.lineWidth = 8;
 
@@ -36,6 +36,7 @@ export function drawBG(ctx: any, gameGridSize: XY, viewGridSize: XY, startCell: 
     }
     ctx.closePath();
     ctx.stroke();
+    ctx.globalAlpha = 1
 }
 
 export function drawBgCell(ctx: any, isOdd: boolean, isSource: boolean, isEmpty: boolean, cellSize: XY) {
@@ -48,7 +49,7 @@ export function drawBgCell(ctx: any, isOdd: boolean, isSource: boolean, isEmpty:
         ctx.fillStyle = "#111";
         ctx.fillRect(gap, gap, insideW, insideH);
     } else {
-        ctx.fillStyle = isOdd ? "#222" : "#333";
+        ctx.fillStyle = isOdd ? "#484848" : "#555";
         ctx.fillRect(gap, gap, insideW, insideH);
     }
     if (isEmpty) drawEmptyCell(ctx, isOdd)
@@ -112,23 +113,8 @@ export function drawSelection(ctx: any, progress: number, cellSize: XY) {
 
 export function drawActiveEnd(ctx: any, progress: number) {
     ctx.globalAlpha = progress;
-    ctx.beginPath();
-    ctx.moveTo(SIZE / 2, SIZE / 2);
-    ctx.lineTo(SIZE / 2, SIZE / 2)
-    ctx.lineWidth = 30 - 10 * progress;
-    ctx.lineJoin = "round";
-    ctx.lineCap = "round";
-    ctx.strokeStyle = "#fff";
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(SIZE / 2, SIZE / 2);
-    ctx.lineTo(SIZE / 2, SIZE / 2)
-    ctx.lineWidth = 5 + 3 * (1 - progress);
-    ctx.lineJoin = "round";
-    ctx.lineCap = "round";
-    ctx.strokeStyle = "#111";
-    ctx.stroke();
+    drawCircle(ctx, SIZE / 2, SIZE / 2, 20 - 5 * progress, "#fff");
+    drawCircle(ctx, SIZE / 2, SIZE / 2, 5 * progress, "#444");
 }
 
 export function drawOffEnd(ctx: any, progress: number, hiding: boolean) {
@@ -174,7 +160,9 @@ export function drawFigure(ctx: any, figure: number, color: number, conns: numbe
     ctx.globalAlpha = opacity;
     const img = getFigureImage(figure, color, false, conns);
     //img && ctx.drawImage(img, -SIZE / 2 - 1, -SIZE / 2 - 1, SIZE + 2, SIZE + 2);
-    img && ctx.drawImage(img, -1, -1, SIZE + 2, SIZE + 2);
+    //img && ctx.drawImage(img, -1, -1, SIZE + 2, SIZE + 2);
+
+    img && ctx.drawImage(img, 0, 0, SIZE, SIZE);
 }
 
 export function drawSourceFg(ctx: any, color: number, size: XY) {

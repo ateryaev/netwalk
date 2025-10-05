@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "../utils/cn"
 import { Blink } from "./UI";
+import { preBeepButton } from "../utils/beep";
 
 export function Button({ onClick, children }) {
     return (
@@ -18,6 +19,7 @@ export function ShowMenuButton({ onClick, ...props }) {
     function handleClick(e) {
         e.currentTarget.blur();
         onClick && onClick();
+        preBeepButton(0.6);
     }
     return (
         <button className="rounded-full  text-puzzle bg-white
@@ -25,9 +27,9 @@ export function ShowMenuButton({ onClick, ...props }) {
                      focus:ring-6 focus:ring-white/40 outline-none
                      active:ring-6 active:ring-white/40 active:transition-none
                      transition-all duration-300"
-            {...props} onClick={handleClick}>
+            {...props} onClick={handleClick}
+            onPointerDown={() => preBeepButton(0.8)}>
             <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-menu-2"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 6l16 0" /><path d="M4 12l16 0" /><path d="M4 18l16 0" /></svg>
-            {/* <SvgBack /> */}
         </button>
     )
 }
@@ -35,14 +37,16 @@ export function BackButton({ onClick, ...props }) {
     function handleClick(e) {
         e.currentTarget.blur();
         onClick && onClick();
+        preBeepButton(0.8);
     }
     return (
-        <button className="rounded-full border-none border-white text-white xbg-white/10
+        <button className="rounded-full border-none border-white text-white opacity-60 xbg-white/5
                     p-3 cursor-pointer select-none text-2xl
                     disabled:invisible disabled:pointer-events-none
                      focus:bg-white/20 outline-none
                      active:bg-white/20 transition-all"
-            {...props} onClick={handleClick}>
+            {...props} onClick={handleClick}
+            onPointerDown={() => preBeepButton(0.6)}>
             <SvgBack />
         </button>
     )
@@ -52,15 +56,17 @@ export function CloseButton({ onClick, ...props }) {
     function handleClick(e) {
         e.currentTarget.blur();
         onClick && onClick();
+        preBeepButton(0.8);
     }
     return (
-        <button className="rounded-full border-none border-white text-white xbg-white/10
+        <button className="rounded-full border-none border-white text-white opacity-60 xbg-white/5
                     p-3 text-2xl cursor-pointer select-none
                     disabled:invisible disabled:pointer-events-none
                      focus:bg-white/20 outline-none
                      active:bg-white/20 transition-all"
-            {...props} onClick={handleClick}>
-            <svg className='' width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" ><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg>
+            {...props} onClick={handleClick}
+            onPointerDown={() => preBeepButton(0.6)}>
+            <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" ><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg>
         </button>
     )
 }
@@ -83,6 +89,7 @@ export function PinkButton({ Svg, className, blink, children, ...props }) {
             "transition-colors duration-300",
             !children && "xbg-red-100 xpx-4 xpe-0",
             className)}
+            onPointerDown={() => preBeepButton(0.8)}
             {...props}>
 
             {Svg && <div className={cn("bg-puzzle text-white rounded-full p-1.5", off && "text-white/20")}><Svg /></div>}
@@ -102,7 +109,8 @@ export function MenuButton({ Svg, children, className, ...props }) {
             "focus:ring-2 ring-puzzle/20 focus:xhue-rotate-180",
             "focus:bg-puzzle/10 disabled:cursor-default disabled:opacity-50",
             className)}
-            {...props}>
+            {...props}
+            onPointerDown={() => preBeepButton(0.8)}>
             {children}
         </button>
     )
@@ -151,7 +159,7 @@ export function DetailedButton({ children, safe, className, subtitle, value, sub
             {...props}
             onBlur={handleBlur}
             onClick={handleClick}  >
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between text-[100%] font-extrabold">
                 <div className="text-ellipsis overflow-hidden">
                     {children}
                 </div>
@@ -160,7 +168,7 @@ export function DetailedButton({ children, safe, className, subtitle, value, sub
                     {value}
                 </div>
             </div>
-            <div className="flex items-center justify-between text-[80%] gap-2 opacity-60">
+            <div className="flex items-center justify-between text-[80%] gap-2 opacity-70">
                 <div className="text-ellipsis overflow-hidden gap-1 flex items-center">
                     {subtitle}
                 </div>

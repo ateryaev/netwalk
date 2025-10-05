@@ -1,68 +1,62 @@
-//import { getSettings } from "./GameData";
+const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+let activeOscillators = [];
 
-let actx = null;
-
-export function beep(vol, freq, delay, duration) {
-    //if (!getSettings().sound) return;
-    try {
-        delay += 0.02;
-        vol *= 0.9;
-        if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
-        let osc = actx.createOscillator();
-        let gn = actx.createGain();
-        osc.connect(gn)
-        osc.frequency.value = freq;
-        osc.type = "triangle";
-        gn.connect(actx.destination);
-
-        gn.gain.cancelScheduledValues(actx.currentTime);
-        gn.gain.setValueAtTime(0.0001, actx.currentTime);
-        gn.gain.linearRampToValueAtTime(vol, actx.currentTime + delay);
-        gn.gain.linearRampToValueAtTime(0.0001, actx.currentTime + delay + duration);
-
-        osc.start(actx.currentTime);
-        osc.stop(actx.currentTime + delay + 0.02 + duration)
-    } catch (e) {
-        //ignore
-    }
+function beepStopAll() {
+    activeOscillators.forEach(osc => osc.stop());
+    activeOscillators = [];
 }
 
-function vibro(param) {
+function beep(frequency, duration, volume = 1, delay = 0) {
+    const osc = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
 
-    try {
-        //if (window.RunNative("vibrate")) return;
-        if (navigator.vibrate) navigator.vibrate(param);
-    } catch (e) {
-        //ignore
-    }
+    osc.type = 'sine';
+    osc.frequency.value = frequency;
+    osc.frequency.setValueAtTime(frequency, audioContext.currentTime + delay);
+    osc.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    const now = audioContext.currentTime;
+    gainNode.gain.value = 0;
+    gainNode.gain.setValueAtTime(0, now + delay);
+    gainNode.gain.linearRampToValueAtTime(volume, now + delay + duration * 0.1);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, now + delay + duration * 0.9);
+    gainNode.gain.linearRampToValueAtTime(0, now + delay + duration);
+    osc.start();
+    osc.stop(now + delay + duration);
+    activeOscillators.push(osc);
 }
 
-export function beepButton() {
-    // beep(0.2, 50, 0, 0.05);
+export function beepButton(mult = 1) {
+
+    //beepStopAll();
+    beep(553 * mult, 0.05, 1, 0);
     vibro(2)
 }
 
-export function preBeepButton() {
-    vibro(1);
-}
-
-export function beepSwipe(index) {
-    //beep(0.4, 30, 0, 0.05);
+export function preBeepButton(mult = 1) {
+    beepStopAll();
+    beep(659 * mult, 0.05, 0.25);
     vibro(1)
 }
 
-export function beepSwipeComplete() {
-    beep(1, 87, 0, 0.1);
-    beep(1, 87, 0.05, 0.1);
-    vibro([40, 20, 20])
-}
-
-export function beepSwipeCancel() {
-    beep(1, 73, 0, 0.1);
-    beep(1, 73, 0.05, 0.1);
+export function beepLevelComplete() {
+    setTimeout(() => beep(553, 0.1), 200);
+    setTimeout(() => beep(659, 0.1), 300);
+    setTimeout(() => beep(784, 0.1), 400);
     vibro([20, 20, 40])
 }
 
-export function beepSolve() {
-    beep(1, 110, 0.1, 0.2);
+export function beepLevelStart() {
+    setTimeout(() => beep(784, 0.1), 100);
+    setTimeout(() => beep(659, 0.1), 200);
+    setTimeout(() => beep(553, 0.1), 300);
+    vibro([40, 20]);
 }
+
+function vibro(param) {
+    try {
+        if (navigator.vibrate) navigator.vibrate(param);
+    } catch (e) {
+    }
+}
+

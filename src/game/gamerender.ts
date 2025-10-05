@@ -14,16 +14,20 @@ export function renderGameBg(ctx: any, manager: GameManager, viewGridSize: XY, s
         const viewCellXY = addXY(startingCell, viewXY);
         const cellXY = bymodXY(viewCellXY, manager.size());
 
-        const isOuterCell = (manager.bordered()) &&
+        const isOuterCell = (manager.bordered() || true) &&
             (viewCellXY.x < 0 || viewCellXY.y < 0 ||
                 viewCellXY.x >= manager.size().x || viewCellXY.y >= manager.size().y);
 
         ctx.save();
         ctx.translate(viewXY.x * SIZE, viewXY.y * SIZE);
-        const isOdd = ((cellXY.x + cellXY.y) % 2) === 0;
+        const isOdd = ((viewCellXY.x + viewCellXY.y) % 2) === 0;
         if (isOuterCell) {
-            ctx.globalAlpha = 0.4;
+            //ctx.globalAlpha = 0.5;
             drawBgCell(ctx, isOdd, false, false, toXY(1, 1));
+            //ctx.globalAlpha = 1;
+            //ctx.globalAlpha = 0.5;
+            ctx.fillStyle = isOdd ? "#313131" : "#363636";
+            ctx.fillRect(0, 0, SIZE, SIZE);
             ctx.globalAlpha = 1;
         } else {
             const cell = manager.cellAt(cellXY);
@@ -33,12 +37,14 @@ export function renderGameBg(ctx: any, manager: GameManager, viewGridSize: XY, s
             if (!skipRenderInside) {
                 //const isOdd = ((viewCellXY.x + viewCellXY.y) % 2) === 0;
 
-                drawBgCell(ctx, isOdd, cell.source > 0, cell.figure === 0, cellRect.size);
+                //drawBgCell(ctx, isOdd, cell.source > 0, cell.figure === 0, cellRect.size);
+                drawBgCell(ctx, isOdd, false, cell.figure === 0, cellRect.size);
             }
         }
         ctx.restore();
     });
-    false && drawBG(ctx, manager.size(), viewGridSize, startingCell);
+    false &&
+        drawBG(ctx, manager.size(), viewGridSize, startingCell);
 }
 
 export function renderSelect(ctx: any, selected: any, manager: GameManager, startViewCell: XY) {
@@ -76,10 +82,10 @@ export function renderSourceFgs(ctx: any, manager: GameManager, viewGridSize: XY
     loopXY(viewGridSize, (viewXY) => {
 
         const viewCellXY = addXY(startViewCell, viewXY);
-        if (manager.bordered()) {
-            if (viewCellXY.x < 0 || viewCellXY.y < 0) return;
-            if (viewCellXY.x >= manager.size().x || viewCellXY.y >= manager.size().y) return;
-        }
+        const isOuterCell = (viewCellXY.x < 0 || viewCellXY.y < 0 ||
+            viewCellXY.x >= manager.size().x || viewCellXY.y >= manager.size().y);
+        if (manager.bordered() && isOuterCell) return;
+
         const cellXY = bymodXY(viewCellXY, manager.size());
         const cell = manager.cellAt(cellXY);
         if (cell.source === 0) return;
@@ -89,7 +95,9 @@ export function renderSourceFgs(ctx: any, manager: GameManager, viewGridSize: XY
         const rectDelta = toXY(Math.min(0, rectStartPos.x), Math.min(0, rectStartPos.y));
         if (!isSameXY(subXY(rect.at, rectDelta), cellXY)) return;
         const trans = mulXY(addXY(viewXY, delta), SIZE);
-        drawTransform(ctx, trans, () => drawSourceFg(ctx, cell.source, rect.size));
+        if (!isOuterCell)
+            drawTransform(ctx, trans, () => drawSourceFg(ctx, cell.source, rect.size));
+        else drawTransform(ctx, trans, () => drawSourceFg(ctx, cell.source + 100, rect.size));
     });
 
 }

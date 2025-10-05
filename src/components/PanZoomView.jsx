@@ -1,21 +1,24 @@
 import { useRef, useState, useEffect, Children, useCallback, useMemo, Fragment, use } from "react";
-import { beepButton, beepSwipe, beepSwipeComplete, preBeepButton } from "../utils/beep";
+//import { beepButton, beepSwipe, beepSwipeComplete, preBeepButton } from "../utils/beep";
 import { toXY, mulXY, subXY, divXY, distXY, addXY, eventToXY, distXYArray, midXYArray, toRectXY, printXY, isSameXY, fromtoXY } from "../utils/xy";
 import { cn } from "../utils/cn.ts";
 import { minmax } from "../utils/numbers.ts";
+import { SIZE } from "../utils/cfg.jsx";
 
 const CLICK_TOLERNCE = 20;
 
 export function clampPanZoomCenter(center, contentSize, viewSize, zoom) {
 
+
     if (!contentSize || !viewSize) return center;
 
+    const border = SIZE;
     const clamp = {
-        x: minmax(center.x, contentSize.x - viewSize.x / zoom / 2, viewSize.x / zoom / 2),
-        y: minmax(center.y, contentSize.y - viewSize.y / zoom / 2, viewSize.y / zoom / 2),
+        x: minmax(center.x, border + (contentSize.x) - (viewSize.x) / zoom / 2, -border + viewSize.x / zoom / 2),
+        y: minmax(center.y, contentSize.y - viewSize.y / zoom / 2 + border, viewSize.y / zoom / 2 - border),
     }
-    if (viewSize.x / zoom >= contentSize.x) clamp.x = contentSize.x / 2;
-    if (viewSize.y / zoom >= contentSize.y) clamp.y = contentSize.y / 2;
+    if (-border * 2 + viewSize.x / zoom >= contentSize.x) clamp.x = contentSize.x / 2;
+    if (-border * 2 + viewSize.y / zoom >= contentSize.y) clamp.y = contentSize.y / 2;
     return clamp;
 }
 
@@ -213,7 +216,7 @@ export function PanZoomView({ ref, className,
         const pointerData = pointers.get(event.pointerId);
         if (!pointerData) return;
         const eventXY = eventToXY(event);
-        pointers.noClick || beepButton();
+        //pointers.noClick || beepButton();
         const containerXY = addXY(divXY(eventXY, panZoom.zoom), contentRect.at);
         const isLastTouch = (pointers.size === 1);
         onRelease?.(containerXY, event.pointerId, isLastTouch);

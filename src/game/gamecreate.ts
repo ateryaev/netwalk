@@ -5,7 +5,7 @@ import { addXY, bymodXY, isSameXY, loopXY, operXY, toXY, type RectXY, type XY } 
 import { createArray2d } from "../utils/array2d";
 import { GAME_LEVEL_COLORS, GAME_LEVEL_EMPTY, GAME_LEVEL_SIZE, GAME_MODE_BORDERED } from "./gameconstants";
 import { createRnd } from "../utils/rnd";
-import { createGameTutorial } from "./gametutorials";
+import { createGameTutorial0, createGameTutorial1, createGameTutorial2, createGameTutorial3, createGameTutorial4 } from "./gametutorials";
 
 //type initSource = (manager: GameManager, cellRect: RectXY, color: number) => XY[];
 //function emptyDirs(manager: GameManager, cellXY: XY, hasBorders: boolean): DIR[];
@@ -47,7 +47,19 @@ function emptyDirs(manager: GameManager, cellXY: XY, hasBorders: boolean = true)
 export function createGame(mode: number, level: number): GameData {
 
     if (mode === 0 && level === 0) {
-        return createGameTutorial();
+        return createGameTutorial0();
+    }
+    if (mode === 1 && level === 0) {
+        return createGameTutorial1();
+    }
+    if (mode === 2 && level === 0) {
+        return createGameTutorial2();
+    }
+    if (mode === 3 && level === 0) {
+        return createGameTutorial3();
+    }
+    if (mode === 4 && level === 0) {
+        return createGameTutorial4();
     }
     const rndFunc = createRnd(mode * 995 + level * 13 + 23);
     console.log("CREATE GAME", rndFunc(2), rndFunc(2), rndFunc(2), rndFunc(2), rndFunc(2));

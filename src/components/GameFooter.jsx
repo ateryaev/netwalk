@@ -3,9 +3,7 @@ import { Inv } from "./UI";
 export function GameFooter({ manager, taps, bordered, random, solved, tutorial, size, ...props }) {
     if (tutorial) return (
         <>
-            <Inv>
-                {tutorial}
-            </Inv>
+            {tutorial}
             {/* <Inv className="flex-1 text-right">
                 {tutorial}
             </Inv> */}

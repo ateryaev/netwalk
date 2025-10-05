@@ -11,7 +11,7 @@ import Modal from './components/Modal.jsx';
 import { MenuButton } from './components/Button.jsx';
 import { PageAbout } from './PageAbout.jsx';
 import { GAME_LEVEL_SIZE, GAME_MODE_BORDERED } from './game/gameconstants.ts';
-import { createGameTutorial } from './game/gametutorials.ts';
+//import { createGameTutorial } from './game/gametutorials.ts';
 
 function App() {
 
@@ -54,7 +54,7 @@ function App() {
   }
 
   //const [game, setGame] = useState(createGame(1, 6)); //load from localStorage or create new
-  const [game, setGame] = useState(createGameTutorial()); //load from localStorage or create new
+  const [game, setGame] = useState(createGame(4, 0)); //load from localStorage or create new
 
   function handleLevelSelect(mode, level) {
     console.log("handleLevelSelect", mode, level);
@@ -106,8 +106,9 @@ function App() {
       <PageAbout shown={(currentPage === PAGE_ABOUT)} onBack={goBack} />
       <PageSettings shown={(currentPage === PAGE_SETTINGS)} onBack={goBack} />
       <PageStory shown={(currentPage === PAGE_STORY)}
-        onStorySelect={(idx) => pushPage(PAGE_STORY_LEVELS, { mode: idx })} onBack={goBack} />
+        onStorySelect={(idx) => pushPage(PAGE_STORY_LEVELS, { mode: idx })} onBack={goBack} onClose={() => { goBack(2) }} />
       <PageStoryLevels shown={(currentPage === PAGE_STORY_LEVELS)} mode={currentData?.mode || 0}
+        onClose={() => { goBack(3) }}
         onLevelSelect={handleLevelSelect}
         onBack={goBack} />
       {/* 

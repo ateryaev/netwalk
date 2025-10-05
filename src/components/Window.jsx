@@ -23,7 +23,7 @@ export function Window({ onBack, title, subtitle, footer, subheader, className, 
     return (
         <div className={cn("flex flex-col bg-[#333] size-full duration-500", className)}>
 
-            <div className="bg-puzzle pl-3 p-4 flex gap-4 items-center  z-10">
+            <div className="bg-puzzle pl-3 p-4 flex gap-4 items-center  z-10" style={{ paddingTop: "calc(16px + env(safe-area-inset-top))" }}>
                 <ShowMenuButton onClick={onBack} />
                 <div className={cn("transition-all overflow-hidden flex-1 text-right xtext-sm text-white flex flex-col",
                     erased && "opacity-0 scale-y-0",
@@ -48,7 +48,7 @@ export function Window({ onBack, title, subtitle, footer, subheader, className, 
                 erased && "opacity-0")}>
 
                 <div className="h-0">
-                    <div className={cn("transition-all p-3 pr-2 flex gap-3 justify-between items-center hue-rotate-180 bg-black/80",
+                    <div className={cn("transition-all p-3 pr-2 flex gap-3 justify-between items-center hue-rotate-180 bg-[#181818]/80",
                         !erased && infoOn ? "translate-y-0 opacity-100" : "opacity-0 -translate-y-full"
                     )}>
                         {infoCurrent}
@@ -58,7 +58,7 @@ export function Window({ onBack, title, subtitle, footer, subheader, className, 
                 {children}
 
                 <div className="h-0">
-                    <div className={cn(" transition-all bg-black/80 text-center hue-rotate-180 text-white p-4 select-none",
+                    <div className={cn(" transition-all bg-[#181818]/80 text-center hue-rotate-180 text-white p-4 select-none",
                         !erased && infoOn ? "-translate-y-full opacity-100" : "opacity-0 -translate-y-0"
                     )}>
                         <span className="animate-pulse">CONGRATULATION</span>

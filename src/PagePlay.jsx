@@ -7,8 +7,8 @@ import { isEnd, isMix, isOff, isOn } from './game/gamedata';
 import { GameHeader } from './components/GameHeader';
 import { clampPanZoomCenter, PanZoomView } from './components/PanZoomView';
 import { addXY, bymodXY, distXY, divXY, fromtoXY, isSameXY, loopXY, mulXY, operXY, printXY, subXY, toRectXY, toXY, XY05, XY1 } from './utils/xy';
-import { getBgImage, getFigureImage, getSourceBgImage } from './utils/canvas';
-import { minmax, rnd, bymod, progress, xyToIndex } from './utils/numbers';
+import { drawCircle, drawStar, getFigureImage, getSourceBgImage } from './utils/canvas';
+import { minmax, rnd, bymod, progress, xyToIndex, progressToCurve } from './utils/numbers';
 import { GameManager } from './game/gamemanager';
 import { invertFigure, moveXY, toDirs } from './game/gamedata';
 import { createArray2d } from './utils/array2d';
@@ -23,9 +23,26 @@ import { GameOverBar } from './components/GameOverBar';
 import Modal from './components/Modal';
 import { GAME_LEVEL_RANDOM, GAME_MODE_TUTORIALS, GAME_MODES } from './game/gameconstants';
 import { GetLevelsSolved } from './game/gamestats';
+import { beepButton, beepLevelComplete, beepLevelStart, preBeepButton } from './utils/beep';
 
 export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, className, ...props }) {
 
+    function createStar() {
+        return {
+            xy: toXY(Math.random(), Math.random() + 1),
+            size: Math.random(),
+            color: rnd(3),
+            createdOn: 0,
+            updatedOn: 0,
+        }
+    }
+    const stars = useRef([
+        createStar(), createStar(), createStar(), createStar(), createStar(),
+        createStar(), createStar(), createStar(), createStar(), createStar(),
+        createStar(), createStar(), createStar(), createStar(), createStar(),
+        createStar(), createStar(), createStar(), createStar(), createStar(),
+        createStar(), createStar(), createStar(), createStar(), createStar()
+    ]);
     const manager = useMemo(() => new GameManager(game), [game]);
 
     const bygmodXY = (xy) => bymodXY(xy, manager.size());
@@ -135,6 +152,15 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
         return newCounter;
     }, [colors])
 
+    const [celebrating, setCelebrating] = useState(0);
+    useEffect(() => {
+        if (counters[0] === 0) {
+            beepLevelComplete();
+            setCelebrating(performance.now());
+        }
+    }, [counters[0]]);
+
+
     function findRtConnections(manager, colors, xy, rotationXy) {
 
         let conns = 0b0000;
@@ -159,10 +185,9 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
     }
 
     function handleDown(xy, pointerId) {
+        preBeepButton();
         console.log("DOWN AT:", xy, pointerId);
         const cellXY = operXY(Math.floor, divXY(xy, SIZE));
-
-        console.log("DOWN AT:", xy, pointerId);
 
         setSmoothScrollTo(null);
 
@@ -178,7 +203,8 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
 
     function handleUp(_, pointerId, isLast) {
         console.log("UP:" + isLast);
-        if (isLast && manager.bordered()) {
+        //if (isLast && manager.bordered()) {
+        if (isLast) {
             const newSmoothScrollTo = clampPanZoomCenter(panZoom.center, contentSize, viewSize, zoom);
             setSmoothScrollTo(newSmoothScrollTo);
         }
@@ -202,6 +228,29 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
         preColorsRef.current = colors;
         manager.rotateAtXY(cellXY);
         setRotation({ at: cellXY, when: performance.now() });
+        //sfx("spin");
+
+        const figure = manager.cellAt(cellXY).figure;
+        const source = manager.cellAt(cellXY).source;
+        if (figure === 0) {
+            return;
+        }
+        if (figure === 0b1111 && !source) {
+            beepButton(0.5);
+            return;
+        }
+        if (source) {
+            beepButton(1);
+        } else if (figure === 0b1010 || figure === 0b0101) {
+            beepButton(1.2);
+        } else if (figure === 0b1100 || figure === 0b0011 || figure === 0b0110 || figure === 0b1001) {
+            beepButton(1.4);
+        } else if (isEnd(figure)) {
+            beepButton(1.8);
+        } else {
+            beepButton(1.6);
+        }
+
         game.taps++;
         onGameChange({ ...game });
     }
@@ -224,16 +273,17 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
 
     function scrollToCell(cellXY, smoothly) {
         let newSmoothScrollTo = mulXY(cellXY, SIZE);
-        if (manager.bordered()) {
-            cellXY = bymodXY(cellXY, manager.size());
-            newSmoothScrollTo = clampPanZoomCenter(newSmoothScrollTo, contentSize, viewSize, zoom);
-        }
+        //if (manager.bordered()) {
+        cellXY = bymodXY(cellXY, manager.size());
+        newSmoothScrollTo = clampPanZoomCenter(newSmoothScrollTo, contentSize, viewSize, zoom);
+        //}
         smoothly && setSmoothScrollTo(newSmoothScrollTo);
         smoothly || setPanZoom({ ...panZoom, zoom: minmax(defaultZoomRef.current, 0.5, 1.0), center: newSmoothScrollTo });
     }
 
     useEffect(() => {
         scrollToCenter(false);
+        beepLevelStart();
     }, [game.level, game.mode, contentSize]);
 
     useEffect(() => {
@@ -250,10 +300,10 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
 
     function handleResize(newSize) {
         setSmoothScrollTo(null);
-        if (manager.bordered()) {
-            const newCenter = clampPanZoomCenter(panZoom.center, contentSize, newSize, zoom);
-            setPanZoom({ zoom, center: newCenter })
-        }
+        //if (manager.bordered()) {
+        const newCenter = clampPanZoomCenter(panZoom.center, contentSize, newSize, zoom);
+        setPanZoom({ zoom, center: newCenter })
+        //}
         setViewSize({ ...newSize });
     }
 
@@ -301,9 +351,9 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
                 const viewCellXY = addXY(startViewCell, viewXY);
                 const cellXY = bymodXY(viewCellXY, game.size);
 
-                if (manager.bordered()) {
-                    if (viewCellXY.x < 0 || viewCellXY.y < 0) return;
-                    if (viewCellXY.x >= game.size.x || viewCellXY.y >= game.size.y) return;
+                const isOuter = (viewCellXY.x < 0 || viewCellXY.y < 0 || viewCellXY.x >= game.size.x || viewCellXY.y >= game.size.y)
+                if (manager.bordered() && isOuter) {
+                    return;
                 }
                 ctx.save();
                 ctx.translate(viewXY.x * SIZE, viewXY.y * SIZE);
@@ -319,6 +369,7 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
 
                 const conns = findRtConnections(manager, colors, cellXY, progress(rotation.when, TRANS_DURATION) < 1 ? rotation.at : null);// 0b1111;
 
+                const alpha = isOuter ? 0.3 : 1;
                 if (cell.source) {
                     const cell_l = manager.cellAtDir(cellXY, LEFT);
                     const cell_t = manager.cellAtDir(cellXY, TOP);
@@ -353,16 +404,15 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
                     drawTransform(ctx, toXY(0, -moveDist), () => drawFigure(ctx, figure2move & LEFT, color, conns));
                     drawTransform(ctx, toXY(moveDist, 0), () => drawFigure(ctx, figure2move & TOP, color, conns));
                     drawTransform(ctx, toXY(-moveDist, 0), () => drawFigure(ctx, figure2move & BOTTOM, color, conns));
-
-                    drawRotated(ctx, rotateProgress * Math.PI / 2, () => drawFigure(ctx, figure2rotate, color, conns))
+                    drawRotated(ctx, rotateProgress * Math.PI / 2, () => drawFigure(ctx, figure2rotate, color + (isOuter ? 100 : 0), conns));
                 } else {
                     const switchingDelta = color !== preColor ? progress(rotation.when, TRANS_DURATION * 1.5) : 1;
                     drawRotated(ctx, rotateProgress * Math.PI / 2, () => {
-                        drawFigure(ctx, cell.figure, preColor, conns, switchingDelta < 1 ? 1 : 0);
-                        drawFigure(ctx, cell.figure, color, conns, switchingDelta);
+                        switchingDelta < 1 && drawFigure(ctx, cell.figure, preColor + (isOuter ? 100 : 0), conns, 1);
+                        drawFigure(ctx, cell.figure, color + (isOuter ? 100 : 0), conns, (switchingDelta));
                     });
 
-                    if (end) {
+                    if (end && !isOuter) {
                         const showing = switchingDelta;// minmax(switchingDelta * 2, 1, 2) - 1;
                         const hiding = switchingDelta;//minmax(switchingDelta * 2, 0, 1);
 
@@ -381,7 +431,83 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
 
             renderSourceFgs(ctx, manager, viewGridSize, startViewCell)
 
+            //renderGameBg2(ctx, manager, viewGridSize, startViewCell)
+
             ctx.restore();
+
+            if (counters[0] === 0) {
+                stars.current.slice(0, 10).forEach((star) => {
+                    star.updatedOn = star.updatedOn || now;
+                    const dt = now - star.updatedOn;
+                    star.updatedOn = now;
+
+                    const speed = (1 + star.size * 0.5);
+                    star.xy.y -= speed * dt / 2000;
+
+                    if (star.xy.y < -0.1) {
+                        star.xy.y += 1.2;
+                        star.color = rnd(3);
+                        star.size = Math.random();
+                        star.xy = toXY(Math.random(), Math.random());
+                        star.createdOn = now;
+                    }
+                    const lifetime = now - star.createdOn;
+
+                    const alpha = minmax(lifetime / speed / 500, 0, 1);
+                    const starting = minmax((now - celebrating) / 500, 0, 1);
+
+                    const dx = 0// Math.sin(star.size + lifetime / 200) * (20 - star.size * 10) * speed;
+                    const ds = 0//Math.sin(star.size + lifetime / 50) * 5;
+
+
+                    const starXY = toXY(star.xy.x * viewSize.x + dx - 50, star.xy.y * viewSize.y);
+
+
+                    const radius = 2 * ((0.5 + star.size) * 10 + 10);
+                    const angle = 0//Math.sin(star.size + lifetime / 500) * 2; //(progress * 10 + 0.5 * progress * Math.PI * (1.5 - star.size)) * (star.size > 0.5 ? 1 : -1);
+                    //starXY.x -= SIZE / 2;
+
+                    // if (progress > 0.99) {
+                    //     star.xy = toXY(Math.random(), Math.random());
+                    //     star.size = Math.random();
+                    //     star.createdOn = now;// + duration * progress * Math.random();
+                    //     star.color = rnd(3);
+                    // }
+
+                    //((now - star.createdOn) / 1000) * star.size * 50;
+
+                    //const starAlpha = minmax((now - star.createdOn) / 2000, 1, 0);
+                    ctx.globalAlpha = starting * alpha * 0.2;//alpha;// * (0.45 - star.size * 0.25);
+                    ctx.save();
+                    ctx.translate(starXY.x, starXY.y);
+                    //drawStar(ctx, 10, 0, 2 * ((0.5 + star.size) * 10 + 10), `${COLOR(0b0001 << star.color)}`);
+                    drawRotated(ctx, angle, () =>
+                        drawStar(ctx, 75, 50, (radius + ds) * progressToCurve(alpha, [0.2, 1.5, 0.75, 1.1, 1]), `${COLOR(0b0001 << star.color)}`));
+                    ctx.restore();
+
+                    //drawStar(ctx, 100, 100, `${COLOR(0b0001 << star.color)}`);
+                    // drawStar(ctx, starXY.x, starXY.y, 2 * ((0.5 + star.size) * 10 + 10),
+                    //     `${COLOR(0b0001 << star.color)}`);
+
+                    // drawCircle(ctx, starXY.x, starXY.y, 2 * ((0.5 + star.size) * progress * 10 + 10),
+                    //     `${COLOR(0b0001 << star.color)}`);
+                    // drawCircle(ctx, starXY.x, starXY.y, 0.5 * (10 + (0.2 + star.size) * progress * 10),
+                    //     `rgba(255,255,255,${alpha * 0.2})`);
+                    //addXY(mulXY(star.xy, viewSize), mulXY(toXY(1, 1), star.size * 20));
+                    //const starAlpha = minmax((now - star.createdOn) / 2000, 0, 1);
+                    //ctx.globalAlpha = starAlpha;//starAlpha * star.size * 0.5;
+                    //ctx.fillStyle = "#fa6";
+                    //ctx.fillRect(starXY.x, starXY.y, star.size * 100, star.size * 100);
+                    // drawTransform(ctx, starXY, () => drawActiveEnd(ctx, alpha * (star.size)));
+                });
+            }
+
+            // ctx.globalAlpha = 0.3;
+            // ctx.fillStyle = "#fff";
+            // ctx.fillRect(0, 0, viewSize.x, viewSize.y);
+            // drawTransform(ctx, toXY(200, 200), () => drawActiveEnd(ctx, 1));
+            ctx.globalAlpha = 1;
+
             animationFrame = requestAnimationFrame(render);
         }
 
@@ -389,7 +515,7 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
 
         return () => { cancelAnimationFrame(animationFrame); }
 
-    }, [viewSize, zoom, center, game, selected, colors, rotation]);
+    }, [viewSize, zoom, center, game, selected, colors, rotation, celebrating]);
 
     function getMiddleColRow() {
         const x = Math.floor(center.x / SIZE);
@@ -448,6 +574,11 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
         return;
     }
 
+    useEffect(() => {
+        if (game.taps === 0) {
+            // scrollToCenter(true);
+        }
+    }, [game.taps])
     const [menu, setMenu] = useState(false);
     return (
         <Window title={game.level > 0 ? game.level : "BEGIN"}
@@ -470,7 +601,8 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
                 className={cn("grid justify-stretch items-stretch size-full")}
                 panZoom={panZoom}
                 zoomRange={zoomRange}
-                contentSize={manager.bordered() ? contentSize : null}
+                //contentSize={manager.bordered() ? contentSize : null}
+                contentSize={contentSize}
                 onPress={handleDown}
                 onRelease={handleUp}
                 onClick={handleClick}
@@ -480,14 +612,6 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
                 <canvas ref={canvasRef} className='contain-size'></canvas>
 
             </PanZoomView >
-            <div className="h-0">
-                <div className={cn("uppercase -translate-y-full transition-all bg-black/80 text-center hue-rotate-180 text-white p-4 select-none",
-                    (!game.hintText || counters[0] === 0) && "opacity-0 -translate-y-0",
-                )}>
-                    <span>{game.hintText}</span>
-                </div>
-            </div>
-
 
         </Window >
     )

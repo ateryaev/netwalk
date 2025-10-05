@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { BackButton, Button, CloseButton, MenuButton, PinkButton, SvgBack } from './Button';
 import { cn } from '../utils/cn';
 
-const Modal = ({ shown, onBack, title, children }) => {
+const Modal = ({ shown, onBack, onClose, title, children }) => {
     const dialogRef = useRef(null);
     const scrollRef = useRef(null);
 
@@ -24,11 +24,12 @@ const Modal = ({ shown, onBack, title, children }) => {
     function handleCancel(e) {
         e.preventDefault();
         onBack && onBack();
+        !onBack && onClose && onClose();
     }
 
     function handleBackdropClick(e) {
         if (e.target === dialogRef.current) {
-            onBack && onBack();
+            handleCancel(e)
         }
     }
     if (!reallyShown && !shown) return null;
@@ -46,10 +47,12 @@ const Modal = ({ shown, onBack, title, children }) => {
                 (!shown) && "scale-90 opacity-0",
                 "outline-none xhue-rotate-180 "
             )} tabIndex={0}>
-                <div className="bg-puzzle flex items-center justify-between p-2 text-white uppercase">
-                    <BackButton onClick={onBack} />
-                    <span className='overflow-hidden text-ellipsis  whitespace-nowrap flex-1 text-center pe-12'>{title}</span>
-
+                <div className="bg-puzzle flex items-center gap-4 justify-between p-2 text-white uppercase font-extrabold">
+                    <BackButton onClick={onBack} disabled={!onBack} />
+                    <div className='overflow-hidden xbg-amber-500 xtext-ellipsis xp-4 xwhitespace-nowrap flex-1 text-center xpe-18  xtext-[120%]'>
+                        {title}
+                    </div>
+                    <CloseButton onClick={onClose} disabled={!onClose} />
 
                 </div>
 

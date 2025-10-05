@@ -10,7 +10,7 @@ import { rnd } from "./utils/numbers";
 
 export function PageMenu({ shown, onBack, onAbout, onSettings, onStory, onCustom }) {
     return (
-        <Modal shown={shown} title={"Netwalk"} onBack={onBack}>
+        <Modal shown={shown} title={"Netwalk"} onClose={onBack}>
             <div className='flex flex-col gap-0 items-stretch p-2'>
                 <DetailedButton onClick={onStory}
                     value={""}
@@ -38,9 +38,9 @@ export function PageMenu({ shown, onBack, onAbout, onSettings, onStory, onCustom
     );
 }
 
-export function PageSettings({ shown, onBack }) {
+export function PageSettings({ shown, onBack, onClose }) {
     return (
-        <Modal shown={shown} title={"Settings"} onBack={onBack}>
+        <Modal shown={shown} title={"Settings"} onBack={onBack} onClose={onClose}>
             <div className='flex flex-col gap-4 items-stretch p-2 m-auto '>
                 Settings
                 <div>Music ON</div>
@@ -53,7 +53,7 @@ export function PageSettings({ shown, onBack }) {
     );
 }
 
-export function PageStory({ shown, onStorySelect, onBack, ...props }) {
+export function PageStory({ shown, onStorySelect, onBack, onClose, ...props }) {
     function ModeButton({ mode, points, emptyFrom, emptyTo, toUnlock, bordered, ...props }) {
         let subtitle = null;
         if (toUnlock > 100) subtitle = "play more to unlock"
@@ -71,7 +71,7 @@ export function PageStory({ shown, onStorySelect, onBack, ...props }) {
     }
 
     return (
-        <Modal shown={shown} title={"game modes"} onBack={onBack}>
+        <Modal shown={shown} title={"game modes"} onBack={onBack} onClose={onClose}>
             <div className='p-2 flex flex-col gap-0 items-stretch'>
                 {GAME_MODES.map((mode, index) => (
                     <ModeButton key={index}
@@ -89,7 +89,7 @@ export function PageStory({ shown, onStorySelect, onBack, ...props }) {
     );
 }
 
-export function PageStoryLevels({ shown, onLevelSelect, onBack, mode = 0 }) {
+export function PageStoryLevels({ shown, onLevelSelect, onBack, onClose, mode = 0 }) {
 
 
     const [currentMode, setCurrentMode] = useState(mode);
@@ -139,7 +139,7 @@ export function PageStoryLevels({ shown, onLevelSelect, onBack, mode = 0 }) {
     }
     const solved = GetLevelsSolved(currentMode);
     return (
-        <Modal shown={shown} title={GAME_MODES[currentMode]} isbottom={true} onBack={onBack}>
+        <Modal shown={shown} title={GAME_MODES[currentMode]} isbottom={true} onBack={onBack} onClose={onClose}>
 
 
             <div className='flex p-2 flex-col'>

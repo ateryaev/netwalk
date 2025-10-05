@@ -20,7 +20,7 @@ export function Blink({ children, className, ...props }) {
     }, []);
 
     return (
-        <div className={cn("", className, { "opacity-40": !isVisible })}>
+        <div className={cn("", className, { "opacity-20": !isVisible })}>
             {children}
         </div>
     );
@@ -29,7 +29,7 @@ export function LabelNew() {
 
 
     return (
-        <div className="bg-puzzle text-white xpuzzle px-1 py-px -m-1 xring-puzzle rounded-fullx lowercase hue-rotate-180">
+        <div className="bg-puzzle text-white xpuzzle px-1.5 -m-1.5 xring-puzzle rounded-xs lowercase hue-rotate-180">
             <Blink>
                 new
             </Blink>

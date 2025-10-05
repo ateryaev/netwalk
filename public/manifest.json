@@ -5,16 +5,13 @@
         {
             "src": "netwalk.svg",
             "type": "image/svg+xml",
-            "sizes": "64x64 32x32 24x24 16x16 192x192 512x512"
+            "sizes": "64x64 32x32 24x24 16x16 192x192 512x512",
+            "purpose": "maskable"
         }
     ],
     "orientation": "portrait",
     "start_url": ".",
     "display": "standalone",
     "theme_color": "#296",
-    "background_color": "#296",
-    "navigationColor": "#296",
-    "navigationColorDark": "#296",
-    "navigationDividerColor": "#296",
-    "navigationDividerColorDark": "#296"
+    "background_color": "#296"
 }

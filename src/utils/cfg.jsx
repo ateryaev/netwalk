@@ -4,15 +4,26 @@ export function COLOR(color) {
         case 0:
             return "#aaa";
         case 1:
-            return "#5af";
+            return "#39f" //"#5af";
         case 2:
-            return "#fb0";
+            return "#f93"//"#fb0";
         case 4:
-            return "#05DF72";
+            return "#5e9";
         case 8:
-            return "#ED6AFF";
+            return "#a6e";
+
+        case 100:
+            return "#444";
+        case 101:
+            return "#456";
+        case 102:
+            return "#654";
+        case 104:
+            return "#465";
+        case 108:
+            return "#546";
         default:
-            return "#aaa";
+            return color < 100 ? "#aaa" : "#444";
     }
 }
 
