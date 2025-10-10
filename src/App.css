@@ -17,3 +17,22 @@ body {
   letter-spacing: 0.5px;
 
 }
+
+/* bounce animation from scale-90 opacity-90 to  100 */
+@keyframes bounce {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.9;
+  }
+
+  75% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

@@ -1,185 +1,78 @@
-import { COLOR, SIZE } from "./cfg";
+import { COLOR, SIZE } from "../game/cfg";
 import { BOTTOM, LEFT, RIGHT, TOP } from "../game/gamedata";
 import { rnd } from "./numbers";
 
-function rasterizeSVG(svgTxt, w, h) {
-    return new Promise((resolve) => {
-        const svgBlob = new Blob([svgTxt], { type: "image/svg+xml;charset=utf-8" });
-        const url = URL.createObjectURL(svgBlob);
-        const img = new Image();
-        img.onload = () => {
-            const canvas = document.createElement("canvas");
-            canvas.width = w;
-            canvas.height = h;
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0, w, h);
-            URL.revokeObjectURL(url);
-            resolve(canvas); // canvas is now a raster sprite
-        };
-        img.src = url;
-    });
-}
-
-
-//let imageObj = null;
-const figureImageCache = { loadedCount: 0 };
-const sourceFgCache = {};
-const bgCache = {};
-
-export function getFigureImage(figure, color, solved, conns) {
-    solved = color === 1 || color === 2 || color === 4;
-    color = COLOR(color)
-    //color = COLORS[color];
-    const key = `${figure}-${color}-${solved}-${conns}`;
-    let imageObj = figureImageCache[key];
-
-    //extractDirs(figure)
-    if (imageObj && imageObj.complete && imageObj.naturalHeight !== 0) {
-        return imageObj;
-    }
-
-    if (!imageObj) {
-        const isEnd = (figure === 0b1000 || figure === 0b0100 || figure === 0b0010 || figure === 0b0001);
-        const len = solved ? 50 : 50;
-        const gap = solved ? 0 : 0;
-        const r = 50;
-        const lenTop = conns & TOP ? len : len / 2;
-        const lenBot = conns & BOTTOM ? len : len / 2;
-        const lenLeft = conns & LEFT ? len : len / 2;
-        const lenRight = conns & RIGHT ? len : len / 2;
-
-        const svgTxt = `
-        <svg xmlns="http://www.w3.org/2000/svg"
-        stroke-width="${solved ? 30 : 30}"
-        width="25"
-        height="25"
-        stroke-linecap="round" stroke-linejoin="round"
-        stroke="${color}"
-        fill="none"
-        viewBox="0 0 200 200">
-
-        <g opacity="${solved ? 0.05 : 0}" stroke-width="50" stroke="#000">
-        
-        ${figure & TOP && `<path d="M100,50 l0,-${lenTop}" ></path>`}
-        ${figure & RIGHT && `<path d="M150,100 l${lenRight},0"></path>`}
-        ${figure & BOTTOM && `<path d="M100,150 l0,${lenBot}"></path>`}
-        ${figure & LEFT && `<path d="M50,100 l-${lenLeft},0" ></path>`}
-        
-        <path d="M100,${100 - r} 
-        ${(figure & TOP && figure & RIGHT) ? `a${r},${r} 0 0 0 ${r},${r}` : `m${r} ${r}`}
-        ${(figure & BOTTOM && figure & RIGHT) ? `a${r},${r} 0 0 0 -${r},${r}` : `m-${r} ${r}`}
-        ${(figure & BOTTOM && figure & LEFT) ? `a${r},${r} 0 0 0 -${r},-${r}` : `m-${r} -${r}`}
-        ${(figure & TOP && figure & LEFT) ? `a${r},${r} 0 0 0 ${r},-${r}` : ''}
-        ${(figure & TOP && figure & BOTTOM) ? 'M100 50 l0 100' : ''}
-        ${(figure & LEFT && figure & RIGHT) ? 'M50 100 l100 0' : ''}
-        "></path>
-
-        ${isEnd && '<path stroke-width="120" d="M100,100 l0,0"></path>'}
-
-        </g>   
-        
-        <g opacity="1">
-        ${figure & TOP && `<path d="M100,50 l0,-${lenTop}" ></path>`}
-        ${figure & RIGHT && `<path d="M150,100 l${lenRight},0"></path>`}
-        ${figure & BOTTOM && `<path d="M100,150 l0,${lenBot}"></path>`}
-        ${figure & LEFT && `<path d="M50,100 l-${lenLeft},0" ></path>`}
-        
-        <path d="M100,${100 - r} 
-        ${(figure & TOP && figure & RIGHT) ? `a${r},${r} 0 0 0 ${r},${r}` : `m${r} ${r}`}
-        ${(figure & BOTTOM && figure & RIGHT) ? `a${r},${r} 0 0 0 -${r},${r}` : `m-${r} ${r}`}
-        ${(figure & BOTTOM && figure & LEFT) ? `a${r},${r} 0 0 0 -${r},-${r}` : `m-${r} -${r}`}
-        ${(figure & TOP && figure & LEFT) ? `a${r},${r} 0 0 0 ${r},-${r}` : ''}
-        ${(figure & TOP && figure & BOTTOM) ? 'M100 50 l0 100' : ''}
-        ${(figure & LEFT && figure & RIGHT) ? 'M50 100 l100 0' : ''}
-        "></path>
-
-        ${figure === 0b1111 && '<path stroke-width="0" stroke="#111" d="M100,100 l0,0" ></path>'}
-        ${figure === 0b1111 && solved && '<path stroke-width="10" stroke="#111" opacity="1" d="M100,100 l0,0" ></path>'}
-        
-        ${isEnd && '<path stroke-width="100" d="M100,100 l0,0"  opacity="1"></path>'}
-        </g> 
-
-        </svg > `;
-
-        figureImageCache[key] = { complete: false }
-        rasterizeSVG(svgTxt, (SIZE) * 2, (SIZE) * 2).then((img) => {
-
-            img.complete = true;
-            figureImageCache[key] = img;
-            figureImageCache.loadedCount++;
-            //    console.log("RAST COUNT:", figureImageCache.loadedCount)
-        });
-
-        // imageObj = new Image();
-        // const svgBlob = new Blob([svgTxt], { type: "image/svg+xml;charset=utf-8" });
-        // const url = URL.createObjectURL(svgBlob);
-
-        // imageObj.src = url;
-        // figureImageCache[key] = imageObj;
-    }
-}
-
-export function getSourceBgImage(color, cols, rows) {
-    color = COLOR(color);
-    const key = `${color} ${cols} ${rows} `;
-    let imageObj = sourceFgCache[key];
-
-    //extractDirs(figure)
-    if (imageObj && imageObj.complete && imageObj.naturalHeight !== 0) {
-        return imageObj;
-    }
-    if (!imageObj) {
-        const svgTxt = `<svg xmlns="http://www.w3.org/2000/svg"
-        stroke-linecap="round" stroke-linejoin="round"
-        viewBox="0 0 ${cols * 100} ${rows * 100}">
-        
-        <rect x="20" y="20" width="${cols * 100 - 40}" stroke-width="10" height="${rows * 100 - 40}" rx="20" ry="20" 
-        fill="#444" stroke="${color}" />
-         <rect x="35" y="35" width="${cols * 100 - 70}" stroke-width="15" height="${rows * 100 - 70}" rx="10" ry="10" opacity="0" fill="#444" stroke="none" />
-        
-         <rect x="35" y="35" width="${cols * 100 - 70}" stroke-width="10" 
-        height="${rows * 100 - 70}" rx="10" ry="10" opacity="1" 
-        fill="#fff" stroke="none" />
-
-        <rect x="45" y="45" width="${cols * 100 - 90}" stroke-width="10" 
-        height="${rows * 100 - 90}" rx="3" ry="3" 
-        fill="#444" xxfill="${color}" stroke="none" opacity="0.95"/>
-
-        <circle cx="50" cy="50" r="5" fill="#444" opacity="0" stroke="none"/>
-        
-
-        
-        </svg > `;
-
-        sourceFgCache[key] = { complete: false }
-        rasterizeSVG(svgTxt, SIZE * 3 * cols, SIZE * 3 * rows).then((img) => {
-
-            img.complete = true;
-            sourceFgCache[key] = img;
-            //sourceFgCache.loadedCount++;
-            //console.log("RAST COUNT:", figureImageCache.loadedCount)
-        });
-    }
-}
-
-
-// console.log("PRELOADING SPRITES");
-// let cnt = 1;
-// for (let figure = 1; figure < 16; figure++) {
-//     for (let conns = 0; conns < 16; conns++) {
-//         for (let on = 0; on < 4; on++) {
-//             console.log("PRELOADING SPRITES", cnt++, figure, conns, on);
-//             getFigureImage(figure, COLORS[on], on === 1 || on === 2, conns);
-//         }
-//     }
-// }
-
-export function drawCircle(ctx, x, y, r, color) {
+export function drawRoundRect(ctx, x, y, w, h, r, color) {
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.arcTo(x + w, y, x + w, y + r, r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+    ctx.lineTo(x + r, y + h);
+    ctx.arcTo(x, y + h, x, y + h - r, r);
+    ctx.lineTo(x, y + r);
+    ctx.arcTo(x, y, x + r, y, r);
+    ctx.closePath();
     ctx.fill();
 }
+
+export function midColor6(from, to, v) {
+    // from and to are in format "#RRGGBB"
+    const r1 = parseInt(from.slice(1, 3), 16);
+    const g1 = parseInt(from.slice(3, 5), 16);
+    const b1 = parseInt(from.slice(5, 7), 16);
+
+    const r2 = parseInt(to.slice(1, 3), 16);
+    const g2 = parseInt(to.slice(3, 5), 16);
+    const b2 = parseInt(to.slice(5, 7), 16);
+
+    const r = Math.round(r1 + (r2 - r1) * v);
+    const g = Math.round(g1 + (g2 - g1) * v);
+    const b = Math.round(b1 + (b2 - b1) * v);
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
+
+export function midColor(from, to, v) {
+    // from and to are in format "#RGB"
+    const r1 = parseInt(from[1] + from[1], 16);
+    const g1 = parseInt(from[2] + from[2], 16);
+    const b1 = parseInt(from[3] + from[3], 16);
+    const r2 = parseInt(to[1] + to[1], 16);
+    const g2 = parseInt(to[2] + to[2], 16);
+    const b2 = parseInt(to[3] + to[3], 16);
+    const r = Math.round(r1 + (r2 - r1) * v);
+    const g = Math.round(g1 + (g2 - g1) * v);
+    const b = Math.round(b1 + (b2 - b1) * v);
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
+
+export function drawCircle(ctx, x, y, r, color) {
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+}
+
+export function strokeCircle(ctx, x, y, r, width, color) {
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.lineWidth = width;
+    ctx.strokeStyle = color;
+    ctx.stroke();
+}
+
+export function strokeLine(ctx, x1, y1, x2, y2, width, color) {
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.lineWidth = width;
+    ctx.strokeStyle = color;
+    ctx.lineCap = "round";
+    ctx.stroke();
+}
+
 export function drawStar(ctx, x, y, r, color) {
     ctx.fillStyle = color;
     ctx.beginPath();
@@ -195,4 +88,21 @@ export function drawStar(ctx, x, y, r, color) {
     }
     ctx.closePath();
     ctx.fill();
+}
+
+export function drawTransform(ctx, xy, draw) {
+    ctx.save();
+    ctx.translate(xy.x, xy.y);
+    draw();
+    ctx.restore();
+}
+
+//export function drawRotated(ctx: any, angel: number, draw: () => void) {
+export function drawRotated(ctx, angel, draw) {
+    ctx.save();
+    ctx.translate(SIZE / 2, SIZE / 2);       // move origin
+    ctx.rotate(angel);         // rotate (radians)
+    ctx.translate(-SIZE / 2, -SIZE / 2);
+    draw();
+    ctx.restore();
 }

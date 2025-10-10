@@ -1,4 +1,4 @@
-import { COLOR } from "../utils/cfg";
+import { COLOR } from "../game/cfg";
 import { cn } from "../utils/cn";
 import { isMix, isOff, isOn } from "../game/gamedata";
 

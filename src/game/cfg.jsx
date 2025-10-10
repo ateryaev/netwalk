@@ -27,4 +27,32 @@ export function COLOR(color) {
     }
 }
 
+export function COLOR_EYE(color) {
+    switch (color) {
+        case 0:
+            return "#ddd";
+        case 1:
+        case 2:
+        case 4:
+        case 8:
+            return "#fff";
+        default:
+            return "#ddd";
+    }
+}
+
+export function COLOR_BALL(color) {
+    switch (color) {
+        case 0:
+            return "#aaa";
+        case 1:
+        case 2:
+        case 4:
+        case 8:
+            return "#444";
+        default:
+            return "#f44";
+    }
+}
+
 export const TRANS_DURATION = 200;

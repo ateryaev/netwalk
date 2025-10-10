@@ -159,7 +159,7 @@ export function DetailedButton({ children, safe, className, subtitle, value, sub
             {...props}
             onBlur={handleBlur}
             onClick={handleClick}  >
-            <div className="flex items-center justify-between text-[100%] font-extrabold">
+            <div className="flex items-center justify-between text-[120%] xfont-extrabold">
                 <div className="text-ellipsis overflow-hidden">
                     {children}
                 </div>
@@ -168,8 +168,8 @@ export function DetailedButton({ children, safe, className, subtitle, value, sub
                     {value}
                 </div>
             </div>
-            <div className="flex items-center justify-between text-[80%] gap-2 opacity-70">
-                <div className="text-ellipsis overflow-hidden gap-1 flex items-center">
+            <div className="flex items-center text-puzzle justify-between -mt-1 font-semibold xlowercase text-[90%] gap-2 opacity-80">
+                <div className="text-ellipsis  overflow-hidden gap-1 flex items-center">
                     {subtitle}
                 </div>
                 <div dir="rtl" className="overflow-hiddenx xtext-ellipsis">

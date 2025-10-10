@@ -25,12 +25,12 @@ export function Window({ onBack, title, subtitle, footer, subheader, className, 
 
             <div className="bg-puzzle pl-3 p-4 flex gap-4 items-center  z-10" style={{ paddingTop: "calc(16px + env(safe-area-inset-top))" }}>
                 <ShowMenuButton onClick={onBack} />
-                <div className={cn("transition-all overflow-hidden flex-1 text-right xtext-sm text-white flex flex-col",
+                <div className={cn("transition-all overflow-hidden flex-1 text-right text-white flex flex-col",
                     erased && "opacity-0 scale-y-0",
                 )}>
                     <div className="">&nbsp;</div>
-                    <div className={cn("-my-1 text-[200%]")}>{title}</div>
-                    <div dir="rtl" className="uppercase h-0x opacity-50 whitespace-nowrap text-ellipsis overflow-hidden">
+                    <div className={cn("-my-1 text-[150%]")}>{title}</div>
+                    <div dir="rtl" className="uppercase font-semibold opacity-70 whitespace-nowrap text-ellipsis overflow-hidden">
                         {!!subtitle ? subtitle : <>&nbsp;</>}
                     </div>
                 </div>

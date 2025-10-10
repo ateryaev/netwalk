@@ -1,19 +1,19 @@
 import { use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import { cn } from './utils/cn'
-import { COLOR, SIZE, TRANS_DURATION } from "./utils/cfg";
+import { COLOR, COLOR_BALL, COLOR_EYE, SIZE, TRANS_DURATION } from "./game/cfg";
 import { BOTTOM, LEFT, RIGHT, TOP } from './game/gamedata';
 import { isEnd, isMix, isOff, isOn } from './game/gamedata';
 import { GameHeader } from './components/GameHeader';
 import { clampPanZoomCenter, PanZoomView } from './components/PanZoomView';
 import { addXY, bymodXY, distXY, divXY, fromtoXY, isSameXY, loopXY, mulXY, operXY, printXY, subXY, toRectXY, toXY, XY05, XY1 } from './utils/xy';
-import { drawCircle, drawStar, getFigureImage, getSourceBgImage } from './utils/canvas';
+import { drawCircle, drawStar, midColor } from './utils/canvas';
 import { minmax, rnd, bymod, progress, xyToIndex, progressToCurve } from './utils/numbers';
 import { GameManager } from './game/gamemanager';
 import { invertFigure, moveXY, toDirs } from './game/gamedata';
 import { createArray2d } from './utils/array2d';
-import { drawActiveEnd, drawBG, drawBgCell, drawEmptyCell, drawFigure, drawMixEnd, drawOffEnd, drawRotated, drawSelection, drawSourceFg, drawTransform } from './game/gamedraw';
-import { renderGameBg, renderHint, renderSelect, renderSourceFgs } from './game/gamerender';
+import { drawRotated, drawTransform } from './utils/canvas';
+import { renderGameBg, renderHint, renderSelect, renderSourceFgs, drawNewFigure, drawSelection } from './game/gamerender';
 import { Button, MenuButton, PinkButton, SvgNext, SvgRestart } from './components/Button';
 import { shufleGame } from './game/gamecreate';
 import { Window } from './components/Window';
@@ -240,15 +240,15 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
             return;
         }
         if (source) {
-            beepButton(1);
+            beepButton(0.6);
         } else if (figure === 0b1010 || figure === 0b0101) {
-            beepButton(1.2);
+            beepButton(0.7);
         } else if (figure === 0b1100 || figure === 0b0011 || figure === 0b0110 || figure === 0b1001) {
-            beepButton(1.4);
+            beepButton(0.8);
         } else if (isEnd(figure)) {
-            beepButton(1.8);
+            beepButton(1);
         } else {
-            beepButton(1.6);
+            beepButton(0.9);
         }
 
         game.taps++;
@@ -338,13 +338,10 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
             renderGameBg(ctx, manager, viewGridSize, startViewCell)
 
             game.hintXY?.[0] && renderHint(ctx, game.hintXY[0], startViewCell);
+
             if (!manager.bordered() || isSameXY(selected.at, bymodXY(selected.at, manager.size()))) {
                 renderSelect(ctx, selected, manager, startViewCell);
-                //             }
-                // if ( game.hintXY[0]|| isSameXY(game.hintXY[0], bymodXY(selected.at, manager.size()))) {
-                //                 renderSelect(ctx, selected, manager, startViewCell);
             }
-
 
             //draw cells
             loopXY(viewGridSize, (viewXY) => {
@@ -365,8 +362,8 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
                 const end = isEnd(cell.figure);
 
                 const isRotating = manager.isSameCell(cellXY, rotation.at);
-                const rotateProgress = isRotating ? progress(rotation.when, TRANS_DURATION) - 1 : 0;
-
+                const rotateProgress2 = isRotating ? progress(rotation.when, TRANS_DURATION) - 1 : 0;
+                const rotateProgress = progressToCurve(rotateProgress2 + 1, [0.0, 0.4, 1.2, 0.95, 1.0]) - 1;
                 const conns = findRtConnections(manager, colors, cellXY, progress(rotation.when, TRANS_DURATION) < 1 ? rotation.at : null);// 0b1111;
 
                 const alpha = isOuter ? 0.3 : 1;
@@ -400,36 +397,76 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
 
                     const moveDist = SIZE * rotateProgress;
 
-                    drawTransform(ctx, toXY(0, moveDist), () => drawFigure(ctx, figure2move & RIGHT, color, conns));
-                    drawTransform(ctx, toXY(0, -moveDist), () => drawFigure(ctx, figure2move & LEFT, color, conns));
-                    drawTransform(ctx, toXY(moveDist, 0), () => drawFigure(ctx, figure2move & TOP, color, conns));
-                    drawTransform(ctx, toXY(-moveDist, 0), () => drawFigure(ctx, figure2move & BOTTOM, color, conns));
-                    drawRotated(ctx, rotateProgress * Math.PI / 2, () => drawFigure(ctx, figure2rotate, color + (isOuter ? 100 : 0), conns));
+                    const currentColor = COLOR(color + (isOuter ? 100 : 0));
+                    drawTransform(ctx, toXY(0, moveDist), () => drawNewFigure(ctx, figure2move & RIGHT, conns, currentColor));
+                    drawTransform(ctx, toXY(0, -moveDist), () => drawNewFigure(ctx, figure2move & LEFT, conns, currentColor));
+                    drawTransform(ctx, toXY(moveDist, 0), () => drawNewFigure(ctx, figure2move & TOP, conns, currentColor));
+                    drawTransform(ctx, toXY(-moveDist, 0), () => drawNewFigure(ctx, figure2move & BOTTOM, conns, currentColor));
+
+                    drawRotated(ctx, rotateProgress * Math.PI / 2, () => drawNewFigure(ctx, figure2rotate, conns, currentColor));
                 } else {
                     const switchingDelta = color !== preColor ? progress(rotation.when, TRANS_DURATION * 1.5) : 1;
+
+                    let currentColor = COLOR(color);
+                    if (isOuter) currentColor = COLOR(color + (isOuter ? 100 : 0));
+                    else currentColor = midColor(COLOR(preColor), COLOR(color), switchingDelta);
+
+                    //                    const rotateProgress2 = progressToCurve(rotateProgress + 1, [0.0, 0.4, 1.2, 0.95, 1.0]) - 1;
+                    //console.log("ROTATE PROG:", rotateProgress, rotateProgress2);
+                    //ds
                     drawRotated(ctx, rotateProgress * Math.PI / 2, () => {
-                        switchingDelta < 1 && drawFigure(ctx, cell.figure, preColor + (isOuter ? 100 : 0), conns, 1);
-                        drawFigure(ctx, cell.figure, color + (isOuter ? 100 : 0), conns, (switchingDelta));
+                        drawNewFigure(ctx, cell.figure, conns, currentColor);
                     });
+                    if (end) {
+                        drawCircle(ctx, SIZE / 2, SIZE / 2, 25, currentColor);
+                        if (!isOuter) {
 
-                    if (end && !isOuter) {
-                        const showing = switchingDelta;// minmax(switchingDelta * 2, 1, 2) - 1;
-                        const hiding = switchingDelta;//minmax(switchingDelta * 2, 0, 1);
+                            const toColor = COLOR_EYE(color);
+                            const fromColor = COLOR_EYE(color);
+                            const toColor2 = COLOR_BALL(color);
+                            const fromColor2 = COLOR_BALL(color);
+                            const rFrom = isMix(preColor) ? 7 : 4;
+                            const rTo = isMix(color) ? 7 : 4;
+                            const r = rFrom + (rTo - rFrom) * switchingDelta;
 
-                        isMix(color) && drawMixEnd(ctx, showing);
-                        isOn(color) && drawActiveEnd(ctx, showing);
-                        isOff(color) && drawOffEnd(ctx, showing);
+                            let dx = 0;
 
-                        isMix(preColor) && drawMixEnd(ctx, (1 - hiding));
-                        isOn(preColor) && drawActiveEnd(ctx, (1 - hiding));
-                        isOff(preColor) && drawOffEnd(ctx, 1 - hiding, true);
+                            if (isMix(color)) {
+                                if (performance.now() % 1000 < 500) {
+                                    dx = performance.now() / 28 % 4 - 2;
+                                }
+                            }
+
+                            const mod = (5000 + (cellXY.x * 300 + cellXY.y * 100) % 2000);
+                            const mod2 = (10000 - (cellXY.x * 300 + cellXY.y * 100) % 3000);
+                            const phase = performance.now() % mod;
+                            const phase2 = performance.now() % mod2;
+                            if (isOn(color)) {
+                                if (phase < 500) {
+                                    //  drawCircle(ctx, SIZE / 2 + dx, SIZE / 2, 12, currentColor);
+                                    dx = 2;
+                                } else if ((phase > 200 && phase < 1000)) {
+                                    dx = -2;
+                                }
+                                dx *= (cellXY.x + cellXY.y) % 2 === 0 ? 1 : -1;
+                            }
+                            if (counters[0] === 0 && performance.now() % 1000 < 500) {
+                                dx = performance.now() / 28 % 4 - 2;
+                            }
+                            if (phase2 > 150 || !isOn(color)) {
+                                drawCircle(ctx, SIZE / 2, SIZE / 2, 12, midColor(fromColor, toColor, switchingDelta));
+                                drawCircle(ctx, SIZE / 2 + dx, SIZE / 2, r, midColor(fromColor2, toColor2, switchingDelta));
+                            }
+
+                        }
                     }
+
                 }
 
                 ctx.restore();
             });
 
-            renderSourceFgs(ctx, manager, viewGridSize, startViewCell)
+            renderSourceFgs(ctx, manager, viewGridSize, startViewCell, counters[0] === 0);
 
             //renderGameBg2(ctx, manager, viewGridSize, startViewCell)
 
@@ -465,18 +502,7 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
 
                     const radius = 2 * ((0.5 + star.size) * 10 + 10);
                     const angle = 0//Math.sin(star.size + lifetime / 500) * 2; //(progress * 10 + 0.5 * progress * Math.PI * (1.5 - star.size)) * (star.size > 0.5 ? 1 : -1);
-                    //starXY.x -= SIZE / 2;
 
-                    // if (progress > 0.99) {
-                    //     star.xy = toXY(Math.random(), Math.random());
-                    //     star.size = Math.random();
-                    //     star.createdOn = now;// + duration * progress * Math.random();
-                    //     star.color = rnd(3);
-                    // }
-
-                    //((now - star.createdOn) / 1000) * star.size * 50;
-
-                    //const starAlpha = minmax((now - star.createdOn) / 2000, 1, 0);
                     ctx.globalAlpha = starting * alpha * 0.2;//alpha;// * (0.45 - star.size * 0.25);
                     ctx.save();
                     ctx.translate(starXY.x, starXY.y);
@@ -485,27 +511,9 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
                         drawStar(ctx, 75, 50, (radius + ds) * progressToCurve(alpha, [0.2, 1.5, 0.75, 1.1, 1]), `${COLOR(0b0001 << star.color)}`));
                     ctx.restore();
 
-                    //drawStar(ctx, 100, 100, `${COLOR(0b0001 << star.color)}`);
-                    // drawStar(ctx, starXY.x, starXY.y, 2 * ((0.5 + star.size) * 10 + 10),
-                    //     `${COLOR(0b0001 << star.color)}`);
 
-                    // drawCircle(ctx, starXY.x, starXY.y, 2 * ((0.5 + star.size) * progress * 10 + 10),
-                    //     `${COLOR(0b0001 << star.color)}`);
-                    // drawCircle(ctx, starXY.x, starXY.y, 0.5 * (10 + (0.2 + star.size) * progress * 10),
-                    //     `rgba(255,255,255,${alpha * 0.2})`);
-                    //addXY(mulXY(star.xy, viewSize), mulXY(toXY(1, 1), star.size * 20));
-                    //const starAlpha = minmax((now - star.createdOn) / 2000, 0, 1);
-                    //ctx.globalAlpha = starAlpha;//starAlpha * star.size * 0.5;
-                    //ctx.fillStyle = "#fa6";
-                    //ctx.fillRect(starXY.x, starXY.y, star.size * 100, star.size * 100);
-                    // drawTransform(ctx, starXY, () => drawActiveEnd(ctx, alpha * (star.size)));
                 });
             }
-
-            // ctx.globalAlpha = 0.3;
-            // ctx.fillStyle = "#fff";
-            // ctx.fillRect(0, 0, viewSize.x, viewSize.y);
-            // drawTransform(ctx, toXY(200, 200), () => drawActiveEnd(ctx, 1));
             ctx.globalAlpha = 1;
 
             animationFrame = requestAnimationFrame(render);

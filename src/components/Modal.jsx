@@ -43,13 +43,13 @@ const Modal = ({ shown, onBack, onClose, title, children }) => {
             <div className={cn("flex-1 ring-2 ring-black/10 scale-90",
                 "opacity-10 duration-200 transition-all",
                 "flex flex-col bg-white max-h-[min(600px,90svh)] max-w-[90svw] w-xl",
-                (reallyShown) && "scale-100 opacity-100",
+                (reallyShown) && "scale-100 opacity-100 animate-[bounce_0.15s_ease-in-out]",
                 (!shown) && "scale-90 opacity-0",
                 "outline-none xhue-rotate-180 "
             )} tabIndex={0}>
                 <div className="bg-puzzle flex items-center gap-4 justify-between p-2 text-white uppercase font-extrabold">
                     <BackButton onClick={onBack} disabled={!onBack} />
-                    <div className='overflow-hidden xbg-amber-500 xtext-ellipsis xp-4 xwhitespace-nowrap flex-1 text-center xpe-18  xtext-[120%]'>
+                    <div className='flex-1 text-center xfont-extrabold text-[120%]'>
                         {title}
                     </div>
                     <CloseButton onClick={onClose} disabled={!onClose} />

@@ -54,7 +54,8 @@ function App() {
   }
 
   //const [game, setGame] = useState(createGame(1, 6)); //load from localStorage or create new
-  const [game, setGame] = useState(createGame(4, 0)); //load from localStorage or create new
+  //const [game, setGame] = useState(createGame(2, 1)); //load from localStorage or create new
+  const [game, setGame] = useState(createGame(3, 0)); //load from localStorage or create new
 
   function handleLevelSelect(mode, level) {
     console.log("handleLevelSelect", mode, level);

@@ -3,7 +3,7 @@ import { useRef, useState, useEffect, Children, useCallback, useMemo, Fragment, 
 import { toXY, mulXY, subXY, divXY, distXY, addXY, eventToXY, distXYArray, midXYArray, toRectXY, printXY, isSameXY, fromtoXY } from "../utils/xy";
 import { cn } from "../utils/cn.ts";
 import { minmax } from "../utils/numbers.ts";
-import { SIZE } from "../utils/cfg.jsx";
+import { SIZE } from "../game/cfg.jsx";
 
 const CLICK_TOLERNCE = 20;
 

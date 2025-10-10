@@ -1,6 +1,6 @@
 import { use, useEffect, useState } from "react";
 import { cn } from "../utils/cn"
-import { COLOR } from "../utils/cfg";
+import { COLOR } from "../game/cfg";
 import { isMix, isOff, isOn } from "../game/gamedata";
 import { BackButton, SvgBack } from "./Button";
 
