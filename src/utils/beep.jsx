@@ -2,12 +2,12 @@ import { zzfx, ZZFX } from 'zzfx';
 
 ZZFX.volume = 0.7;
 export function beepButton(mult = 1) {
-    zzfx(1, .05, 220 + 50 * mult, 0, 0, .1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0); // Sound Default
+    zzfx(0.5, .05, 220 + 50 * mult, 0, 0, .1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0); // Sound Default
     vibro(2)
     return
 }
 export function preBeepButton(mult = 1) {
-    zzfx(1, .05, 180, 0, 0, .1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0); // Sound Default
+    zzfx(0.5, .05, 180, 0, 0, .05, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0); // Sound Default
     vibro(1)
     return;
 }

@@ -1,5 +1,4 @@
 import { use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import './App.css'
 import { cn } from './utils/cn'
 import { COLOR, COLOR_BALL, COLOR_EYE, SIZE, TRANS_DURATION } from "./game/cfg";
 import { BOTTOM, LEFT, RIGHT, TOP } from './game/gamedata';
@@ -14,7 +13,7 @@ import { invertFigure, moveXY, toDirs } from './game/gamedata';
 import { createArray2d } from './utils/array2d';
 import { drawRotated, drawTransform } from './utils/canvas';
 import { renderGameBg, renderHint, renderSelect, renderSourceFgs, drawNewFigure, drawSelection } from './game/gamerender';
-import { Button, MenuButton, PinkButton, SvgNext, SvgRestart } from './components/Button';
+import { MenuButton, PinkButton, SvgNext, SvgRestart } from './components/Button';
 import { shufleGame } from './game/gamecreate';
 import { Window } from './components/Window';
 import { GameFooter } from './components/GameFooter';
@@ -157,11 +156,7 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
         if (game.taps === 0) {
             setProgressFX(createEffect(1000));
         }
-    }, [game.taps]);
-
-
-
-
+    }, [game.taps, game.level, game.mode]);
 
     function findRtConnections(manager, colors, xy, rotationXy) {
 
@@ -230,30 +225,27 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
         preColorsRef.current = colors;
         manager.rotateAtXY(cellXY);
         setRotation({ at: cellXY, when: performance.now() });
-        //sfx("spin");
 
         const figure = manager.cellAt(cellXY).figure;
         const source = manager.cellAt(cellXY).source;
+
         if (figure === 0) {
             return;
-        }
-        if (figure === 0b1111 && !source) {
+        } else if (figure === 0b1111 && !source) {
             beepButton(0.5);
-            return;
-        }
-        if (source) {
-            beepButton(0.6);
-        } else if (figure === 0b1010 || figure === 0b0101) {
+        } else if (source) {
             beepButton(0.7);
-        } else if (figure === 0b1100 || figure === 0b0011 || figure === 0b0110 || figure === 0b1001) {
-            beepButton(0.8);
-        } else if (isEnd(figure)) {
-            beepButton(1);
-        } else {
+        } else if (figure === 0b1010 || figure === 0b0101) {
             beepButton(0.9);
+        } else if (figure === 0b1100 || figure === 0b0011 || figure === 0b0110 || figure === 0b1001) {
+            beepButton(1.1);
+        } else if (isEnd(figure)) {
+            beepButton(1.5);
+        } else {
+            beepButton(1.3);
         }
 
-        game.taps++;
+        if (figure !== 0b1111) game.taps++;
         onGameChange({ ...game });
     }
 

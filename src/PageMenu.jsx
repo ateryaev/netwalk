@@ -139,7 +139,7 @@ export function PageStoryLevels({ shown, onLevelSelect, onBack, onClose, mode = 
     }
     const solved = GetLevelsSolved(currentMode);
     return (
-        <Modal shown={shown} title={GAME_MODES[currentMode]} isbottom={true} onBack={onBack} onClose={onClose}>
+        <Modal reversed={true} shown={shown} title={GAME_MODES[currentMode]} isbottom={true} onBack={onBack} onClose={onClose}>
 
 
             <div className='flex p-2 flex-col'>

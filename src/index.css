@@ -1,4 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap');
+
 @import "tailwindcss";
+
 
 @theme {
     --color-puzzle: #296;
@@ -6,6 +9,35 @@
     --color-white: #eefffc;
 }
 
-path {
-    xtransition: all 0.2s;
+
+body {
+
+    text-size-adjust: none;
+    font-family: Fredoka, Tahoma, sans-serif, Verdana, Geneva, Tahoma, sans-serif;
+    margin: 0;
+    padding: 0;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+
+}
+
+/* bounce animation from scale-90 opacity-90 to 100 */
+@keyframes show-modal-animation {
+    0% {
+        transform: scale(0.9);
+        opacity: 0.9;
+    }
+
+    75% {
+        transform: scale(1.04);
+        opacity: 1;
+    }
+
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }

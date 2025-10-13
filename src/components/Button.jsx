@@ -3,52 +3,66 @@ import { cn } from "../utils/cn"
 import { Blink } from "./UI";
 import { preBeepButton } from "../utils/beep";
 
-export function Button({ onClick, children }) {
+function BaseButton({ children, className, onClick, ...props }) {
+    const viewRef = useRef(null);
     return (
-        <button onClick={onClick} className='rounded-full
-        outline-none 
-        focus:ring-4 focus:ring-blue-300/50 select-none
-        text-puzzle xhue-rotate-180 uppercase
-        px-6 py-1 bg-[#fff] tcursor-pointer border-puzzle border-8 '>
+        <button
+            ref={viewRef}
+            className={cn(
+                "outline-none cursor-pointer select-none disabled:pointer-events-none disabled:cursor-default",
+                "transition-all focus:transition-none active:transition-none",
+                className
+            )}
+            onClick={(e) => {
+                e.preventDefault();
+                e.currentTarget.blur();
+                onClick?.(e);
+            }}
+            onPointerDown={(e) => {
+                e.preventDefault();
+                e.currentTarget.focus();
+                preBeepButton();
+            }}
+            onPointerCancel={(e) => {
+                e.preventDefault();
+                e.currentTarget.blur();
+            }}
+
+            onContextMenu={(e) => { e.currentTarget.blur(); e.preventDefault() }}
+            {...props}
+        >
             {children}
         </button>
-    )
+    );
 }
 
 export function ShowMenuButton({ onClick, ...props }) {
     function handleClick(e) {
-        e.currentTarget.blur();
-        onClick && onClick();
-        preBeepButton(0.6);
+        onClick?.();
     }
     return (
-        <button className="rounded-full  text-puzzle bg-white
-                    p-3.5 text-2xl cursor-pointer select-none
-                     focus:ring-6 focus:ring-white/40 outline-none
-                     active:ring-6 active:ring-white/40 active:transition-none
-                     transition-all duration-300"
-            {...props} onClick={handleClick}
-            onPointerDown={() => preBeepButton(0.8)}>
-            <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-menu-2"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 6l16 0" /><path d="M4 12l16 0" /><path d="M4 18l16 0" /></svg>
-        </button>
+        <BaseButton className="rounded-full  text-puzzle bg-white
+                    p-3.5 text-2xl 
+                    focus:active:ring-6 focus:active:ring-white/40
+                    focus:ring-6 focus:ring-white/40"
+            {...props} onClick={handleClick}>
+            <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-menu-2"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 6l16 0" /><path d="M4 12l16 0" /><path d="M4 18l16 0" /></svg>
+        </BaseButton>
     )
 }
 export function BackButton({ onClick, ...props }) {
     function handleClick(e) {
         e.currentTarget.blur();
         onClick && onClick();
-        preBeepButton(0.8);
     }
     return (
-        <button className="rounded-full border-none border-white text-white opacity-60 xbg-white/5
+        <BaseButton className="rounded-full border-none border-white text-white opacity-60 xbg-white/5
                     p-3 cursor-pointer select-none text-2xl
                     disabled:invisible disabled:pointer-events-none
-                     focus:bg-white/20 outline-none
-                     active:bg-white/20 transition-all"
-            {...props} onClick={handleClick}
-            onPointerDown={() => preBeepButton(0.6)}>
+                     active:bg-white/20 focus:bg-white/20"
+            {...props} onClick={handleClick}>
             <SvgBack />
-        </button>
+        </BaseButton>
     )
 }
 
@@ -56,18 +70,15 @@ export function CloseButton({ onClick, ...props }) {
     function handleClick(e) {
         e.currentTarget.blur();
         onClick && onClick();
-        preBeepButton(0.8);
     }
     return (
-        <button className="rounded-full border-none border-white text-white opacity-60 xbg-white/5
-                    p-3 text-2xl cursor-pointer select-none
-                    disabled:invisible disabled:pointer-events-none
-                     focus:bg-white/20 outline-none
-                     active:bg-white/20 transition-all"
-            {...props} onClick={handleClick}
-            onPointerDown={() => preBeepButton(0.6)}>
+        <BaseButton className="rounded-full border-none border-white text-white opacity-60 xbg-white/5
+                    p-3 text-2xl 
+                    disabled:invisible 
+                     active:bg-white/20 focus:bg-white/20"
+            {...props} onClick={handleClick}>
             <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" ><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg>
-        </button>
+        </BaseButton>
     )
 }
 
@@ -82,37 +93,32 @@ export function PinkButton({ Svg, className, blink, children, ...props }) {
         return () => clearInterval(interval);
     }, [blink]);
     return (
-        <button className={cn("flex items-center uppercase font-semibold  p-1.5 gap-0  rounded-full",
-            "bg-white text-puzzle whitespace-nowrap cursor-pointer select-none",
-            "focus:ring-6 focus:ring-puzzle/40 outline-none",
-            "active:bg-puzzle active:text-white active:transition-none",
-            "transition-colors duration-300",
-            !children && "xbg-red-100 xpx-4 xpe-0",
-            className)}
-            onPointerDown={() => preBeepButton(0.8)}
+        <BaseButton className={cn("flex items-center uppercase font-semibold  p-1.5 gap-0  rounded-full",
+            "bg-white text-puzzle whitespace-nowrap",
+            "focus:ring-6 focus:ring-puzzle/40 focus:bg-puzzle focus:text-white",
+            "active:ring-6 active:ring-puzzle/40 active:bg-puzzle active:text-white",
+            "transition-colors duration-300", className)}
             {...props}>
 
             {Svg && <div className={cn("bg-puzzle text-white rounded-full p-1.5", off && "text-white/20")}><Svg /></div>}
             {children && <div className="flex justify-between gap-1.5 text-ellipsis px-2 py-0.5 overflow-hidden text-center flex-1">
                 {children}
             </div>}
-        </button>
+        </BaseButton>
     )
 }
 
 
 export function MenuButton({ Svg, children, className, ...props }) {
     return (
-        <button className={cn("items-center uppercase p-6 flex gap-2 justify-center xcapitalize",
-            "text-darkpuzzle whitespace-nowrap cursor-pointer select-none outline-none",
-            "active:not-disabled:bg-puzzle/20",
-            "focus:ring-2 ring-puzzle/20 focus:xhue-rotate-180",
-            "focus:bg-puzzle/10 disabled:cursor-default disabled:opacity-50",
+        <BaseButton className={cn("items-center uppercase p-6 flex gap-2 justify-center",
+            "text-darkpuzzle whitespace-nowrap",
+            "focus:ring-2 ring-puzzle/20 focus:bg-puzzle/10 disabled:opacity-50",
+            "active:ring-2 active:bg-puzzle/10",
             className)}
-            {...props}
-            onPointerDown={() => preBeepButton(0.8)}>
+            {...props}>
             {children}
-        </button>
+        </BaseButton>
     )
 }
 

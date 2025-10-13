@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { BackButton, Button, CloseButton, MenuButton, PinkButton, SvgBack } from './Button';
+import { BackButton, CloseButton, MenuButton, PinkButton, SvgBack } from './Button';
 import { cn } from '../utils/cn';
+import { preBeepButton } from '../utils/beep';
 
-const Modal = ({ shown, onBack, onClose, title, children }) => {
+const Modal = ({ shown, onBack, onClose, title, children, reversed }) => {
     const dialogRef = useRef(null);
     const scrollRef = useRef(null);
 
@@ -37,13 +38,14 @@ const Modal = ({ shown, onBack, onClose, title, children }) => {
     return (
         <dialog ref={dialogRef} onCancel={handleCancel}
             onClick={handleBackdropClick}
+            onPointerDown={(e) => e.target === dialogRef.current && preBeepButton()}
             className="backdrop:bg-black/0 z-10 bg-white/0 select-none p-0 xtext-[16px]
              grid min-w-svw  min-h-svh max-h-svh  justify-center items-center ">
 
             <div className={cn("flex-1 ring-2 ring-black/10 scale-90",
                 "opacity-10 duration-200 transition-all",
                 "flex flex-col bg-white max-h-[min(600px,90svh)] max-w-[90svw] w-xl",
-                (reallyShown) && "scale-100 opacity-100 animate-[bounce_0.15s_ease-in-out]",
+                (reallyShown) && "scale-100 opacity-100 animate-[show-modal-animation_0.15s_ease-in-out]",
                 (!shown) && "scale-90 opacity-0",
                 "outline-none xhue-rotate-180 "
             )} tabIndex={0}>
@@ -57,7 +59,9 @@ const Modal = ({ shown, onBack, onClose, title, children }) => {
                 </div>
 
                 <div ref={scrollRef}
-                    className={cn("flex-1 bg-white items-stretch w-full overflow-y-auto flex flex-col-reverse")}>
+                    className={cn("flex-1 bg-white items-stretch w-full overflow-y-auto flex flex-col",
+                        reversed && "flex-col-reverse"
+                    )}>
                     {children}
                 </div>
 

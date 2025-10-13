@@ -1,5 +1,4 @@
 import { use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import './App.css'
 import { cn } from './utils/cn.ts'
 import { PagePlay } from './PagePlay';
 import { PageMenu, PageSettings, PageStory, PageStoryLevels } from './PageMenu';
@@ -11,7 +10,6 @@ import Modal from './components/Modal.jsx';
 import { MenuButton } from './components/Button.jsx';
 import { PageAbout } from './PageAbout.jsx';
 import { GAME_LEVEL_SIZE, GAME_MODE_BORDERED } from './game/gameconstants.ts';
-//import { createGameTutorial } from './game/gametutorials.ts';
 
 function App() {
 
