@@ -24,25 +24,11 @@ import Modal from './components/Modal';
 import { GAME_LEVEL_RANDOM, GAME_MODE_TUTORIALS, GAME_MODES } from './game/gameconstants';
 import { GetLevelsSolved } from './game/gamestats';
 import { beepButton, beepLevelComplete, beepLevelStart, preBeepButton } from './utils/beep';
+import { createEffect, produceEndingEffect } from './game/gameeffects';
 
 export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, className, ...props }) {
 
-    function createStar() {
-        return {
-            xy: toXY(Math.random(), Math.random() + 1),
-            size: Math.random(),
-            color: rnd(3),
-            createdOn: 0,
-            updatedOn: 0,
-        }
-    }
-    const stars = useRef([
-        createStar(), createStar(), createStar(), createStar(), createStar(),
-        createStar(), createStar(), createStar(), createStar(), createStar(),
-        createStar(), createStar(), createStar(), createStar(), createStar(),
-        createStar(), createStar(), createStar(), createStar(), createStar(),
-        createStar(), createStar(), createStar(), createStar(), createStar()
-    ]);
+
     const manager = useMemo(() => new GameManager(game), [game]);
 
     const bygmodXY = (xy) => bymodXY(xy, manager.size());
@@ -77,6 +63,8 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
 
     const startGameCell = useMemo(() => bymodXY(startViewCell, game.size), [startViewCell, game]);
     const startCellOffset = useMemo(() => subXY(startViewCell2, startViewCell), [startViewCell, contentRect]);
+
+
 
     const defaultZoomRef = useRef(0);
 
@@ -152,13 +140,27 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
         return newCounter;
     }, [colors])
 
-    const [celebrating, setCelebrating] = useState(0);
+
+
+    const [progresFX, setProgressFX] = useState(null);
+    const [solvedFX, setSolvedFX] = useState(null);
+
     useEffect(() => {
         if (counters[0] === 0) {
-            beepLevelComplete();
-            setCelebrating(performance.now());
+            setSolvedFX(createEffect());
+        } else {
+            setSolvedFX(null);
         }
     }, [counters[0]]);
+
+    useEffect(() => {
+        if (game.taps === 0) {
+            setProgressFX(createEffect(1000));
+        }
+    }, [game.taps]);
+
+
+
 
 
     function findRtConnections(manager, colors, xy, rotationXy) {
@@ -283,7 +285,7 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
 
     useEffect(() => {
         scrollToCenter(false);
-        beepLevelStart();
+
     }, [game.level, game.mode, contentSize]);
 
     useEffect(() => {
@@ -320,6 +322,10 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
         function render() {
 
             const now = performance.now();
+
+            const solvedFXdata = solvedFX?.update();
+            const progressFXdata = progresFX?.update();
+
             ctx.save();
 
             let dx = -startCellOffset.x * SIZE;
@@ -333,15 +339,29 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
 
 
 
+            // progressFXdata && progressFXdata.index === 1 && (dx += progressFXdata.shake * 2 || 0);
+            // progressFXdata && progressFXdata.index === 1 && progressFXdata.switched && beepLevelStart();
+            //beepLevelStart();
             ctx.translate(dx, dy);
 
-            renderGameBg(ctx, manager, viewGridSize, startViewCell)
+            // if (progressFXdata && progressFXdata.index === 1) {
+            //     progressFXdata.switched && beepLevelStart();
+            //     ctx.save();
+            //     ctx.translate(progressFXdata.shake * 2, 0);
+            // }
+
+            renderGameBg(ctx, manager, viewGridSize, startViewCell, progressFXdata);
+
+
 
             game.hintXY?.[0] && renderHint(ctx, game.hintXY[0], startViewCell);
 
             if (!manager.bordered() || isSameXY(selected.at, bymodXY(selected.at, manager.size()))) {
                 renderSelect(ctx, selected, manager, startViewCell);
             }
+            // if (progressFXdata && progressFXdata.index === 1) {
+            //     ctx.restore();
+            // }
 
             //draw cells
             loopXY(viewGridSize, (viewXY) => {
@@ -443,16 +463,15 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
                             const phase2 = performance.now() % mod2;
                             if (isOn(color)) {
                                 if (phase < 500) {
-                                    //  drawCircle(ctx, SIZE / 2 + dx, SIZE / 2, 12, currentColor);
                                     dx = 2;
                                 } else if ((phase > 200 && phase < 1000)) {
                                     dx = -2;
                                 }
                                 dx *= (cellXY.x + cellXY.y) % 2 === 0 ? 1 : -1;
                             }
-                            if (counters[0] === 0 && performance.now() % 1000 < 500) {
-                                dx = performance.now() / 28 % 4 - 2;
-                            }
+
+                            dx = solvedFXdata?.shake || dx;
+
                             if (phase2 > 150 || !isOn(color)) {
                                 drawCircle(ctx, SIZE / 2, SIZE / 2, 12, midColor(fromColor, toColor, switchingDelta));
                                 drawCircle(ctx, SIZE / 2 + dx, SIZE / 2, r, midColor(fromColor2, toColor2, switchingDelta));
@@ -465,55 +484,16 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
 
                 ctx.restore();
             });
+            //const solveAge = solvedOn > 0 ? performance.now() - solvedOn : 0;
 
-            renderSourceFgs(ctx, manager, viewGridSize, startViewCell, counters[0] === 0);
 
-            //renderGameBg2(ctx, manager, viewGridSize, startViewCell)
+
+            renderSourceFgs(ctx, manager, viewGridSize, startViewCell, progressFXdata, solvedFXdata);
 
             ctx.restore();
-
-            if (counters[0] === 0) {
-                stars.current.slice(0, 10).forEach((star) => {
-                    star.updatedOn = star.updatedOn || now;
-                    const dt = now - star.updatedOn;
-                    star.updatedOn = now;
-
-                    const speed = (1 + star.size * 0.5);
-                    star.xy.y -= speed * dt / 2000;
-
-                    if (star.xy.y < -0.1) {
-                        star.xy.y += 1.2;
-                        star.color = rnd(3);
-                        star.size = Math.random();
-                        star.xy = toXY(Math.random(), Math.random());
-                        star.createdOn = now;
-                    }
-                    const lifetime = now - star.createdOn;
-
-                    const alpha = minmax(lifetime / speed / 500, 0, 1);
-                    const starting = minmax((now - celebrating) / 500, 0, 1);
-
-                    const dx = 0// Math.sin(star.size + lifetime / 200) * (20 - star.size * 10) * speed;
-                    const ds = 0//Math.sin(star.size + lifetime / 50) * 5;
+            produceEndingEffect(ctx, viewSize, solvedFXdata);
 
 
-                    const starXY = toXY(star.xy.x * viewSize.x + dx - 50, star.xy.y * viewSize.y);
-
-
-                    const radius = 2 * ((0.5 + star.size) * 10 + 10);
-                    const angle = 0//Math.sin(star.size + lifetime / 500) * 2; //(progress * 10 + 0.5 * progress * Math.PI * (1.5 - star.size)) * (star.size > 0.5 ? 1 : -1);
-
-                    ctx.globalAlpha = starting * alpha * 0.2;//alpha;// * (0.45 - star.size * 0.25);
-                    ctx.save();
-                    ctx.translate(starXY.x, starXY.y);
-                    //drawStar(ctx, 10, 0, 2 * ((0.5 + star.size) * 10 + 10), `${COLOR(0b0001 << star.color)}`);
-                    drawRotated(ctx, angle, () =>
-                        drawStar(ctx, 75, 50, (radius + ds) * progressToCurve(alpha, [0.2, 1.5, 0.75, 1.1, 1]), `${COLOR(0b0001 << star.color)}`));
-                    ctx.restore();
-
-
-                });
-            }
             ctx.globalAlpha = 1;
 
             animationFrame = requestAnimationFrame(render);
@@ -523,7 +503,7 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
 
         return () => { cancelAnimationFrame(animationFrame); }
 
-    }, [viewSize, zoom, center, game, selected, colors, rotation, celebrating]);
+    }, [viewSize, zoom, center, game, selected, colors, rotation, solvedFX]);
 
     function getMiddleColRow() {
         const x = Math.floor(center.x / SIZE);

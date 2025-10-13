@@ -1,7 +1,7 @@
 import { COLOR, SIZE, TRANS_DURATION } from "./cfg";
-import { drawTransform } from "../utils/canvas";
+import { drawTransform, midColor } from "../utils/canvas";
 import type { GameManager } from "./gamemanager";
-import { progress } from "../utils/numbers";
+import { progress, progressToCurve } from "../utils/numbers";
 import { addXY, bymodXY, isSameXY, loopXY, mulXY, subXY, toXY, type XY } from "../utils/xy";
 import { drawCircle, drawRoundRect, strokeCircle, strokeLine } from "../utils/canvas";
 import { BOTTOM, LEFT, RIGHT, TOP } from "./gamedata";
@@ -46,9 +46,13 @@ export function drawSelection(ctx: any, progress: number, cellSize: XY) {
 }
 
 //renderGame(ctx, manager, game.size, viewGridSize, startViewCell)
-export function renderGameBg(ctx: any, manager: GameManager, viewGridSize: XY, startingCell: XY) {
+export function renderGameBg(ctx: any, manager: GameManager, viewGridSize: XY, startingCell: XY, progressFX: any) {
 
-    ctx.clearRect(0, 0, viewGridSize.x * SIZE, viewGridSize.y * SIZE);
+    //ctx.clearRect(0, 0, viewGridSize.x * SIZE, viewGridSize.y * SIZE);
+    const animate = (progressFX?.index === 1 || progressFX?.index % 10 === 2);
+    const animatedY = Math.floor(progressFX.progress * manager.size().y);
+    //const animateProgress = progressFX.progress * manager.size().y - animatedY;
+    const efx = progressToCurve(progressFX.progress, [0, 1, 1, 0])
 
     // draw bg chees grid
     loopXY(viewGridSize, (viewXY) => {
@@ -69,6 +73,11 @@ export function renderGameBg(ctx: any, manager: GameManager, viewGridSize: XY, s
             ctx.globalAlpha = 1;
         } else {
             ctx.fillStyle = isOdd ? "#484848" : "#555";
+
+            if (animate && manager.size().y - cellXY.y - 1 === animatedY && !isOdd) {
+                ctx.fillStyle = midColor(ctx.fillStyle, "#666", efx);
+            }
+
             ctx.fillRect(0, 0, SIZE, SIZE);
             manager.cellAt(cellXY).figure === 0 && drawEmptyCell(ctx, isOdd)
         }
@@ -96,7 +105,9 @@ function drawHint(ctx: any) {
     const phase = (performance.now() % dur);
     ctx.globalAlpha = (phase > dur / 2 ? 0.1 : 0.0);
     ctx.fillStyle = "#fff";
-    ctx.fillRect(0, 0, SIZE, SIZE);
+    //ctx.fillRect(0, 0, SIZE, SIZE);
+    drawCircle(ctx, SIZE / 2, SIZE / 2, 60, "#fff");
+    drawCircle(ctx, SIZE / 2, SIZE / 2, 40, "#000");
 }
 
 export function renderHint(ctx: any, gameXY: any, startViewCell: XY) {
@@ -106,30 +117,28 @@ export function renderHint(ctx: any, gameXY: any, startViewCell: XY) {
     drawTransform(ctx, trans, () => drawHint(ctx));
 }
 
-function drawSourceFg(ctx: any, color: number, size: XY, outer: boolean, gameover: boolean = false) {
+function drawSourceFg(ctx: any, color: number, size: XY, outer: boolean, progressFX: any, solvedFX: any) {
     const count = (size.x * 2 - 1) * (size.y * 2 - 1);
-    const rndSeed = 1000;// - count * 50;
 
-    const phase = (performance.now() + rndSeed) % rndSeed;
-    const shift = Math.floor(((performance.now() + rndSeed) % (count * rndSeed)) / rndSeed);
     drawRoundRect(ctx, 15, 15, (SIZE * size.x) - 30, (SIZE * size.y) - 30, 20, COLOR(color));
 
     const s = 40;
     const g = 10;
     const d = 30;
 
-    let idx = 0;
-    let dx = 0;
-    if (gameover && phase < 500) {
-        dx = performance.now() / 28 % 4 - 2;
-    }
+    let dx = solvedFX?.shake || 0;
 
     for (let i = 0; i < size.x * 2 - 1; i++) {
         for (let j = 0; j < size.y * 2 - 1; j++) {
             drawRoundRect(ctx, d + i * (s + g), d + j * (s + g), s, s, 10, "#444");
             if (outer) continue;
-            if ((gameover || idx++ === shift) && phase < 500) {
-                drawCircle(ctx, dx + d + i * (s + g) + s / 2, d + j * (s + g) + s / 2, 12, "#eee");
+            if (solvedFX) {
+                let c = midColor("#eee", COLOR(color), 1 - solvedFX.visibility);
+                drawCircle(ctx, dx + d + i * (s + g) + s / 2, d + j * (s + g) + s / 2, 12, c);
+            } else if ((progressFX?.index % (count)) === (i * (size.y * 2 - 1) + j)) {
+                let c = midColor("#eee", COLOR(color), 1 - progressFX.visibility);
+                if (count === 1 && progressFX?.index % 2 === 0) c = COLOR(color);
+                drawCircle(ctx, dx + d + i * (s + g) + s / 2, d + j * (s + g) + s / 2, 12, c);
             } else {
                 drawCircle(ctx, d + i * (s + g) + s / 2, d + j * (s + g) + s / 2, 12, COLOR(color));
             }
@@ -137,7 +146,7 @@ function drawSourceFg(ctx: any, color: number, size: XY, outer: boolean, gameove
     }
 }
 
-export function renderSourceFgs(ctx: any, manager: GameManager, viewGridSize: XY, startViewCell: XY, gameover: boolean) {
+export function renderSourceFgs(ctx: any, manager: GameManager, viewGridSize: XY, startViewCell: XY, progressFX: any, solvedFX: any) {
     // Draw all sources foreground
 
     loopXY(viewGridSize, (viewXY) => {
@@ -157,8 +166,8 @@ export function renderSourceFgs(ctx: any, manager: GameManager, viewGridSize: XY
         if (!isSameXY(subXY(rect.at, rectDelta), cellXY)) return;
         const trans = mulXY(addXY(viewXY, delta), SIZE);
         if (!isOuterCell)
-            drawTransform(ctx, trans, () => drawSourceFg(ctx, cell.source, rect.size, false, gameover));
-        else drawTransform(ctx, trans, () => drawSourceFg(ctx, cell.source + 100, rect.size, true, gameover));
+            drawTransform(ctx, trans, () => drawSourceFg(ctx, cell.source, rect.size, false, progressFX, solvedFX));
+        else drawTransform(ctx, trans, () => drawSourceFg(ctx, cell.source + 100, rect.size, true, progressFX, solvedFX));
     });
 
 }
