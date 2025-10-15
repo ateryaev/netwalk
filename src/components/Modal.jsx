@@ -12,7 +12,7 @@ const Modal = ({ shown, onBack, onClose, title, children, reversed }) => {
     useEffect(() => {
         const to = setTimeout(() => {
             setReallyShown(shown);
-        }, shown ? 100 : 200);
+        }, 200);
         return () => clearTimeout(to);
     }, [shown]);
 
@@ -45,9 +45,10 @@ const Modal = ({ shown, onBack, onClose, title, children, reversed }) => {
             <div className={cn("flex-1 ring-2 ring-black/10 scale-90",
                 "opacity-10 duration-200 transition-all",
                 "flex flex-col bg-white max-h-[min(600px,90svh)] max-w-[90svw] w-xl",
-                (reallyShown) && "scale-100 opacity-100 animate-[show-modal-animation_0.15s_ease-in-out]",
-                (!shown) && "scale-90 opacity-0",
-                "outline-none xhue-rotate-180 "
+                //(reallyShown) && "scale-100 opacity-100 animate-[show-modal-animation_0.2s_ease-in-out]",
+                (reallyShown) && "scale-100 opacity-100",
+                (!shown) && "scale-90 opacity-10",
+                "outline-none"
             )} tabIndex={0}>
                 <div className="bg-puzzle flex items-center gap-4 justify-between p-2 text-white uppercase font-extrabold">
                     <BackButton onClick={onBack} disabled={!onBack} />

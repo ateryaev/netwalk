@@ -43,8 +43,8 @@ export function produceEndingEffect(ctx: CanvasRenderingContext2D, size: XY, pha
     if (switched) {
         //just restarted
         stars.length = 0;
-        const volume = index < 3 ? 1 : ((index - 2) ** (-2))
-        if (index < 8) beepLevelComplete(volume);
+        const volume = 1 - (index / 3) * 0.7;
+        if (index < 4) beepLevelComplete(volume);
         for (let i = 0; i < 5; i++) {
             stars.push({
                 ...toXY(Math.random() * size.x, Math.random() * size.y),

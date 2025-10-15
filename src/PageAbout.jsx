@@ -1,10 +1,11 @@
 import Modal from "./components/Modal";
 
-export function PageAbout({ shown, onBack }) {
+
+export function PageAbout({ shown, onBack, onClose }) {
+
     return (
-        <Modal shown={shown} title={"about"} onBack={onBack}>
-            <div className='flex flex-col gap-2 items-stretch p-4 m-auto'>
-                ABOUT
+        <Modal shown={shown} title={"About"} onBack={onBack} onClose={onClose}>
+            <div className='flex p-2 flex-col'>
                 <br /><br />
                 Test modal content about the game.
                 <br />
@@ -21,6 +22,5 @@ export function PageAbout({ shown, onBack }) {
                 <br /><br />
                 Even more text to see how it looks when there is a lot of content in the modal window. Even more text to see how it looks when there is a lot of content in the modal window. Even more text to see how it looks when there is a lot of content in the modal window.
             </div>
-        </Modal>
-    )
+        </Modal >);
 }

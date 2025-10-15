@@ -1,34 +1,35 @@
 import { use, useEffect, useState } from "react";
-import { DetailedButton, MenuButton, PinkButton, SvgNext, SvgPlay, SvgRestart } from "./components/Button";
+import { DetailedButton } from "./components/Button";
 import Modal from "./components/Modal";
-import { Inv, LabelNew } from "./components/UI";
+import { Blink, Inv, LabelNew, LabelPlay } from "./components/UI";
 import { cn } from "./utils/cn";
-import { GAME_LEVEL_COLORS, GAME_LEVEL_EMPTY, GAME_LEVEL_RANDOM, GAME_LEVEL_SIZE, GAME_MODE_AVAILABLE, GAME_MODE_BORDERED, GAME_MODE_EMPTIES, GAME_MODE_SCORE, GAME_MODE_TO_UNLOCK, GAME_MODE_TUTORIALS, GAME_MODES } from "./game/gameconstants";
-import { GetLevelsSolved } from "./game/gamestats";
-import { rnd } from "./utils/numbers";
+import { GAME_MODE_BORDERED, GAME_MODE_EMPTIES, GAME_MODE_SCORE, GAME_MODE_TO_UNLOCK, GAME_MODES } from "./game/gameconstants";
+import { GetAvailableModes, GetLevelsSolved, GetTotalScores } from "./game/gamestats";
 
-
-export function PageMenu({ shown, onBack, onAbout, onSettings, onStory, onCustom }) {
+export function PageMenu({ shown, onBack, onAbout, onSettings, onStory, onRating }) {
     return (
         <Modal shown={shown} title={"Netwalk"} onClose={onBack}>
             <div className='flex flex-col gap-0 items-stretch p-2'>
                 <DetailedButton onClick={onStory}
-                    value={""}
-                    subvalue={<LabelNew />}
-                    subtitle={"modes available: 3"}
+                    value={GetLevelsSolved(GetAvailableModes() - 1) === 0 && <LabelNew />}
+                    subvalue={""}
+                    subtitle={"modes available: " + GetAvailableModes()}
                 >game levels</DetailedButton>
                 <DetailedButton
-                    value={"140'440"}
+                    onClick={onRating}
+                    value={GetTotalScores().toLocaleString('en-US')}
                     subvalue={"points"}
                     subtitle={"global rank: 42"}
 
                 >leaderboard</DetailedButton>
                 <DetailedButton
+                    onClick={onSettings}
                     value={"Player123"}
                     subtitle={"sounds: OFF, music: OFF"}
                     subvalue={"name"}
                 >Settings</DetailedButton>
                 <DetailedButton
+                    onClick={onAbout}
                     value={"by"}
                     subtitle={"version 1.0.0"}
                     subvalue={"anton teryaev"}
@@ -38,22 +39,9 @@ export function PageMenu({ shown, onBack, onAbout, onSettings, onStory, onCustom
     );
 }
 
-export function PageSettings({ shown, onBack, onClose }) {
-    return (
-        <Modal shown={shown} title={"Settings"} onBack={onBack} onClose={onClose}>
-            <div className='flex flex-col gap-4 items-stretch p-2 m-auto '>
-                Settings
-                <div>Music ON</div>
-                <div>Sounds ON</div>
-                <div>Vibro ON</div>
-                <div>Rotate CLOCKWISE</div>
-                <div>Theme LIGHT</div>
-            </div>
-        </Modal>
-    );
-}
 
-export function PageStory({ shown, onStorySelect, onBack, onClose, ...props }) {
+
+export function PageModes({ shown, onModeSelect, onBack, onClose, ...props }) {
     function ModeButton({ mode, points, emptyFrom, emptyTo, toUnlock, bordered, ...props }) {
         let subtitle = null;
         if (toUnlock > 100) subtitle = "play more to unlock"
@@ -63,8 +51,9 @@ export function PageStory({ shown, onStorySelect, onBack, onClose, ...props }) {
         return (<DetailedButton
             disabled={toUnlock > 0}
             subtitle={subtitle}
-            value={points > 0 && points.toLocaleString('en-US')}
-            subvalue={points === 0 ? (toUnlock <= 0 ? <LabelNew /> : "locked") : "points"}
+            value={points > 0 && points.toLocaleString('en-US') || toUnlock <= 0 && <LabelNew />}
+            //subvalue={points === 0 ? (toUnlock <= 0 ? <LabelNew /> : "locked") : "points"}
+            subvalue={points === 0 ? (toUnlock <= 0 ? "" : "locked") : "points"}
             {...props}>
             {mode}
         </DetailedButton>)
@@ -81,7 +70,7 @@ export function PageStory({ shown, onStorySelect, onBack, onClose, ...props }) {
                         emptyFrom={GAME_MODE_EMPTIES[index][0]}
                         emptyTo={GAME_MODE_EMPTIES[index][1]}
                         bordered={GAME_MODE_BORDERED[index]}
-                        onClick={() => onStorySelect && onStorySelect(index)}
+                        onClick={() => onModeSelect?.(index)}
                     />))}
 
             </div>
@@ -89,95 +78,3 @@ export function PageStory({ shown, onStorySelect, onBack, onClose, ...props }) {
     );
 }
 
-export function PageStoryLevels({ shown, onLevelSelect, onBack, onClose, mode = 0 }) {
-
-
-    const [currentMode, setCurrentMode] = useState(mode);
-    useEffect(() => {
-        if (!shown) return;
-        setCurrentMode(mode);
-    }, [mode, shown]);
-    function LevelButton({ level, disabled, size, colors, empties, times, isRandom, isLastRandom, ...props }) {
-        //<svg className='hue-rotate-180 -mx-1' width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" ><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg>
-        let subvalue;
-        if (times === 0 && !disabled) subvalue = <LabelNew />
-        else if (isRandom) subvalue = "times";
-        else if (disabled) subvalue = "locked";
-        else subvalue = "solved";
-
-        if (level === 0 && times > 0) subvalue = "completed";
-
-        let subtitle;
-        if (disabled) subtitle = "solve previous to unlock";
-        else if (isRandom) subtitle = <>size:{size.x}<Inv className={"-m-1 lowercase"}>x</Inv>{size.y},&nbsp;<Inv>every time new</Inv></>;
-        else subtitle = <>
-            size:{size.x}<Inv className={"-m-1 lowercase"}>x</Inv>{size.y},&nbsp;
-            colors: <Inv>{colors}</Inv>,
-            empty: <Inv>{empties}</Inv>
-        </>;
-
-        if (level === 0) subtitle = GAME_MODE_TUTORIALS[currentMode];
-
-        //let subtitle="solve previous to unlock";
-        return (
-            <DetailedButton className={cn("xpy-0.5",
-                //isRandom && "ring-darkpuzzle/20 ring-0  xshadow-md  xpx-6 -xmx-2  bg-puzzle/10 puzzle/10",
-                //isLastRandom && "xsticky xtop-2 xz-20"
-            )}
-                safe={true}
-                subtitle={subtitle}
-                value={isRandom && times > 0 && times}
-                subvalue={subvalue}
-                disabled={disabled}
-                {...props}>
-                {level === 0 && "Begin"}
-                {isRandom && "Random " + level}
-                {!isRandom && level > 0 && "Level " + level}
-
-            </DetailedButton>
-        )
-    }
-    const solved = GetLevelsSolved(currentMode);
-    return (
-        <Modal reversed={true} shown={shown} title={GAME_MODES[currentMode]} isbottom={true} onBack={onBack} onClose={onClose}>
-
-
-            <div className='flex p-2 flex-col'>
-
-                {Array.from({ length: solved + 1 }, (_, index) => (
-
-                    <LevelButton key={index} level={index}
-                        size={GAME_LEVEL_SIZE(currentMode, index)}
-                        colors={GAME_LEVEL_COLORS(mode, index)}
-                        empties={GAME_LEVEL_EMPTY(mode, index)}
-                        times={index === solved ? 0 : 1}
-                        isRandom={GAME_LEVEL_RANDOM(mode, index)}
-                        isLastRandom={index === 20}
-                        onClick={() => onLevelSelect && onLevelSelect(currentMode, index)}
-                    />
-                ))}
-
-                <LevelButton disabled level={solved + 1}
-                    isRandom={false}
-                />
-
-                {/* <DetailedButton
-                    subtitle={"size: 15x16, colors: 4, empty: 9"}
-
-                    subvalue={<LabelNew />}>
-                    level 11
-                </DetailedButton>
-
-                <DetailedButton disabled
-                    subtitle={"solve previous to unlock"}
-                    subvalue={"locked"}>
-                    level 12
-                </DetailedButton> */}
-                {/* <div className="p-2 pb-4 text-center opacity-50 text-[10px] xhue-rotate-180 uppercase text-puzzle xbg-black/20 z-10 xsticky xtop-0  ">
-                    solve new to unlock next
-                </div> */}
-
-            </div>
-
-        </Modal >);
-}

@@ -25,7 +25,7 @@ import { GetLevelsSolved } from './game/gamestats';
 import { beepButton, beepLevelComplete, beepLevelStart, preBeepButton } from './utils/beep';
 import { createEffect, produceEndingEffect } from './game/gameeffects';
 
-export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, className, ...props }) {
+export function PagePlay({ game, onGameChange, onSolved, onBack, onNext, onRestart, className, ...props }) {
 
 
     const manager = useMemo(() => new GameManager(game), [game]);
@@ -147,6 +147,7 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
     useEffect(() => {
         if (counters[0] === 0) {
             setSolvedFX(createEffect());
+            onSolved?.();
         } else {
             setSolvedFX(null);
         }
@@ -214,6 +215,7 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
         setMsg("CLICK:" + cellXY.x + ":" + cellXY.y + ":" + manager.bordered());
         if (manager.bordered() && !isSameXY(cellXY, bygmodXY(cellXY))) return;
 
+        if (counters[0] === 0) return; //blocked if solved
         if (game.hintXY && !game.hintXY.find((hxy) => isSameXY(hxy, cellXY))) {
             return;
         }
@@ -328,19 +330,7 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
             let start = contentRect.at;
             let size = contentRect.size;
 
-
-
-
-            // progressFXdata && progressFXdata.index === 1 && (dx += progressFXdata.shake * 2 || 0);
-            // progressFXdata && progressFXdata.index === 1 && progressFXdata.switched && beepLevelStart();
-            //beepLevelStart();
             ctx.translate(dx, dy);
-
-            // if (progressFXdata && progressFXdata.index === 1) {
-            //     progressFXdata.switched && beepLevelStart();
-            //     ctx.save();
-            //     ctx.translate(progressFXdata.shake * 2, 0);
-            // }
 
             renderGameBg(ctx, manager, viewGridSize, startViewCell, progressFXdata);
 
@@ -351,9 +341,6 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
             if (!manager.bordered() || isSameXY(selected.at, bymodXY(selected.at, manager.size()))) {
                 renderSelect(ctx, selected, manager, startViewCell);
             }
-            // if (progressFXdata && progressFXdata.index === 1) {
-            //     ctx.restore();
-            // }
 
             //draw cells
             loopXY(viewGridSize, (viewXY) => {
@@ -423,9 +410,6 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
                     if (isOuter) currentColor = COLOR(color + (isOuter ? 100 : 0));
                     else currentColor = midColor(COLOR(preColor), COLOR(color), switchingDelta);
 
-                    //                    const rotateProgress2 = progressToCurve(rotateProgress + 1, [0.0, 0.4, 1.2, 0.95, 1.0]) - 1;
-                    //console.log("ROTATE PROG:", rotateProgress, rotateProgress2);
-                    //ds
                     drawRotated(ctx, rotateProgress * Math.PI / 2, () => {
                         drawNewFigure(ctx, cell.figure, conns, currentColor);
                     });
@@ -476,9 +460,6 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
 
                 ctx.restore();
             });
-            //const solveAge = solvedOn > 0 ? performance.now() - solvedOn : 0;
-
-
 
             renderSourceFgs(ctx, manager, viewGridSize, startViewCell, progressFXdata, solvedFXdata);
 
@@ -559,7 +540,7 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
             // scrollToCenter(true);
         }
     }, [game.taps])
-    const [menu, setMenu] = useState(false);
+
     return (
         <Window title={game.level > 0 ? game.level : "BEGIN"}
             subtitle={GAME_MODES[game.mode]}
@@ -581,7 +562,6 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
                 className={cn("grid justify-stretch items-stretch size-full")}
                 panZoom={panZoom}
                 zoomRange={zoomRange}
-                //contentSize={manager.bordered() ? contentSize : null}
                 contentSize={contentSize}
                 onPress={handleDown}
                 onRelease={handleUp}
@@ -590,7 +570,6 @@ export function PagePlay({ game, onGameChange, onBack, onNext, onRestart, classN
                 onPanZoomChange={handlePanZoomChange}
             >
                 <canvas ref={canvasRef} className='contain-size'></canvas>
-
             </PanZoomView >
 
         </Window >

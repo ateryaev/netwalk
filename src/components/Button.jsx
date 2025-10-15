@@ -77,7 +77,7 @@ export function CloseButton({ onClick, ...props }) {
                     disabled:invisible 
                      active:bg-white/20 focus:bg-white/20"
             {...props} onClick={handleClick}>
-            <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" ><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg>
+            <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" ><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg>
         </BaseButton>
     )
 }
@@ -113,8 +113,8 @@ export function MenuButton({ Svg, children, className, ...props }) {
     return (
         <BaseButton className={cn("items-center uppercase p-6 flex gap-2 justify-center",
             "text-darkpuzzle whitespace-nowrap",
-            "focus:ring-2 ring-puzzle/20 focus:bg-puzzle/10 disabled:opacity-50",
-            "active:ring-2 active:bg-puzzle/10",
+            " ring-puzzle/20 focus:bg-puzzle/10 disabled:opacity-50",
+            " active:bg-puzzle/10",
             className)}
             {...props}>
             {children}
@@ -174,7 +174,7 @@ export function DetailedButton({ children, safe, className, subtitle, value, sub
                     {value}
                 </div>
             </div>
-            <div className="flex items-center text-puzzle justify-between -mt-1 font-semibold xlowercase text-[90%] gap-2 opacity-80">
+            <div className="flex items-center justify-between -mt-1 font-semibold xlowercase text-[90%] gap-2 opacity-80">
                 <div className="text-ellipsis  overflow-hidden gap-1 flex items-center">
                     {subtitle}
                 </div>
@@ -210,7 +210,7 @@ export function SvgRestart({ className, ...props }) {
 }
 
 export function SvgBack({ className, ...props }) {
-    return (<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"
+    return (<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round"
         className={cn('', className)}><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 12l14 0" /><path d="M5 12l6 6" /><path d="M5 12l6 -6" /></svg>)
 }
 
@@ -218,6 +218,12 @@ export function SvgBack({ className, ...props }) {
 
 export function SvgPlay({ ...props }) {
     return (
-        <svg {...props} width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7 4v16l13 -8z" /></svg>
+        <svg {...props} width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={4} strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7 4v16l13 -8z" /></svg>
+    )
+}
+
+export function SvgBell({ ...props }) {
+    return (
+        <svg {...props} xmlns="http://www.w3.org/2000/svg" width="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" ><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6" /><path d="M9 17v1a3 3 0 0 0 6 0v-1" /></svg>
     )
 }

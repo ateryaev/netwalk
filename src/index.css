@@ -1,7 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap');
-
 @import "tailwindcss";
-
 
 @theme {
     --color-puzzle: #296;
@@ -9,9 +7,7 @@
     --color-white: #eefffc;
 }
 
-
 body {
-
     text-size-adjust: none;
     font-family: Fredoka, Tahoma, sans-serif, Verdana, Geneva, Tahoma, sans-serif;
     margin: 0;
@@ -20,7 +16,6 @@ body {
     font-weight: 600;
     font-size: 14px;
     letter-spacing: 0.5px;
-
 }
 
 /* bounce animation from scale-90 opacity-90 to 100 */

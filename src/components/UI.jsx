@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { cn } from "../utils/cn";
+import { SvgBell, SvgPlay } from "./Button";
 
 export function Inv({ children, className, ...props }) {
     return (
@@ -26,14 +27,9 @@ export function Blink({ children, className, ...props }) {
     );
 }
 export function LabelNew() {
+    return (<Blink><SvgBell /></Blink>)
+}
 
-
-    return (
-        <div className="bg-puzzle text-white xpuzzle px-1.5 -m-1.5 xring-puzzle rounded-xs lowercase hue-rotate-180">
-            <Blink>
-                new
-            </Blink>
-        </div>
-    );
-    //return <div className="bg-puzzle text-[#fff] px-1 ring-puzzle rounded-xs lowercase hue-rotate-180">new</div>
+export function LabelPlay() {
+    return (<Blink><SvgPlay /></Blink>)
 }
