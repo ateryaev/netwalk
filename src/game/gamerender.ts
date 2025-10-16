@@ -50,9 +50,9 @@ export function renderGameBg(ctx: any, manager: GameManager, viewGridSize: XY, s
 
     //ctx.clearRect(0, 0, viewGridSize.x * SIZE, viewGridSize.y * SIZE);
     const animate = (progressFX?.index === 1 || progressFX?.index % 10 === 2);
-    const animatedY = Math.floor(progressFX.progress * manager.size().y);
+    const animatedY = animate ? Math.floor(progressFX.progress * manager.size().y) : 0;
     //const animateProgress = progressFX.progress * manager.size().y - animatedY;
-    const efx = progressToCurve(progressFX.progress, [0, 1, 1, 0])
+    const efx = animate ? progressToCurve(progressFX.progress, [0, 1, 1, 0]) : 0;
 
     // draw bg chees grid
     loopXY(viewGridSize, (viewXY) => {

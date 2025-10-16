@@ -23,19 +23,51 @@ import { createEffect, playRotatedFx, produceEndingEffect } from './game/gameeff
 
 export function PagePlay({ mode, level, onMenu, onNext, className, ...props }) {
 
+    const [restarting, setRestarting] = useState(true);
+    const [progresFX, setProgressFX] = useState(null);
+    const [solvedFX, setSolvedFX] = useState(null);
+
     const gamesize = useMemo(() => GAME_LEVEL_SIZE(mode, level), [mode, level]);
     const [manager, setManager] = useState(() => new GameManager(mode, level));
 
+    //function 
     function handleRestart() {
-        const manager = new GameManager(mode, level);
-        setManager(manager);
+        setRestarting(true);
+        setTimeout(() => {
+            const manager = new GameManager(mode, level);
+            setManager(manager);
+            setRestarting(false);
+            setProgressFX(createEffect(1000));
+        }, 500);
     }
 
     useEffect(() => {
         if (manager.mode() !== mode || manager.level() !== level) {
-            setManager(new GameManager(mode, level));
+            setRestarting(true);
+            setTimeout(() => {
+                setManager(new GameManager(mode, level));
+                setRestarting(false);
+                setProgressFX(createEffect(1000));
+            }, 500);
         }
     }, [mode, level]);
+
+    useEffect(() => {
+        setTimeout(() => {
+            setRestarting(false);
+            console.log("EFFF")
+            setProgressFX(createEffect(1000));
+        }, 500);
+    }, []);
+
+    useEffect(() => {
+        if (manager.isSolved()) {
+            setTimeout(() => setSolvedFX(createEffect()), 250);
+        } else {
+            setSolvedFX(null);
+        }
+    }, [manager.isSolved()]);
+
 
     const [panZoom, setPanZoom] = useState({ center: mulXY(gamesize, SIZE / 2), zoom: 1 });
 
@@ -70,14 +102,12 @@ export function PagePlay({ mode, level, onMenu, onNext, className, ...props }) {
     const defaultZoomRef = useRef(0);
 
     const zoomRange = useMemo(() => {
-        //to see at leas 6x3 field!
         let defaultZoom = defaultZoomRef.current;
         if (defaultZoom < 0.1) {
             const defaultZoomX = viewSize.x / (6 * SIZE);
             const defaultZoomY = viewSize.y / (3 * SIZE);
             defaultZoom = Math.min(defaultZoomX, defaultZoomY);
             defaultZoomRef.current = defaultZoom;
-            //  console.log("defaultZoom", defaultZoom, viewSize.x);
         }
 
         defaultZoom = minmax(defaultZoom, 0.5, 1.0)
@@ -87,12 +117,8 @@ export function PagePlay({ mode, level, onMenu, onNext, className, ...props }) {
     }, [viewSize]);
 
     function handlePanZoomChange(newPanZoom) {
-        // if (newPanZoom.zoom < zoomRange.min) newPanZoom.zoom = zoomRange.min
-        // if (newPanZoom.zoom > zoomRange.max) newPanZoom.zoom = zoomRange.max
         setPanZoom(newPanZoom);
     }
-
-    // const preColorsRef = useRef(null);
 
     useEffect(() => {
         let to = null;
@@ -108,25 +134,6 @@ export function PagePlay({ mode, level, onMenu, onNext, className, ...props }) {
         const rotateProgress = progressToCurve(rotateProgress2 + 1, [0.0, 0.4, 1.2, 0.95, 1.0]) - 1;
         return rotateProgress;
     }
-
-    const [progresFX, setProgressFX] = useState(null);
-    const [solvedFX, setSolvedFX] = useState(null);
-
-    useEffect(() => {
-        if (manager.isSolved()) {
-            setSolvedFX(createEffect());
-            //onSolved?.();
-        } else {
-            setSolvedFX(null);
-        }
-    }, [manager]);
-
-    useEffect(() => {
-        //if (game.taps === 0) {
-        setProgressFX(createEffect(1000));
-        //}
-    }, [mode, level]);
-
 
     function handleDown(xy) {
         preBeepButton();
@@ -381,7 +388,7 @@ export function PagePlay({ mode, level, onMenu, onNext, className, ...props }) {
 
         return () => { cancelAnimationFrame(animationFrame); }
 
-    }, [viewSize, zoom, center, manager, selected, rotation, solvedFX]);
+    }, [viewSize, zoom, center, manager, selected, rotation, solvedFX, progresFX]);
 
     function getMiddleColRow() {
         const x = Math.floor(center.x / SIZE);
@@ -408,19 +415,20 @@ export function PagePlay({ mode, level, onMenu, onNext, className, ...props }) {
 
     return (
         <Window title={manager.level() || "BEGIN"}
-            subtitle={GAME_MODES[mode]}
+            subtitle={GAME_MODES[manager.mode()]}
             onBack={onMenu}
             className={className}
             footer={<GameFooter
                 taps={manager.taps()}
                 size={gamesize}
-                tutorial={level === 0 ? GAME_MODE_TUTORIALS[mode] : null}
-                solved={level < GetLevelsSolved(mode)}
-                random={GAME_LEVEL_RANDOM(mode, level)}
+                tutorial={manager.level() === 0 ? GAME_MODE_TUTORIALS[manager.mode()] : null}
+                solved={manager.level() < GetLevelsSolved(manager.mode())}
+                random={GAME_LEVEL_RANDOM(manager.mode(), manager.level())}
             />}
             infobar={manager.isSolved() && <GameOverBar onNext={onNext} onRestart={handleRestart} />}
             subheader={<GameSubHeader counters={manager.endCounters()}
                 onClickColor={scrollToColor} />}
+            erased={restarting}
             {...props}>
 
             <PanZoomView
@@ -434,7 +442,7 @@ export function PagePlay({ mode, level, onMenu, onNext, className, ...props }) {
                 onResize={handleResize}
                 onPanZoomChange={handlePanZoomChange}
             >
-                <canvas ref={canvasRef} className='contain-size'></canvas>
+                <canvas ref={canvasRef} className={cn('contain-size rotate-0x scale-100 rotate-0 duration-500 transition-all', restarting && 'duration-200 rotate-3 scale-125')}></canvas>
             </PanZoomView >
 
         </Window >
