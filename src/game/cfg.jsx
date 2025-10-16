@@ -55,4 +55,4 @@ export function COLOR_BALL(color) {
     }
 }
 
-export const TRANS_DURATION = 200;
+export const TRANS_DURATION = 300;

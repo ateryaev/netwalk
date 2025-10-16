@@ -1,8 +1,9 @@
-import { beepLevelComplete } from "../utils/beep";
+import { beepButton, beepLevelComplete } from "../utils/beep";
 import { drawStar } from "../utils/canvas";
 import { rnd } from "../utils/numbers";
 import { toXY, type XY } from "../utils/xy";
 import { COLOR } from "./cfg";
+import { isEnd } from "./gamedata";
 
 const stars: { x: number, y: number, color: string, size: number }[] = [];
 
@@ -59,4 +60,22 @@ export function produceEndingEffect(ctx: CanvasRenderingContext2D, size: XY, pha
         drawStar(ctx, star.x + dx, star.y + dy * (0.5 + star.size * 0.5), 25 + 25 * star.size, star.color);
     });
 
+}
+
+export function playRotatedFx(figure: number, source: number) {
+    if (figure === 0) {
+        return;
+    } else if (figure === 0b1111 && !source) {
+        beepButton(0.5);
+    } else if (source) {
+        beepButton(0.7);
+    } else if (figure === 0b1010 || figure === 0b0101) {
+        beepButton(0.9);
+    } else if (figure === 0b1100 || figure === 0b0011 || figure === 0b0110 || figure === 0b1001) {
+        beepButton(1.1);
+    } else if (isEnd(figure)) {
+        beepButton(1.5);
+    } else {
+        beepButton(1.3);
+    }
 }

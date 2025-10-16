@@ -29,84 +29,67 @@ function App() {
   const PAGE_TEST = "/test";
   const PAGE_PLAY_LEVEL = "/play/128";
 
-
   const { currentPage, currentData, pushPage, replacePage, goBack } = usePageHistory();
 
-
-  function handleNewGame(cols, rows, bordered) {
-    let newGame = createGame(cols, rows, bordered);
-    setGame(newGame);
-    pushPage(PAGE_PLAY);
-  }
-
-  function handleRestart() {
-    setRestarting(true);
-    setTimeout(() => {
-      const g = createGame(game.mode, game.level);
-      setGame(g);
-      setRestarting(false);
-      setSolved(false);
-    }, 500);
-
-    // shufleGame(game);
-    // onGameChange({ ...game });
-  }
-
-  function handleBack() {
-    //goBack()
+  function handleMenu() {
     pushPage(PAGE_MENU);
   }
 
-  //const [game, setGame] = useState(createGame(1, 6)); //load from localStorage or create new
-  //const [game, setGame] = useState(createGame(2, 1)); //load from localStorage or create new
-  const [game, setGame] = useState(createGame(4, 0)); //load from localStorage or create new
+  const [mode, setMode] = useState(0);
+  const [level, setLevel] = useState(0);
 
-  const [solved, setSolved] = useState(false);
+  //const [solved, setSolved] = useState(false);
   function handleLevelSelect(mode, level) {
+    setMode(mode);
+    setLevel(level);
     console.log("handleLevelSelect", mode, level);
     goBack(3); //close levels
-    setRestarting(true);
-    setTimeout(() => {
-      const g = createGame(mode, level);
-      setGame(g);
-      setRestarting(false);
-      setSolved(false);
-    }, 500);
+    // setRestarting(true);
+    // setTimeout(() => {
+    //   const g = createGame(mode, level);
+    //   setGame(g);
+    //   setRestarting(false);
+    //   setSolved(false);
+    // }, 500);
     //TODO: pushPage with new level, so we could back to prev?
   }
 
-  const [restarting, setRestarting] = useState(false);
+  //const [restarting, setRestarting] = useState(false);
   function handleNext() {
-    setRestarting(true);
-    setTimeout(() => {
-      const g = createGame(game.mode, game.level + 11);
-      setGame(g);
-      setRestarting(false);
-      setSolved(false);
-    }, 500);
+    setLevel(level + 1);
+    // setRestarting(true);
+    // setTimeout(() => {
+    //   const g = createGame(game.mode, game.level + 11);
+    //   setGame(g);
+    //   setRestarting(false);
+    //   setSolved(false);
+    // }, 500);
   }
 
-  function handleGameChange(newGame) {
-    if (solved) return; //block changes after solved
-    setGame(newGame);
-  }
+  // function handleGameChange(newGame) {
+  //   if (solved) return; //block changes after solved
+  //   setGame(newGame);
+  // }
 
-  function handleSolved() {
-    // pushPage(PAGE_MENU);
-    console.log("handleSolved", game.mode, game.level);
-    SetLevelSolved(game.mode, game.level);
-    setSolved(true);
-  }
+  // function handleSolved() {
+  //   // pushPage(PAGE_MENU);
+  //   console.log("handleSolved", game.mode, game.level);
+  //   SetLevelSolved(game.mode, game.level);
+  //   setSolved(true);
+  // }
 
   return (
     <>
-      <PagePlay game={game} onGameChange={handleGameChange}
-        onSolved={handleSolved}
-        erased={restarting}
+      <PagePlay
+        //game={game} onGameChange={handleGameChange}
+        mode={mode}
+        level={level}
+        //onSolved={handleSolved}
+        //erased={restarting}
         onNext={handleNext}
-        onRestart={handleRestart}
+        //onRestart={handleRestart}
         className={cn("transition-all", (currentPage !== PAGE_START) && "brightness-50 contrast-75 grayscale-50")}
-        onBack={handleBack} />
+        onMenu={handleMenu} />
 
       <PageMenu shown={(currentPage === PAGE_MENU)}
         onBack={goBack}

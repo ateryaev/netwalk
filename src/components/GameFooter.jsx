@@ -1,6 +1,6 @@
 import { Inv } from "./UI";
 
-export function GameFooter({ manager, taps, bordered, random, solved, tutorial, size, ...props }) {
+export function GameFooter({ taps, bordered, random, solved, tutorial, size, ...props }) {
     if (tutorial) return (
         <>
             {tutorial}

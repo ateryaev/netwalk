@@ -2,6 +2,7 @@ export type XY = {
     x: number;
     y: number;
 }
+
 export type RectXY = {
     at: XY;
     size: XY;
@@ -68,7 +69,6 @@ export function midXYArray(arr: RoXY[]): XY {
         sumY += arr[i].y;
     }
     return toXY(sumX / arr.length, sumY / arr.length);
-    //return toXY(sumX, sumY);
 }
 
 export function distXYArray(arr: RoXY[]): number {
@@ -109,7 +109,6 @@ export function operXY(func: (...args: number[]) => number, ...xys: XY[]) {
     return toXY(func(...xx), func(...yy));
 }
 
-
 export function fromtoXY(from: XY, to: XY, progress: number): XY {
     //done - if from-to is very small
     const result = toXY(
@@ -119,3 +118,6 @@ export function fromtoXY(from: XY, to: XY, progress: number): XY {
     return (Math.abs(result.x - to.x) < 0.1 && Math.abs(result.y - to.y) < 0.1) ? to : result;
 }
 
+export function isXYInSize(xy: XY, size: XY): boolean {
+    return xy.x >= 0 && xy.y >= 0 && xy.x < size.x && xy.y < size.y;
+}

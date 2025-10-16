@@ -1,5 +1,5 @@
 import type { Array2d } from "../utils/array2d";
-import { toXY, type XY } from "../utils/xy";
+import { isXYInSize, toXY, type XY } from "../utils/xy";
 
 export const TOP = 0b1000;
 export const RIGHT = 0b0100;
@@ -15,13 +15,21 @@ export type Cell = {
     source: COLOR;
 }
 
+//only data to save/load to/from localStorage
 export interface GameData extends Array2d<Cell> {
     bordered: boolean,
     mode: number,
     level: number,
     taps: number,
-    hintText: string | undefined,
-    hintXY: XY[] | undefined,
+    hintXY: XY[] | undefined
+}
+
+export function cellFromDir(game: GameData, xy: XY, dir: DIR): Cell {
+    const newXY = moveXY(xy, dir);
+    if (game.bordered && !isXYInSize(newXY, game.size)) {
+        return { figure: 0, source: 0 };
+    }
+    return game.get(newXY) || { figure: 0, source: 0 };
 }
 
 export function isMix(color: number): boolean {
@@ -44,10 +52,6 @@ export function rotateFigure(figure: number, times: number = 1) {
     times = times % 4;
     return (figure >> times) | (figure << (4 - times)) & 0b1111;
 }
-
-// export function invertDir(dir: DIR): number {
-//     return (dir >> 2) | (dir << 2) & 0b1111;
-// }
 
 export function invertFigure(figure: number): number {
     return (figure >> 2) | (figure << 2) & 0b1111;

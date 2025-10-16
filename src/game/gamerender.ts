@@ -1,7 +1,7 @@
-import { COLOR, SIZE, TRANS_DURATION } from "./cfg";
+import { COLOR, SIZE } from "./cfg";
 import { drawTransform, midColor } from "../utils/canvas";
 import type { GameManager } from "./gamemanager";
-import { progress, progressToCurve } from "../utils/numbers";
+import { progressToCurve } from "../utils/numbers";
 import { addXY, bymodXY, isSameXY, loopXY, mulXY, subXY, toXY, type XY } from "../utils/xy";
 import { drawCircle, drawRoundRect, strokeCircle, strokeLine } from "../utils/canvas";
 import { BOTTOM, LEFT, RIGHT, TOP } from "./gamedata";
@@ -83,19 +83,19 @@ export function renderGameBg(ctx: any, manager: GameManager, viewGridSize: XY, s
         }
         ctx.restore();
     });
-
 }
 
 export function renderSelect(ctx: any, selected: any, manager: GameManager, startViewCell: XY) {
+    if (!selected) return;
     //draw selection
-    const selectProgress = progress(selected.when, TRANS_DURATION);
+    const selectProgress = 1;//progress(selected.when, TRANS_DURATION);
     if (selectProgress > 0) {
         const cellRect = manager.getCellRect(selected.at);
         const gameXY = bymodXY(selected.at, manager.size());
         const pos = subXY(selected.at, startViewCell);
         const delta = subXY(cellRect.at, gameXY);
         const trans = mulXY(addXY(pos, delta), SIZE);
-        const phase = selected.active ? selectProgress : 1 - selectProgress;
+        const phase = 1;// selected.active ? selectProgress : 1 - selectProgress;
         drawTransform(ctx, trans, () => drawSelection(ctx, phase, cellRect.size));
     }
 }
@@ -111,6 +111,7 @@ function drawHint(ctx: any) {
 }
 
 export function renderHint(ctx: any, gameXY: any, startViewCell: XY) {
+    if (!gameXY) return;
     const pos = subXY(gameXY, startViewCell);
     const delta = subXY(gameXY, gameXY);
     const trans = mulXY(addXY(pos, delta), SIZE);

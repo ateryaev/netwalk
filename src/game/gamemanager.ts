@@ -1,29 +1,62 @@
 import type { Cell, GameData } from "./gamedata";
-import { BOTTOM, LEFT, moveXY, RIGHT, rotateFigure, TOP, type DIR } from "./gamedata";
-import { addXY, bymodXY, isSameXY, loopXY, toXY, type RectXY, type XY } from "../utils/xy";
+import { BOTTOM, invertFigure, isEnd, isMix, isOn, LEFT, moveXY, RIGHT, rotateFigure, toDirs, TOP, type DIR } from "./gamedata";
+import { addXY, bymodXY, distXY, isSameXY, loopXY, toXY, type RectXY, type XY } from "../utils/xy";
+import { createArray2d, type Array2d } from "../utils/array2d";
+import { rnd } from "../utils/numbers";
+import { createGame } from "./gamecreate";
+//import { createGame } from "./gamecreate";
 
 export class GameManager {
     private game: GameData;
 
-    constructor(game: GameData) {
-        this.game = game;
+    private colors: Array2d<number>;
+    private counters: Map<number, number>;
+    private connections: Array2d<number>;
+
+    private preColors: Array2d<number>;
+
+    constructor(mode: number, level: number) {
+        console.log("CREATE", mode, level)
+        this.game = createGame(mode, level);
+        level > 0 && this.shufleGame();
+        this.colors = this.calcColors();
+        this.counters = this.calcCounters();
+        this.connections = this.calcConnections();
+        this.preColors = this.colors;
     }
 
-    size(): Readonly<XY> {
-        return this.game.size
-    }
-    bordered(): boolean {
-        return this.game.bordered;
-    }
-    cellAt(x: number, y: number): Cell;
-    cellAt(xy: { x: number; y: number }): Cell;
+    // constructor(game: GameData) {
+    //     this.game = game;
+    //     this.colors = this.calcColors();
+    //     this.counters = this.calcCounters();
+    //     this.connections = this.calcConnections();
+    //     this.preColors = this.colors;
+    // }
 
-    cellAt(arg1: number | XY, arg2?: number): Cell {
-        const isXY = (typeof arg1 !== 'number');
-        const x = isXY ? arg1.x : arg1;
-        const y = isXY ? arg1.y : (arg2 as number);
-        return this.game.get({ x, y }) || { figure: 0, source: 0 };
+    endCounters(): Map<number, number> {
+        return this.counters;
     }
+
+    connectionAt(xy: XY, rotateAt: XY) {
+        if (rotateAt && isSameXY(xy, rotateAt)) return 0;
+        return this.connections.get(xy) || 0;
+    }
+
+    level() { return this.game.level; }
+    mode() { return this.game.mode; }
+    hint() { return this.game.hintXY?.[0] || null; }
+    taps() { return this.game.taps; }
+    size(): Readonly<XY> { return this.game.size }
+    bordered(): boolean { return this.game.bordered; }
+    isSolved(): boolean { return this.counters.get(0) === 0; }
+    colorAt(xy: XY): number { return this.colors.get(xy) || 0; }
+    preColorAt(xy: XY): number { return this.preColors.get(xy) || 0; }
+
+    //connectionAt(xy: XY, connections: Array2d<number>) { return connections.get(xy) || 0; }
+
+    figureAt(xy: XY): number { return this.cellAt(xy).figure; }
+    sourceAt(xy: XY): number { return this.cellAt(xy).source; }
+    cellAt(xy: XY) { return this.game.get(xy) || { figure: 0, source: 0 }; }
 
     cellAtDir(xy: XY, dir: DIR): Cell {
         const { x, y } = xy;
@@ -38,15 +71,14 @@ export class GameManager {
     }
 
     getCellRect(xy: XY): RectXY {
-
         const cell = this.cellAt(xy);
         let left = xy.x, right = xy.x, top = xy.y, bottom = xy.y;
 
         if (cell.source > 0) {
-            while (this.cellAt(left - 1, xy.y).source === cell.source) left--;
-            while (this.cellAt(right + 1, xy.y).source === cell.source) right++;
-            while (this.cellAt(xy.x, top - 1).source === cell.source) top--;
-            while (this.cellAt(xy.x, bottom + 1).source === cell.source) bottom++;
+            while (this.cellAt(toXY(left - 1, xy.y)).source === cell.source) left--;
+            while (this.cellAt(toXY(right + 1, xy.y)).source === cell.source) right++;
+            while (this.cellAt(toXY(xy.x, top - 1)).source === cell.source) top--;
+            while (this.cellAt(toXY(xy.x, bottom + 1)).source === cell.source) bottom++;
         }
 
         return {
@@ -59,7 +91,6 @@ export class GameManager {
         const rect2 = this.getCellRect(xy2);
         const rect1 = this.getCellRect(xy1);
         return isSameXY(rect1.at, rect2.at);
-        //return xy1.x >= rect2.x && xy1.x < rect2.x + rect2.cols && xy1.y >= rect2.y && xy1.y < rect2.y + rect2.rows;
     }
 
     findAllSources(): XY[] {
@@ -92,10 +123,20 @@ export class GameManager {
         return newFigure;
     }
 
+    canRotateAt(xy: XY): boolean {
+        const nxy = bymodXY(xy, this.size());
+        if (this.isSolved()) return false;
+        if (this.bordered() && !isSameXY(xy, nxy)) return false;
+        if (this.game.hintXY && !this.game.hintXY.find((hxy) => isSameXY(hxy, nxy))) {
+            return false;
+        }
+        return true;
+    }
+
     rotateAtXY(xy: XY) {
         const rect = this.getCellRect(xy);
-
         const newFigures: any[] = [];
+
         loopXY(rect.size, (dxy: XY) => {
             const cellXY = addXY(dxy, rect.at);
             newFigures.push({ xy: cellXY, figure: this.getRotatedFigureAt(cellXY.x, cellXY.y) })
@@ -104,5 +145,112 @@ export class GameManager {
         newFigures.forEach((item: any) => {
             this.cellAt(item.xy).figure = item.figure;
         });
+
+        this.preColors = this.colors;
+        this.colors = this.calcColors();
+        this.connections = this.calcConnections();
+        this.counters = this.calcCounters();
+
+        if (this.game.hintXY) {
+            //remove first occurance of cellXY from hints
+            this.game.hintXY = this.game.hintXY.filter((hxy) => !isSameXY(hxy, xy));
+        }
+
+        // make it work for 1111 or 0000 in big source
+        // const figure = this.figureAt(xy);
+        // if (figure !== 0b1111) 
+        this.game.taps++;
     }
+
+    calcColors() {
+        const sources = this.findAllSources();
+        const newColors = createArray2d<number>(this.size());
+        sources.forEach((sxy) => {
+            newColors.set(sxy, this.cellAt(sxy).source);
+            const actives = [sxy];
+            const color = newColors.get(sxy) || 0;
+            for (let i = 0; i < actives.length; i++) {
+                const xy = actives[i];
+                const cell = this.cellAt(xy);
+                toDirs(cell.figure).forEach((dir) => {
+                    const xy2 = moveXY(xy, dir);
+
+                    if (this.bordered() && !isSameXY(xy2, bymodXY(xy2, this.size()))) return;
+
+                    const cell2 = this.cellAtDir(xy, dir);
+                    const isConnected = (cell2.figure & invertFigure(dir));
+                    const color2 = newColors.get(xy2) || 0;
+                    const includesColor = (color2 & color);
+                    if (!cell2.source && isConnected && !includesColor) {
+                        newColors.set(xy2, color2 | color);
+                        actives.push(xy2);
+                    }
+                });
+            }
+        });
+        return newColors;
+    }
+
+    calcCounters(): Map<number, number> {
+        const newCounter = new Map<number, number>;
+        newCounter.set(0, 0);
+        this.colors.forEach((color, xy) => {
+            const cell = this.cellAt(xy);
+            if (cell.source) {
+                newCounter.set(cell.source, newCounter.get(cell.source) || 0);
+            } else if (isEnd(cell.figure)) {
+                color = color || 0;
+                color = isMix(color) ? 0 : color;
+                const oldCount = newCounter.get(color) || 0;
+                newCounter.set(color, oldCount + 1);
+            }
+        });
+        return newCounter;
+    }
+
+    calcConnections(): Array2d<number> {
+        const connections = createArray2d<number>(this.size());
+        connections.forEach((_, xy) => {
+            let conns = 0b0000;
+            toDirs(this.cellAt(xy).figure).forEach((dir) => {
+                const xy2 = moveXY(xy, dir);
+                const cell2 = this.cellAtDir(xy, dir);
+                const color1 = this.colors.get(xy);
+                const color2 = this.colors.get(xy2);
+                if (color1 === color2) {
+                    conns |= (invertFigure(cell2.figure) & dir);
+                }
+            });
+            connections.set(xy, conns);
+        });
+        return connections;
+    }
+
+    findClosestXY(fromXY: XY, color: number): XY | null {
+        let dist = 9999;
+        let closestXY = null;
+        loopXY(this.game.size, (xy) => {
+            const cell = this.cellAt(xy);
+            const cellColor = this.colors.get(xy) || 0;
+            if ((isOn(color) && cell.source === color) ||
+                (isEnd(cell.figure) && !isOn(cellColor) && !isOn(color))) {
+                const newDist = distXY(fromXY, xy);
+                if (newDist < dist) {
+                    closestXY = xy;
+                    dist = newDist;
+                }
+            }
+        });
+        return closestXY;
+    }
+
+    shufleGame() {
+
+        this.game.forEach((_, xy) => {
+            const times = rnd(3);//0, 1, 2, 3
+            for (let i = 0; i < times; i++) this.rotateAtXY(xy);
+        });
+        this.game.taps = 0;
+    }
+
 }

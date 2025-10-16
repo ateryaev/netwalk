@@ -3,7 +3,7 @@ import { type XY } from "./xy";
 
 export type Array2d<Type> = {
     size: XY;
-    get: (xy: XY) => Type | undefined,
+    get: (xy: XY) => Type,
     set: (at: XY, val: Type) => void,
     data: () => Type[],
     forEach: (callback: (val: Type, index: XY) => void) => void
