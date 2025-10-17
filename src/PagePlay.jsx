@@ -20,9 +20,11 @@ import { GAME_LEVEL_RANDOM, GAME_LEVEL_SIZE, GAME_MODE_TUTORIALS, GAME_MODES } f
 import { GetLevelsSolved } from './game/gamestats';
 import { beepButton, beepLevelComplete, beepLevelStart, preBeepButton } from './utils/beep';
 import { createEffect, playRotatedFx, produceEndingEffect } from './game/gameeffects';
+import { useGame } from './GameContext';
 
 export function PagePlay({ mode, level, onMenu, onNext, className, ...props }) {
 
+    const gameCtx = useGame();
     const [restarting, setRestarting] = useState(true);
     const [progresFX, setProgressFX] = useState(null);
     const [solvedFX, setSolvedFX] = useState(null);
@@ -166,6 +168,7 @@ export function PagePlay({ mode, level, onMenu, onNext, className, ...props }) {
         const source = manager.sourceAt(cellXY);
         playRotatedFx(figure, source);
         //onGameChange({ ...game });
+        gameCtx.updateProgress({ current: manager.game });
     }
 
     const [smoothScrollTo, setSmoothScrollTo] = useState(null);

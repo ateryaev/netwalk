@@ -5,8 +5,10 @@ import { Blink, Inv, LabelNew, LabelPlay } from "./components/UI";
 import { cn } from "./utils/cn";
 import { GAME_MODE_BORDERED, GAME_MODE_EMPTIES, GAME_MODE_SCORE, GAME_MODE_TO_UNLOCK, GAME_MODES } from "./game/gameconstants";
 import { GetAvailableModes, GetLevelsSolved, GetTotalScores } from "./game/gamestats";
+import { useGame } from "./GameContext";
 
 export function PageMenu({ shown, onBack, onAbout, onSettings, onStory, onRating }) {
+    const { settings } = useGame();
     return (
         <Modal shown={shown} title={"Netwalk"} onClose={onBack}>
             <div className='flex flex-col gap-0 items-stretch p-2'>
@@ -24,8 +26,8 @@ export function PageMenu({ shown, onBack, onAbout, onSettings, onStory, onRating
                 >leaderboard</DetailedButton>
                 <DetailedButton
                     onClick={onSettings}
-                    value={"Player123"}
-                    subtitle={"sounds: OFF, music: OFF"}
+                    value={<div className="normal-case">{settings.name}</div>}
+                    subtitle={`sound: ${settings.sound ? "ON" : "OFF"} music: ${settings.music ? "ON" : "OFF"}`}
                     subvalue={"name"}
                 >Settings</DetailedButton>
                 <DetailedButton

@@ -33,3 +33,12 @@ export function GetSolved(): number[] {
 export function SetLevelSolved(mode: number, level: number) {
     DATA.solved[mode] = Math.max(DATA.solved[mode] || 0, level);
 }
+
+export function GetSettings() {
+    return {
+        sound: true,
+        music: false,
+        vibro: true,
+        name: "Player"
+    }
+}

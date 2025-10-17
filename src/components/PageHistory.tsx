@@ -19,12 +19,12 @@ export const usePageHistory = () => {
     }, []);
 
     useEffect(() => {
-        const main = document.title.split("/")[0];
+        const main = document.title.split(" ")[0];
         if (!currentPage || currentPage === "/") {
             document.title = main;
             return;
         }
-        const newTitle = main + currentPage;
+        const newTitle = main + " " + currentPage;
         document.title = newTitle;
     }, [currentPage]);
 
