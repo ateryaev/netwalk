@@ -2,8 +2,8 @@ import type { Cell, GameData } from "./gamedata";
 import { BOTTOM, invertFigure, isEnd, isMix, isOn, LEFT, moveXY, RIGHT, rotateFigure, toDirs, TOP, type DIR } from "./gamedata";
 import { addXY, bymodXY, distXY, isSameXY, loopXY, toXY, type RectXY, type XY } from "../utils/xy";
 import { createArray2d, type Array2d } from "../utils/array2d";
-import { rnd } from "../utils/numbers";
 import { createGame } from "./gamecreate";
+import { CREATE_RND_FUNC } from "./gameconstants";
 //import { createGame } from "./gamecreate";
 
 export class GameManager {
@@ -245,12 +245,11 @@ export class GameManager {
     }
 
     shufleGame() {
-
+        const rndFunc = CREATE_RND_FUNC(this.game.mode, this.game.level, 99);
         this.game.forEach((_, xy) => {
-            const times = rnd(3);//0, 1, 2, 3
+            const times = rndFunc(3);//0, 1, 2, 3
             for (let i = 0; i < times; i++) this.rotateAtXY(xy);
         });
         this.game.taps = 0;
     }
-
 }

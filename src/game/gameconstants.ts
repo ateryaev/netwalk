@@ -1,5 +1,6 @@
+import { rnd } from "../utils/numbers";
 import { createRnd } from "../utils/rnd";
-import { type XY } from "../utils/xy";
+import { toXY, XY1, type XY } from "../utils/xy";
 
 export const GAME_MODES = [
     "Too young to loose", //only one color, many empties, bordered (basic tutorial), 5x5+
@@ -57,17 +58,36 @@ export function GAME_LEVEL_RANDOM(mode: number, level: number): boolean {
     return x === Math.sqrt(clampLevel);
 }
 
+export function CREATE_RND_FUNC(mode: number, level: number, seed: number): (max: number) => number {
+    const isRandomRnd = GAME_LEVEL_RANDOM(mode, level);
+    const rndFunc = isRandomRnd ? rnd : createRnd(mode * (1000 + seed) + level + seed / 2);
+    return rndFunc;
+}
+
 export function GAME_LEVEL_COLORS(mode: number, level: number): number {
-    const rndFunc = createRnd(mode * 1000 + level + 100);
+    const rndFunc = CREATE_RND_FUNC(mode, level, 100);
     let maxColors = 1;
     if (level > 5) maxColors = 2;
-    if (level > 20) maxColors = 3;
-    if (level > 40) maxColors = 4;
-    return rndFunc(maxColors) + 1;
+    if (level > 10) maxColors = 3;
+    if (level > 20) maxColors = 4;
+    maxColors = Math.min(maxColors, [1, 2, 3, 4, 4][mode]);
+    return rndFunc(maxColors - 1) + 1;
+}
+
+export function GAME_LEVEL_SOURCES(mode: number, level: number): XY[] {
+    const count = GAME_LEVEL_COLORS(mode, level);
+    const possibleSizes = [XY1, XY1, XY1, XY1, toXY(1, 2), toXY(2, 1), toXY(1, 2), toXY(2, 1), toXY(2, 2)];
+    const maxPossible = possibleSizes.length - 1 - [8, 3, 1, 0, 0][mode];
+    const rndFunc = CREATE_RND_FUNC(mode, level, 101);
+    const result = [];
+    for (let i = 0; i < count; i++) {
+        result.push(possibleSizes[rndFunc(maxPossible)]);
+    }
+    return result;
 }
 
 export function GAME_LEVEL_EMPTY(mode: number, level: number): number {
-    const rndFunc = createRnd(mode * 999 + level);
+    const rndFunc = CREATE_RND_FUNC(mode, level, 211);
     const [min, max] = GAME_MODE_EMPTIES[mode];
     const size = GAME_LEVEL_SIZE(mode, level);
     const minEmpty = Math.floor(size.x * size.y * min / 100);
@@ -86,8 +106,10 @@ export function GAME_MODE_AVAILABLE(mode: number, preSolved: number): boolean {
 }
 
 export function GAME_MODE_TO_UNLOCK(mode: number, preSolved: number): number {
+    return 0;
     if (mode === 0) return 0;
-    if (preSolved === 0) return 9999;
+
+    if (preSolved === 0) return Infinity;
     const needed = [10, 10, 10, 10];
     return Math.max(needed[mode - 1] - preSolved, 0);
 }

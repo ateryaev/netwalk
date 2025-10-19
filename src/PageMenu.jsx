@@ -1,4 +1,4 @@
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 import { DetailedButton } from "./components/Button";
 import Modal from "./components/Modal";
 import { Blink, Inv, LabelNew, LabelPlay } from "./components/UI";
@@ -8,20 +8,36 @@ import { GetAvailableModes, GetLevelsSolved, GetTotalScores } from "./game/games
 import { useGame } from "./GameContext";
 
 export function PageMenu({ shown, onBack, onAbout, onSettings, onStory, onRating }) {
-    const { settings } = useGame();
+    const { settings, getLevelsSolved } = useGame();
+
+    const totalScore = useMemo(() => {
+        return GAME_MODES.reduce((total, _, mode) =>
+            total + GAME_MODE_SCORE(mode, getLevelsSolved(mode)), 0);
+    }, [getLevelsSolved]);
+
+    //use: GAME_MODE_AVAILABLE, getLevelsSolved, implement: availableModes
+    const availableModes = useMemo(() => {
+        let modes = 1;
+        for (let mode = 1; mode < GAME_MODES.length; mode++) {
+            if (GAME_MODE_TO_UNLOCK(mode, getLevelsSolved(mode - 1)) === 0) modes++;
+            else break;
+        }
+        return modes;
+    }, [getLevelsSolved]);
+
     return (
         <Modal shown={shown} title={"Netwalk"} onClose={onBack}>
             <div className='flex flex-col gap-0 items-stretch p-2'>
                 <DetailedButton onClick={onStory}
-                    value={GetLevelsSolved(GetAvailableModes() - 1) === 0 && <LabelNew />}
+                    value={getLevelsSolved(availableModes - 1) === 0 && <LabelNew />}
                     subvalue={""}
-                    subtitle={"modes available: " + GetAvailableModes()}
+                    subtitle={"modes available: " + availableModes}
                 >game levels</DetailedButton>
                 <DetailedButton
                     onClick={onRating}
-                    value={GetTotalScores().toLocaleString('en-US')}
+                    value={totalScore.toLocaleString('en-US')}
                     subvalue={"points"}
-                    subtitle={"global rank: 42"}
+                    subtitle={"global rank: ??"}
 
                 >leaderboard</DetailedButton>
                 <DetailedButton
@@ -44,6 +60,8 @@ export function PageMenu({ shown, onBack, onAbout, onSettings, onStory, onRating
 
 
 export function PageModes({ shown, onModeSelect, onBack, onClose, ...props }) {
+    const { getLevelsSolved } = useGame();
+
     function ModeButton({ mode, points, emptyFrom, emptyTo, toUnlock, bordered, ...props }) {
         let subtitle = null;
         if (toUnlock > 100) subtitle = "play more to unlock"
@@ -64,11 +82,12 @@ export function PageModes({ shown, onModeSelect, onBack, onClose, ...props }) {
     return (
         <Modal shown={shown} title={"game modes"} onBack={onBack} onClose={onClose}>
             <div className='p-2 flex flex-col gap-0 items-stretch'>
-                {GAME_MODES.map((mode, index) => (
+                {GAME_MODES.map((modeName, index) => (
                     <ModeButton key={index}
-                        toUnlock={GAME_MODE_TO_UNLOCK(index, GetLevelsSolved(index - 1))}
-                        mode={mode}
-                        points={GAME_MODE_SCORE(index, GetLevelsSolved(index))}
+                        toUnlock={GAME_MODE_TO_UNLOCK(index, getLevelsSolved(index - 1))}
+                        mode={modeName}
+                        //points={GAME_MODE_SCORE(index, GetLevelsSolved(index))}
+                        points={GAME_MODE_SCORE(index, getLevelsSolved(index))}
                         emptyFrom={GAME_MODE_EMPTIES[index][0]}
                         emptyTo={GAME_MODE_EMPTIES[index][1]}
                         bordered={GAME_MODE_BORDERED[index]}

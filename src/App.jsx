@@ -82,8 +82,8 @@ function App() {
     pushPage(PAGE_MENU);
   }
 
-  const [mode, setMode] = useState(4);
-  const [level, setLevel] = useState(0);
+  const [mode, setMode] = useState(2);
+  const [level, setLevel] = useState(8);
 
   function handleLevelSelect(mode, level) {
     setMode(mode);

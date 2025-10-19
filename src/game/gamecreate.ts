@@ -1,12 +1,21 @@
 import { BOTTOM, cellFromDir, invertFigure, isEnd, LEFT, moveXY, RIGHT, rotateFigure, TOP, type DIR, type GameData } from "./gamedata";
-import { rnd } from "../utils/numbers";
-import { addXY, bymodXY, isSameXY, loopXY, operXY, toXY, type RectXY, type XY } from "../utils/xy";
+import { addXY, bymodXY, isSameXY, loopXY, subXY, toXY, XY1, type RectXY, type XY } from "../utils/xy";
 import { createArray2d } from "../utils/array2d";
-import { GAME_LEVEL_COLORS, GAME_LEVEL_EMPTY, GAME_LEVEL_SIZE, GAME_MODE_BORDERED } from "./gameconstants";
-import { createRnd } from "../utils/rnd";
+import { CREATE_RND_FUNC, GAME_LEVEL_EMPTY, GAME_LEVEL_SIZE, GAME_LEVEL_SOURCES, GAME_MODE_BORDERED } from "./gameconstants";
 import { createGameTutorial0, createGameTutorial1, createGameTutorial2, createGameTutorial3, createGameTutorial4 } from "./gametutorials";
 
 function initSource(game: GameData, cellRect: RectXY, color: number) {
+
+    let overlap = false;
+    loopXY(addXY(cellRect.size, toXY(2, 2)), (xy) => {
+        const cellXY = addXY(subXY(cellRect.at, XY1), xy);
+        const cell = game.get(cellXY)!;
+        if (cell.source !== 0 || cell.figure !== 0) {
+            overlap = true;
+        }
+    });
+
+    if (overlap) return null;
 
     const ends: XY[] = [];
     loopXY(cellRect.size, (xy) => {
@@ -39,6 +48,25 @@ function emptyDirs(game: GameData, cellXY: XY, hasBorders: boolean = true): DIR[
     return available;
 }
 
+function generateNewEnd(game: GameData, ends: XY[], rndFunc: (max: number) => number, bordered: boolean) {
+    const fromIdx = rndFunc(ends.length - 1);
+    const end = ends[fromIdx];
+    const cell = game.get(end);
+    const canGoTo = emptyDirs(game, end, bordered);
+
+    if (canGoTo.length > 0) {
+        const dir = canGoTo[rndFunc(canGoTo.length - 1)];
+        cell!.figure |= dir;
+        const opXy = moveXY(end, dir);
+        const opCell = game.get(opXy);
+        opCell!.figure |= invertFigure(dir);
+        ends.push(opXy);
+    } else {
+        ends.splice(fromIdx, 1);
+    }
+    return ends;
+}
+
 export function createGame(mode: number, level: number): GameData {
 
     if (mode === 0 && level === 0) {
@@ -56,13 +84,12 @@ export function createGame(mode: number, level: number): GameData {
     if (mode === 4 && level === 0) {
         return createGameTutorial4();
     }
-    const rndFunc = createRnd(mode * 995 + level * 13 + 23);
-    console.log("CREATE GAME", rndFunc(2), rndFunc(2), rndFunc(2), rndFunc(2), rndFunc(2));
+    //const rndFunc =  createRnd(mode * 995 + level * 13 + 23);
+    const rndFunc = CREATE_RND_FUNC(mode, level, 991);
+    console.log("CREATE GAME RND:", rndFunc(2), rndFunc(2), rndFunc(2), rndFunc(2), rndFunc(2));
 
     const size = GAME_LEVEL_SIZE(mode, level);
-    const empty = GAME_LEVEL_EMPTY(mode, level); //not used now
-    const colors = GAME_LEVEL_COLORS(mode, level); //not used now
-    console.log("CREATE GAME", { mode, level, size, empty, colors });
+    const empty = GAME_LEVEL_EMPTY(mode, level);
     const cols = size.x;
     const rows = size.y;
     const bordered = GAME_MODE_BORDERED[mode];
@@ -72,50 +99,49 @@ export function createGame(mode: number, level: number): GameData {
         ...createArray2d(size)
     };
 
-    game.forEach((_, index) => { game.set(index, { figure: 0, source: 0 }) })
 
-    const source = rnd(1);
 
-    const sourceXY1 = operXY(Math.floor, toXY((cols - 1) / 2, (rows - 0) / 2));
-    const sourceXY2 = operXY(Math.floor, toXY((cols - 1) / 2, (rows - 0) / 4));
-    const sourceXY3 = operXY(Math.floor, toXY((cols - 1) / 2, (rows - 0) * 3 / 4));
 
+
+    // const sourceXY1 = operXY(Math.floor, toXY((cols - 1) / 2, (rows - 0) / 2));
+    // const sourceXY2 = operXY(Math.floor, toXY((cols - 1) / 2, (rows - 0) / 4));
+    // const sourceXY3 = operXY(Math.floor, toXY((cols - 1) / 2, (rows - 0) * 3 / 4));
+
+
+    const firstColor = rndFunc(1);
     let ends: XY[] = [];
 
-    if (colors === 1) {
-        const ends1 = initSource(game, { at: sourceXY1, size: toXY(1, 1) }, 0b0001 << source);
-        ends = ends.concat(ends1);
-    } else if (colors === 2) {
-        const ends2 = initSource(game, { at: sourceXY2, size: toXY(1, 1) }, (0b0001 << (source + 1) % 4));
-        const ends3 = initSource(game, { at: sourceXY3, size: toXY(1, 1) }, (0b0001 << (source + 2) % 4));
-        ends = ends.concat(ends2).concat(ends3);
-    } else {
-        const ends1 = initSource(game, { at: sourceXY1, size: toXY(1, 1) }, 0b0001 << source);
-        const ends2 = initSource(game, { at: sourceXY2, size: toXY(1, 1) }, (0b0001 << (source + 1) % 4));
-        const ends3 = initSource(game, { at: sourceXY3, size: toXY(1, 1) }, (0b0001 << (source + 2) % 4));
-        ends = ends.concat(ends1).concat(ends2).concat(ends3);
-    }
 
+    game.forEach((_, index) => { game.set(index, { figure: 0, source: 0 }) })
+
+    const sourceSizes = GAME_LEVEL_SOURCES(mode, level);
+    const colors = sourceSizes.length;
+    console.log("CREATE GAME", { mode, level, empty, colors, W: size.x, H: size.y });
+
+    let colorsPool = colors;
+    let trialsPool = colors * 4;
+
+
+    while (colorsPool > 0 && trialsPool > 0) {
+        trialsPool--;
+        const size = sourceSizes[colorsPool - 1];
+        const at = toXY(rndFunc(cols - size.x), rndFunc(rows - size.y));
+        //const at = toXY(rnd(cols - size.x), rnd(rows - size.y));
+        let endsN = initSource(game, { at, size }, 0b0001 << (firstColor + colorsPool) % 4);
+        if (endsN) {
+            console.log("SOURCE CREATED AT:", at, "SIZE:", size);
+            endsN = generateNewEnd(game, endsN, rndFunc, bordered);
+            ends = ends.concat(endsN);
+            colorsPool--;
+        }
+    }
+    console.log("SOURCE ENDS CREATED, REMAINING COLORS/TRIALS:", colorsPool, trialsPool);
 
     //TODO: make sure all sources having at least one exit
     //TODO: make sure no sources using all exits
 
     for (let i = 0; i < cols * rows * 2 && ends.length > 0; i++) {
-        const fromIdx = rndFunc(ends.length - 1);
-        const end = ends[fromIdx];
-        const cell = game.get(end);
-        const canGoTo = emptyDirs(game, end, bordered);
-
-        if (canGoTo.length > 0) {
-            const dir = canGoTo[rndFunc(canGoTo.length - 1)];
-            cell!.figure |= dir;
-            const opXy = moveXY(end, dir);
-            const opCell = game.get(opXy);
-            opCell!.figure |= invertFigure(dir);
-            ends.push(opXy);
-        } else {
-            ends.splice(fromIdx, 1);
-        }
+        ends = generateNewEnd(game, ends, rndFunc, bordered);
     }
 
     //console.log("GAME CREATED1:", game.data()[0].figure.toString(2).padStart(4, "0"))

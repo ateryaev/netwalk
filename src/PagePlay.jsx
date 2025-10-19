@@ -16,7 +16,7 @@ import { Window } from './components/Window';
 import { GameFooter } from './components/GameFooter';
 import { GameSubHeader } from './components/GameSubHeader';
 import { GameOverBar } from './components/GameOverBar';
-import { GAME_LEVEL_RANDOM, GAME_LEVEL_SIZE, GAME_MODE_TUTORIALS, GAME_MODES } from './game/gameconstants';
+import { GAME_LEVEL_RANDOM, GAME_LEVEL_SIZE, GAME_MODE_BORDERED, GAME_MODE_TUTORIALS, GAME_MODES } from './game/gameconstants';
 import { GetLevelsSolved } from './game/gamestats';
 import { beepButton, beepLevelComplete, beepLevelStart, preBeepButton } from './utils/beep';
 import { createEffect, playRotatedFx, produceEndingEffect } from './game/gameeffects';
@@ -65,6 +65,7 @@ export function PagePlay({ mode, level, onMenu, onNext, className, ...props }) {
     useEffect(() => {
         if (manager.isSolved()) {
             setTimeout(() => setSolvedFX(createEffect()), 250);
+            gameCtx.markLevelSolved(manager.mode(), manager.level(), manager.taps())
         } else {
             setSolvedFX(null);
         }
@@ -168,7 +169,7 @@ export function PagePlay({ mode, level, onMenu, onNext, className, ...props }) {
         const source = manager.sourceAt(cellXY);
         playRotatedFx(figure, source);
         //onGameChange({ ...game });
-        gameCtx.updateProgress({ current: manager.game });
+        //gameCtx.updateProgress({ current: manager.game });
     }
 
     const [smoothScrollTo, setSmoothScrollTo] = useState(null);
@@ -422,6 +423,7 @@ export function PagePlay({ mode, level, onMenu, onNext, className, ...props }) {
             onBack={onMenu}
             className={className}
             footer={<GameFooter
+                bordered={GAME_MODE_BORDERED[manager.mode()]}
                 taps={manager.taps()}
                 size={gamesize}
                 tutorial={manager.level() === 0 ? GAME_MODE_TUTORIALS[manager.mode()] : null}
