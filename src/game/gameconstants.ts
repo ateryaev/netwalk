@@ -51,7 +51,7 @@ export function GAME_LEVEL_SIZE(mode: number, level: number): XY {
 export function GAME_LEVEL_RANDOM(mode: number, level: number): boolean {
     mode;
     if (level === 0) return false;
-    if (level === 8) return true;
+    if (level === 1) return true;
     const startSize = 5;
     const clampLevel = startSize * startSize + level;
     const x = Math.floor(Math.sqrt(clampLevel));
@@ -106,7 +106,7 @@ export function GAME_MODE_AVAILABLE(mode: number, preSolved: number): boolean {
 }
 
 export function GAME_MODE_TO_UNLOCK(mode: number, preSolved: number): number {
-    return 0;
+    //if (mode !== 4) return 0;
     if (mode === 0) return 0;
 
     if (preSolved === 0) return Infinity;

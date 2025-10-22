@@ -14,88 +14,54 @@ import { PageLevels } from './PageLevels.jsx';
 import { PageSettings } from './PageSettings.jsx';
 import { PageRating } from './PageRating.jsx';
 import { GetSettings, SetLevelSolved } from './game/gamestats.ts';
-import MusicPlayer from './utils/bgmusic.jsx';
+//import MusicPlayer from './utils/bgmusic.jsx';
 import { useGame } from './GameContext.jsx';
+//import { musicPause, musicResume } from './game/gamemusic.ts';
+import { useGameMusic } from './GameMusic.jsx';
 
-// const musicPlayer = new BackgroundMusic();
-// musicPlayer.init();
-// musicPlayer.load('music/ethereal_whispers.mp3');
-let timeout = null;
+const PAGE_START = "/";
+const PAGE_MENU = "Menu";
+
+const MENU_MAIN = "MENU_MAIN";
+const MENU_MODES = "MENU_MODES";
+const MENU_LEVELS = "MENU_LEVELS";
+const MENU_SETTINGS = "MENU_SETTINGS";
+const MENU_RATING = "MENU_RATING";
+const MENU_ABOUT = "MENU_ABOUT";
 
 function App() {
-
   const { settings } = useGame();
-  const { currentPage, currentData, pushPage, replacePage, goBack } = usePageHistory();
+  const { currentPage, pushPage, goBack } = usePageHistory();
+  const music = useGameMusic();
 
-  const PAGE_START = "/";
-  const PAGE_MENU = "Menu";
-  const PAGE_ABOUT = "About";
-  const PAGE_SETTINGS = "Settings";
-  const PAGE_STORY = "Modes";
-  const PAGE_RATING = "Leaderboard";
-  const PAGE_STORY_LEVELS = "Levels";
-  const PAGE_CUSTOM = "Custom";
-  const PAGE_TEST = "Test";
+  const isPaused = useMemo(() => currentPage === PAGE_MENU, [currentPage]);
 
-  const menuMusicRef = useRef(null);
+  const [mode, setMode] = useState(0);
+  const [level, setLevel] = useState(0);
 
-  function stopMusic() {
-    clearTimeout(timeout);
-    menuMusicRef.current?.stop(2);
-  }
-
-  function startMusic() {
-    clearTimeout(timeout);
-    const file = 'music/ethereal_whispers.mp3';// 'music/dreaming_in_pixels.mp3';
-    timeout = setTimeout(() => menuMusicRef.current?.play(file), 2000);
-  }
-  useEffect(() => {
-    function handlePointer() {
-      menuMusicRef.current = new MusicPlayer();
-      if (currentPage !== PAGE_START) stopMusic(); else startMusic();
-      console.log("pointerdown - start music");
-    }
-    document.addEventListener('pointerdown', handlePointer, { once: true });
-    return () => {
-      document.removeEventListener('pointerdown', handlePointer);
-      menuMusicRef.current?.cleanup();
-    };
-  }, []);
+  const [menuPage, setMenuPage] = useState(MENU_MAIN);
+  const [menuPlayMode, setMenuPlayMode] = useState(mode);
+  const [menuPlayLevel, setMenuPlayLevel] = useState(level);
 
   useEffect(() => {
-    function handleVisibilityChange() {
-      if (document.hidden) stopMusic();
-      else if (currentPage === PAGE_START) startMusic();
-    }
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [settings.music, currentPage]);
-
-  useEffect(() => {
-    if (currentPage !== PAGE_START) stopMusic(); else startMusic();
-  }, [currentPage !== PAGE_START]);
-
+    music.setModeLevel({ mode, level });
+  }, [mode, level]);
 
   function handleMenu() {
     pushPage(PAGE_MENU);
   }
 
-  const [mode, setMode] = useState(2);
-  const [level, setLevel] = useState(8);
 
   function handleLevelSelect(mode, level) {
+    setMenuPlayLevel(level);
     setMode(mode);
     setLevel(level);
     console.log("handleLevelSelect", mode, level);
-    goBack(3); //close levels
+    goBack(); //close levels
   }
 
-  //const [restarting, setRestarting] = useState(false);
   function handleNext() {
     setLevel(level + 1);
-    //startMusic(currentPage);
   }
 
   return (
@@ -104,27 +70,39 @@ function App() {
         mode={mode}
         level={level}
         onNext={handleNext}
-        className={cn("transition-all", (currentPage !== PAGE_START) && "brightness-50 contrast-75 grayscale-50")}
+        className={cn("transition-all", (isPaused) && "brightness-50 contrast-75 grayscale-50")}
         onMenu={handleMenu} />
 
-      <PageMenu shown={(currentPage === PAGE_MENU)}
+      <PageMenu shown={(isPaused && menuPage === MENU_MAIN)}
         onBack={goBack}
-        onRating={() => pushPage(PAGE_RATING)}
-        onSettings={() => pushPage(PAGE_SETTINGS)}
-        onAbout={() => pushPage(PAGE_ABOUT)}
-        onStory={() => pushPage(PAGE_STORY)}
+        onRating={() => setMenuPage(MENU_RATING)}
+        onSettings={() => setMenuPage(MENU_SETTINGS)}
+        onAbout={() => setMenuPage(MENU_ABOUT)}
+        onModes={() => setMenuPage(MENU_MODES)}
       />
 
-      <PageAbout shown={(currentPage === PAGE_ABOUT)} onBack={goBack} onClose={() => { goBack(2) }} />
-      <PageSettings shown={(currentPage === PAGE_SETTINGS)} onBack={goBack} />
-      <PageRating shown={(currentPage === PAGE_RATING)} onBack={goBack} />
-      <PageModes shown={(currentPage === PAGE_STORY)}
-        onModeSelect={(idx) => pushPage(PAGE_STORY_LEVELS, { mode: idx })}
-        onBack={goBack} onClose={() => { goBack(2) }} />
-      <PageLevels shown={(currentPage === PAGE_STORY_LEVELS)} mode={currentData?.mode || 0}
-        onClose={() => { goBack(3) }}
+      <PageSettings shown={(isPaused && menuPage === MENU_SETTINGS)}
+        onClose={goBack}
+        onBack={() => setMenuPage(MENU_MAIN)}
+      />
+
+      <PageModes shown={(isPaused && menuPage === MENU_MODES)}
+        selected={menuPlayMode}
+        onModeSelect={(idx) => { setMenuPlayMode(idx); setMenuPage(MENU_LEVELS); }}
+        onBack={() => setMenuPage(MENU_MAIN)}
+        onClose={goBack} />
+
+      <PageLevels shown={(isPaused && menuPage === MENU_LEVELS)}
+        mode={menuPlayMode}
+        selected={menuPlayLevel}
+        onClose={goBack}
         onLevelSelect={handleLevelSelect}
-        onBack={goBack} />
+        onBack={() => setMenuPage(MENU_MODES)} />
+
+      {/*         
+      <PageAbout shown={(currentPage === PAGE_ABOUT)} onBack={goBack} onClose={() => { goBack(2) }} />
+      <PageRating shown={(currentPage === PAGE_RATING)} onBack={goBack} />
+      */}
     </>
   );
 }

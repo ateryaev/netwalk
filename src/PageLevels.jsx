@@ -20,7 +20,7 @@ function SelectedButton({ levelName, isNew, ...props }) {
     )
 }
 
-export function PageLevels({ shown, onLevelSelect, onBack, onClose, mode }) {
+export function PageLevels({ shown, onLevelSelect, onBack, onClose, selected, mode }) {
     const [currentMode, setCurrentMode] = useState(mode);
     const { getLevelsSolved, getLevelStats } = useGame();
 
@@ -33,7 +33,8 @@ export function PageLevels({ shown, onLevelSelect, onBack, onClose, mode }) {
         let subvalue;
         const isNew = isNewest;//times === 0 && !disabled;
 
-        if (isNew) subvalue = ""
+        if (isNewest && !selected) subvalue = <Blink><Inv>new</Inv></Blink>;
+        else if (times === 0) subvalue = <Inv>new</Inv>;
         else if (isRandom) subvalue = "times";
         else if (disabled) subvalue = "locked";
         else subvalue = times === 0 ? "" : "solved";
@@ -42,6 +43,7 @@ export function PageLevels({ shown, onLevelSelect, onBack, onClose, mode }) {
 
         let subtitle;
         if (disabled) subtitle = "solve previous to unlock";
+        else if (selected) subtitle = <Blink><Inv>tap again to play</Inv></Blink>;
         else if (isRandom) subtitle = <>size:{size.x}<Inv className={"-m-1 lowercase"}>x</Inv>{size.y},&nbsp;<Inv>every time new</Inv></>;
         else subtitle = <>
             size:{size.x}<Inv className={"-m-1 lowercase"}>x</Inv>{size.y},&nbsp;
@@ -56,14 +58,15 @@ export function PageLevels({ shown, onLevelSelect, onBack, onClose, mode }) {
         else if (isRandom) levelName = "Random " + level;
         else if (level > 0) levelName = "Level " + level;
 
-        if (selected) return (
-            <SelectedButton levelName={levelName} isNew={times === 0} {...props} />
-        )
+        // if (selected) return (
+        //     <SelectedButton levelName={levelName} isNew={times === 0} {...props} />
+        // )
 
         return (
             <DetailedButton
+                className={cn(selected && "bg-puzzle/20 ring-2 ring-puzzle rounded-xs scroll-m-2 scrolltoitem")}
                 subtitle={subtitle}
-                value={isNew && <LabelNew /> || isRandom && times}
+                value={isRandom && times > 0 && times}
                 subvalue={subvalue}
                 disabled={disabled}
                 {...props}>
@@ -73,7 +76,7 @@ export function PageLevels({ shown, onLevelSelect, onBack, onClose, mode }) {
     }
 
     const solved = getLevelsSolved(currentMode) + 10;
-    const [selectedIndex, setSelectedIndex] = useState(-1);
+    const [selectedIndex, setSelectedIndex] = useState(selected);
     function handleLevelSelect(level) {
         if (level === selectedIndex && level >= 0) {
             onLevelSelect?.(mode, level);
@@ -81,9 +84,6 @@ export function PageLevels({ shown, onLevelSelect, onBack, onClose, mode }) {
         }
         setSelectedIndex(level);
     }
-    useEffect(() => {
-        if (shown) setSelectedIndex(-1);
-    }, [shown])
 
     return (
         <Modal reversed={true} shown={shown} title={GAME_MODES[currentMode]} isbottom={true} onBack={onBack} onClose={onClose}>

@@ -17,15 +17,22 @@ const Modal = ({ shown, onBack, onClose, title, children, reversed }) => {
     }, [shown]);
 
     useEffect(() => {
-        reallyShown && (scrollRef.current.scrollTop = 0);
-        reallyShown && dialogRef.current?.showModal();
-        reallyShown || dialogRef.current?.close();
+        if (reallyShown) {
+            setTimeout(() => {
+                const element = document.querySelector(".scrolltoitem");
+                element?.scrollIntoView({ block: "end", inline: "nearest" });
+                if (!element) scrollRef.current.scrollTop = 0;
+            }, 0)
+            dialogRef.current?.showModal();
+        } else {
+            dialogRef.current?.close();
+        }
     }, [reallyShown]);
 
     function handleCancel(e) {
         e.preventDefault();
-        onBack && onBack();
-        !onBack && onClose && onClose();
+        (onClose && onClose());
+        (!onClose && onBack && onBack());
     }
 
     function handleBackdropClick(e) {

@@ -31,15 +31,15 @@ export const usePageHistory = () => {
     const pushPage = useCallback((pageName: string, data: any) => {
         console.log("usePageHistory.pushPage", pageName, data)
         window.history.pushState({ page: pageName }, "");
-        setCurrentPage(pageName);
-        setCurrentData(data);
+        const event = new PopStateEvent("popstate", { state: { page: pageName, data: data } });
+        window.dispatchEvent(event);
     }, []);
 
     const replacePage = useCallback((pageName: string, data: any) => {
         console.log("usePageHistory.replacePage", pageName, data)
         window.history.replaceState({ page: pageName, data: data }, "");
-        setCurrentPage(pageName);
-        setCurrentData(data);
+        const event = new PopStateEvent("popstate", { state: { page: pageName, data: data } });
+        window.dispatchEvent(event);
     }, []);
 
     const goBack = useCallback((delta = 1) => {

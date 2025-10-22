@@ -3,7 +3,7 @@ import { createContext, use, useContext, useEffect, useState } from 'react';
 import { GetSettings } from './game/gamestats';
 import { BEEP } from './utils/beep';
 import { loadFromLocalStorage, saveToLocalStorage } from './utils/storage';
-import { MUSIC } from './utils/bgmusic';
+//import { MUSIC } from './utils/bgmusic';
 import { createGameTutorial0 } from './game/gametutorials';
 
 // Create the context
@@ -15,12 +15,9 @@ const CURRENT_STORAGE_KEY = "netwalk_game_current";
 
 // Create a provider component
 export function GameProvider({ children }) {
-
     const [settings, setSettings] = useState({});
     const [progress, setProgress] = useState([]);
     const [current, setCurrent] = useState({});
-
-
 
     useEffect(() => {
         const savedProgress = loadFromLocalStorage(PROGRESS_STORAGE_KEY, []);
@@ -38,15 +35,6 @@ export function GameProvider({ children }) {
             setProgress(savedProgress);
         }
     }, []);
-
-    // const reset = () => {
-    //     setProgress([]);
-    //     saveToLocalStorage(PROGRESS_STORAGE_KEY, []);
-    //     setSettings({});
-    //     saveToLocalStorage(SETTINGS_STORAGE_KEY, {});
-    //     setCurrent({});
-    //     saveToLocalStorage(CURRENT_STORAGE_KEY, {});
-    // }
 
     const markLevelSolved = (mode, level, taps) => {
         const modeProgress = progress[mode] || [];
@@ -92,15 +80,15 @@ export function GameProvider({ children }) {
         };
     }
 
-    const getModeProgress = (mode) => {
-        return progress[mode] || [];
-    }
+    // const getModeProgress = (mode) => {
+    //     return progress[mode] || [];
+    // }
 
 
-    const updateProgress = (newProgress) => {
-        //saveToLocalStorage(PROGRESS_STORAGE_KEY, { ...progress, ...newProgress });
-        //setProgress((prev) => ({ ...prev, ...newProgress }));
-    };
+    // const updateProgress = (newProgress) => {
+    //     //saveToLocalStorage(PROGRESS_STORAGE_KEY, { ...progress, ...newProgress });
+    //     //setProgress((prev) => ({ ...prev, ...newProgress }));
+    // };
 
     const updateSettings = (newSettings) => {
         if (newSettings.name === "!!!") {
@@ -120,7 +108,7 @@ export function GameProvider({ children }) {
         console.log("Settings changed:", settings);
         BEEP.sound = settings.sound;
         BEEP.vibro = settings.vibro;
-        MUSIC.off = !settings.music;
+        // MUSIC.off = !settings.music;
     }, [settings.sound, settings.vibro, settings.music]);
 
     return (

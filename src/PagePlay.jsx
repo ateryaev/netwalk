@@ -427,7 +427,7 @@ export function PagePlay({ mode, level, onMenu, onNext, className, ...props }) {
                 taps={manager.taps()}
                 size={gamesize}
                 tutorial={manager.level() === 0 ? GAME_MODE_TUTORIALS[manager.mode()] : null}
-                solved={manager.level() < GetLevelsSolved(manager.mode())}
+                solved={gameCtx.getLevelStats(manager.mode(), manager.level()).playedTimes > 0}
                 random={GAME_LEVEL_RANDOM(manager.mode(), manager.level())}
             />}
             infobar={manager.isSolved() && <GameOverBar onNext={onNext} onRestart={handleRestart} />}

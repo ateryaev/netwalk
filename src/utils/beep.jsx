@@ -41,11 +41,11 @@ function vibro(param) {
 
 function unlockAudio() {
     if (ZZFX.audioContext.state === 'suspended') {
-        console.log(ZZFX.audioContext.state, "RESUMING")
+        //console.log(ZZFX.audioContext.state, "RESUMING")
         ZZFX.audioContext.resume();
     }
 }
 
 // example usage
-document.addEventListener('touchstart', unlockAudio, { once: true });
-document.addEventListener('click', unlockAudio, { once: true });
+// document.addEventListener('touchstart', unlockAudio, { once: true });
+// document.addEventListener('click', unlockAudio, { once: true });

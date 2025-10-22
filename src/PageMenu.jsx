@@ -7,7 +7,7 @@ import { GAME_MODE_BORDERED, GAME_MODE_EMPTIES, GAME_MODE_SCORE, GAME_MODE_TO_UN
 import { GetAvailableModes, GetLevelsSolved, GetTotalScores } from "./game/gamestats";
 import { useGame } from "./GameContext";
 
-export function PageMenu({ shown, onBack, onAbout, onSettings, onStory, onRating }) {
+export function PageMenu({ shown, onBack, onAbout, onSettings, onModes, onRating }) {
     const { settings, getLevelsSolved } = useGame();
 
     const totalScore = useMemo(() => {
@@ -28,9 +28,9 @@ export function PageMenu({ shown, onBack, onAbout, onSettings, onStory, onRating
     return (
         <Modal shown={shown} title={"Netwalk"} onClose={onBack}>
             <div className='flex flex-col gap-0 items-stretch p-2'>
-                <DetailedButton onClick={onStory}
-                    value={getLevelsSolved(availableModes - 1) === 0 && <LabelNew />}
-                    subvalue={""}
+                <DetailedButton onClick={onModes}
+                    subvalue={getLevelsSolved(availableModes - 1) === 0 && <Blink><Inv>new</Inv></Blink>}
+                    //subvalue={""}
                     subtitle={"modes available: " + availableModes}
                 >game levels</DetailedButton>
                 <DetailedButton
@@ -59,7 +59,7 @@ export function PageMenu({ shown, onBack, onAbout, onSettings, onStory, onRating
 
 
 
-export function PageModes({ shown, onModeSelect, onBack, onClose, ...props }) {
+export function PageModes({ shown, onModeSelect, onBack, onClose, selected, ...props }) {
     const { getLevelsSolved } = useGame();
 
     function ModeButton({ mode, points, emptyFrom, emptyTo, toUnlock, bordered, ...props }) {
@@ -69,13 +69,15 @@ export function PageModes({ shown, onModeSelect, onBack, onClose, ...props }) {
         else subtitle = <>{(bordered ? "bordered" : "looped")} <Inv>{emptyFrom}-{emptyTo}%</Inv> empty</>;
 
         return (<DetailedButton
+            className={cn(selected === mode && "bg-puzzle/20 ring-2 ring-puzzle rounded-xs")}
             disabled={toUnlock > 0}
             subtitle={subtitle}
-            value={points > 0 && points.toLocaleString('en-US') || toUnlock <= 0 && <LabelNew />}
-            //subvalue={points === 0 ? (toUnlock <= 0 ? <LabelNew /> : "locked") : "points"}
-            subvalue={points === 0 ? (toUnlock <= 0 ? "" : "locked") : "points"}
+            //value={points > 0 && points.toLocaleString('en-US') || toUnlock <= 0 && <LabelNew />}
+            value={points > 0 && points.toLocaleString('en-US')}
+            subvalue={points === 0 ? (toUnlock <= 0 ? <Blink><Inv>new</Inv></Blink> : "locked") : "points"}
+            //subvalue={points === 0 ? (toUnlock <= 0 ? "" : "locked") : "points"}
             {...props}>
-            {mode}
+            {GAME_MODES[mode]}
         </DetailedButton>)
     }
 
@@ -85,7 +87,7 @@ export function PageModes({ shown, onModeSelect, onBack, onClose, ...props }) {
                 {GAME_MODES.map((modeName, index) => (
                     <ModeButton key={index}
                         toUnlock={GAME_MODE_TO_UNLOCK(index, getLevelsSolved(index - 1))}
-                        mode={modeName}
+                        mode={index}
                         //points={GAME_MODE_SCORE(index, GetLevelsSolved(index))}
                         points={GAME_MODE_SCORE(index, getLevelsSolved(index))}
                         emptyFrom={GAME_MODE_EMPTIES[index][0]}
