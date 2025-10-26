@@ -4,7 +4,7 @@ import { cn } from './utils/cn'
 
 import { rnd, bymod } from './utils/numbers';
 import { SIZE } from "./game/cfg";
-import { GameHeader } from './components/GameHeader';
+//import { GameHeader } from './components/GameHeader';
 import { PanZoomView } from './components/PanZoomView';
 import { addXY, distXY, divXY, mulXY, printXY, subXY, toXY } from './utils/xy';
 

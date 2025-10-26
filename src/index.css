@@ -1,10 +1,32 @@
 @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap');
 @import "tailwindcss";
 
+/* puzzle: {
+        50: '#e0f2e9',
+        100: '#b3e0c9',
+        200: '#80cda6',
+        300: '#4dbb83',
+        400: '#26a86a',
+        500: '#296',
+        600: '#23815a',
+        700: '#1d6a4a',
+        800: '#17553b',
+        900: '#113f2c',
+      } */
 @theme {
+    --color-ipuzzle: #D65F92;
     --color-puzzle: #296;
     --color-darkpuzzle: #074;
-    --color-white: #eefffc;
+    --color-white2: #eefffc;
+
+    --color-puzzle-50: #e0f2e9;
+    --color-puzzle-100: #b3e0c9;
+    --color-puzzle-200: #80cda6;
+    --color-puzzle-300: #4dbb83;
+    --color-puzzle-400: #26a86a;
+    --color-puzzle-500: #296;
+    --color-puzzle-600: #23815a;
+    --color-puzzle-700: #1d6a4a;
 }
 
 body {

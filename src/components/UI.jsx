@@ -4,10 +4,23 @@ import { SvgBell, SvgPlay } from "./Button";
 
 export function Inv({ children, className, ...props }) {
     return (
-        <span className={"hue-rotate-180 " + className} {...props}>
+        <span className={cn("hue-rotate-180 ", className)} {...props}>
             {children}
         </span>
     )
+}
+export function Titled({ children, title, className, ...props }) {
+    return (<div className={cn("uppercase", className)}>
+        <div className="text-[100%]">{title}</div>
+        <div className="opacity-60 text-[85%] lowercasex -mt-1">{children}</div>
+    </div>)
+}
+
+export function BigTitled({ children, title, className, ...props }) {
+    return (<div className={cn("uppercase", className)}>
+        <div className="text-[125%] font-bold">{title}</div>
+        <div className="opacity-60 uppercase text-[90%] -mt-1">{children}</div>
+    </div>)
 }
 
 export function Blink({ children, className, ...props }) {

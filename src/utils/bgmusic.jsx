@@ -28,13 +28,12 @@ export default
         }
 
         if (this.audio?.filename !== url) {
-            console.log("STARTING NEW", url)
             this.audio = new Audio(url);
             this.audio.filename = url;
             this.audio.loop = false;
             this.audio.crossOrigin = "anonymous";
             this.audio.volume = 0.25;
-            this.audio.playbackRate = 0.9;
+            //this.audio.playbackRate = 0.9;
             this.gain.gain.value = 0;
             const track = this.ctx.createMediaElementSource(this.audio);
             track.connect(this.gain);

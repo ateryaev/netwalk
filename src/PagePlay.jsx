@@ -3,7 +3,6 @@ import { cn } from './utils/cn'
 import { COLOR, COLOR_BALL, COLOR_EYE, SIZE, TRANS_DURATION } from "./game/cfg";
 import { BOTTOM, LEFT, RIGHT, TOP } from './game/gamedata';
 import { isEnd, isMix, isOff, isOn } from './game/gamedata';
-import { GameHeader } from './components/GameHeader';
 import { clampPanZoomCenter, PanZoomView } from './components/PanZoomView';
 import { addXY, bymodXY, distXY, divXY, fromtoXY, isSameXY, loopXY, mulXY, operXY, printXY, subXY, toRectXY, toXY, XY05, XY1 } from './utils/xy';
 import { drawCircle, drawStar, midColor } from './utils/canvas';

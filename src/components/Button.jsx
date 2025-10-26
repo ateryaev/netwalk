@@ -1,9 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "../utils/cn"
-import { Blink } from "./UI";
+import { Blink, Inv, Titled } from "./UI";
 import { preBeepButton } from "../utils/beep";
+import { SvgBack, SvgCheck, SvgClose, SvgUnCheck } from "./Svg";
 
-function BaseButton({ children, className, onClick, ...props }) {
+export function CheckBox({ checked, className, ...props }) {
+    return (
+        checked ? <SvgCheck className={"text-2xl"} /> : <SvgUnCheck className={"text-2xl opacity-70"} />
+    )
+}
+export function BaseButton({ children, className, onClick, ...props }) {
     const viewRef = useRef(null);
     return (
         <button
@@ -36,6 +42,35 @@ function BaseButton({ children, className, onClick, ...props }) {
     );
 }
 
+export function MainButton({ onClick, children, selected, ...props }) {
+    return (
+        <BaseButton className={cn("rounded-full  text-puzzle bg-white p-3 text-2xl",
+            "focus:active:ring-6 focus:active:ring-white/40",
+            "focus:ring-6 focus:ring-white/40 stroke-3",
+            "border-4 border-puzzle",
+            selected && "bg-puzzle text-white"
+        )}
+            {...props} onClick={null}>
+            {children}
+        </BaseButton>
+    )
+}
+
+export function TabButton({ onClick, className, children, selected, ...props }) {
+    return (
+        <BaseButton className={cn("rounded-sm text-puzzle bg-white/50 p-3 border-0",
+            "focus:active:ring-6 focus:active:ring-white/40",
+            "focus:ring-6 focus:ring-white/40 stroke-3",
+            "border-puzzle uppercase text-[90%]",
+            "whitespace-nowrap text-ellipsis overflow-hidden ",
+            className,
+            selected && "bg-puzzle/90 text-white ",
+        )}
+            {...props} onClick={null}>{children}
+        </BaseButton>
+    )
+}
+
 export function ShowMenuButton({ onClick, ...props }) {
     function handleClick(e) {
         onClick?.();
@@ -50,34 +85,19 @@ export function ShowMenuButton({ onClick, ...props }) {
         </BaseButton>
     )
 }
-export function BackButton({ onClick, ...props }) {
-    function handleClick(e) {
-        e.currentTarget.blur();
-        onClick && onClick();
-    }
-    return (
-        <BaseButton className="rounded-full border-none border-white text-white opacity-60 xbg-white/5
-                    p-3 cursor-pointer select-none text-2xl
-                    disabled:invisible disabled:pointer-events-none
-                     active:bg-white/20 focus:bg-white/20"
-            {...props} onClick={handleClick}>
-            <SvgBack />
-        </BaseButton>
-    )
-}
 
-export function CloseButton({ onClick, ...props }) {
+export function RoundButton({ onClick, className, children, ...props }) {
     function handleClick(e) {
         e.currentTarget.blur();
         onClick && onClick();
+
     }
     return (
-        <BaseButton className="rounded-full border-none border-white text-white opacity-60 xbg-white/5
-                    p-3 text-2xl 
-                    disabled:invisible 
-                     active:bg-white/20 focus:bg-white/20"
+        <BaseButton className={cn("rounded-full text-puzzle-50 p-3 ring-0 ring-puzzle-200 bg-puzzle-300 white",
+            " disabled:invisible stroke-3 active:bg-white/20 focus:bg-white/20 flex justify-center items-center gap-3",
+            className)}
             {...props} onClick={handleClick}>
-            <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" ><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg>
+            {children}
         </BaseButton>
     )
 }
@@ -113,8 +133,8 @@ export function MenuButton({ Svg, children, className, ...props }) {
     return (
         <BaseButton className={cn("items-center uppercase p-6 flex gap-2 justify-center",
             "text-darkpuzzle whitespace-nowrap",
-            " ring-puzzle/20 focus:bg-puzzle/10 disabled:opacity-50",
-            " active:bg-puzzle/10",
+            "focus:opacity-75 disabled:opacity-50",
+            "active:opacity-75",
             className)}
             {...props}>
             {children}
@@ -148,7 +168,7 @@ export function ConfirmButton({ Svg, children, className, ...props }) {
     )
 }
 
-export function DetailedButton({ children, safe, className, subtitle, value, subvalue, ...props }) {
+export function DetailedButton({ children, special, safe, className, subtitle, value, subvalue, icon, ...props }) {
     const [isFocused, setIsFocused] = useState(false);
     const buttonRef = useRef(null);
     const handleBlur = () => {
@@ -161,28 +181,14 @@ export function DetailedButton({ children, safe, className, subtitle, value, sub
         setIsFocused(true);
     }
     return (
-        <MenuButton className={cn("p-4 flex-col gap-0 items-stretch", className)}
+        <MenuButton className={cn("px-6 py-6 pb-4 flex gap-0 items-center justify-between",
+            special && "border-l-8 pl-4 x-ml-2 border-ipuzzle", className)}
             {...props}
             onBlur={handleBlur}
-            onClick={handleClick}  >
-            <div className="flex items-center justify-between text-[120%] xfont-extrabold">
-                <div className="text-ellipsis overflow-hidden">
-                    {children}
-                </div>
-
-                <div className="hue-rotate-180 lowercase">
-                    {value}
-                </div>
-            </div>
-            <div className="flex items-center justify-between -mt-1 font-semibold xlowercase text-[90%] gap-2 opacity-80">
-                <div className="text-ellipsis  overflow-hidden gap-1 flex items-center">
-                    {subtitle}
-                </div>
-                <div dir="rtl" className="overflow-hiddenx xtext-ellipsis">
-
-                    {subvalue}
-                </div>
-            </div>
+            onClick={handleClick}>
+            <Titled className={"text-left flex-1"} title={children}>{subtitle}</Titled>
+            <Titled className={"text-right"} title={<Inv className={"normal-case"}>{value || <>&nbsp;</>}</Inv>}>{subvalue || <>&nbsp;</>}</Titled>
+            {icon && <Inv>{icon}</Inv>}
         </MenuButton>
     )
 }
@@ -209,10 +215,6 @@ export function SvgRestart({ className, ...props }) {
     )
 }
 
-export function SvgBack({ className, ...props }) {
-    return (<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round"
-        className={cn('', className)}><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 12l14 0" /><path d="M5 12l6 6" /><path d="M5 12l6 -6" /></svg>)
-}
 
 
 

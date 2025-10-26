@@ -1,9 +1,26 @@
 import { useEffect, useRef, useState } from 'react';
-import { BackButton, CloseButton, MenuButton, PinkButton, SvgBack } from './Button';
+import { BaseButton, MainButton, MenuButton, PinkButton, RoundButton, TabButton } from './Button';
 import { cn } from '../utils/cn';
 import { preBeepButton } from '../utils/beep';
+import { BigTitled, Inv, Titled } from './UI';
+import { SvgClose, SvgBack } from './Svg';
 
-const Modal = ({ shown, onBack, onClose, title, children, reversed }) => {
+export function SubHeader({ className, children }) {
+    return (<div
+        className={cn('uppercase text-puzzle-600 mx-0 px-6 py-4 sticky top-0 z-10',
+            ' bg-puzzle-50', className)}>
+        {children}
+    </div>)
+}
+
+export function SubContent({ className, children }) {
+    return (<div className={cn('flex flex-col bg-white mx-0 p-0', className)}>
+        {children}
+    </div>)
+}
+
+
+const Modal = ({ shown, onBack, onClose, title, subtitle, children, reversed }) => {
     const dialogRef = useRef(null);
     const scrollRef = useRef(null);
 
@@ -49,34 +66,48 @@ const Modal = ({ shown, onBack, onClose, title, children, reversed }) => {
             className="backdrop:bg-black/0 z-10 bg-white/0 select-none p-0 xtext-[16px]
              grid min-w-svw  min-h-svh max-h-svh  justify-center items-center ">
 
-            <div className={cn("flex-1 ring-2 ring-black/10 scale-90",
-                "opacity-10 duration-200 transition-all",
-                "flex flex-col bg-white max-h-[min(600px,90svh)] max-w-[90svw] w-xl",
-                //(reallyShown) && "scale-100 opacity-100 animate-[show-modal-animation_0.2s_ease-in-out]",
+            <div className={cn("flex-1 ring-2 ring-black/10 scale-90 border-puzzle-200",
+                "opacity-10 duration-200 transition-all overflow-hidden",
+                "flex flex-col max-h-[min(600px,90svh)] max-w-[90svw] w-xl",
                 (reallyShown) && "scale-100 opacity-100",
                 (!shown) && "scale-90 opacity-10",
                 "outline-none"
             )} tabIndex={0}>
-                <div className="bg-puzzle flex items-center gap-4 justify-between p-2 text-white uppercase font-extrabold">
-                    <BackButton onClick={onBack} disabled={!onBack} />
-                    <div className='flex-1 text-center xfont-extrabold text-[120%]'>
-                        {title}
-                    </div>
-                    <CloseButton onClick={onClose} disabled={!onClose} />
+                <div className="flex items-center gap-3 text-white puzzle-100 z-10 bg-puzzle-500
+                justify-center p-6 text-left ">
+                    {/* <RoundButton disabled={!onBack} onClick={onBack}><SvgBack /></RoundButton> */}
 
-                </div>
+                    <BigTitled title={title}
+                        className={cn("flex-1 text-left", onBack && "xtext-right")}>
+                        {subtitle}
+                    </BigTitled>
+
+                    <RoundButton className={cn("bg-white/50 text-puzzle-600", !onBack && "invisible")} onClick={onBack}><SvgBack /></RoundButton>
+                    <RoundButton className={"invisiblex bg-white/50 text-puzzle-600"} onClick={onClose}><SvgClose /></RoundButton>
+
+
+
+                </div >
 
                 <div ref={scrollRef}
-                    className={cn("flex-1 bg-white items-stretch w-full overflow-y-auto flex flex-col",
+                    className={cn("flex-1  bg-white",
+                        "items-stretch w-full overflow-y-auto  flex flex-col",
                         reversed && "flex-col-reverse"
                     )}>
                     {children}
-                </div>
 
-                <div className=" bg-puzzle/20 p-2 flex items-stretch justify-stretch flex-col">
                 </div>
+                {/* <div className="z-10 p-1 px-6 xring-4 ring-puzzle-50/50 text-center xfont-light bg-puzzle-50
+                text-x[70%] xuppercase text-puzzle-600 white  xtext-shadow-sm puzzle-600">
+                    vervsion 202511
+                </div> */}
 
-            </div>
+
+
+
+
+            </div >
+
 
         </dialog >
     );

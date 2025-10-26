@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react"
 import { cn } from "../utils/cn"
-import { BackButton, MenuButton, ShowMenuButton } from "./Button"
-import { Blink } from "./UI";
+import { MenuButton, RoundButton, ShowMenuButton } from "./Button"
+import { BigTitled, Blink, Titled } from "./UI";
+import { SvgMenu } from "./Svg";
 
 export function WindowHeader({ children, ...props }) {
     return (
@@ -23,17 +24,10 @@ export function Window({ onBack, title, subtitle, footer, subheader, className, 
     return (
         <div className={cn("flex flex-col bg-[#333] size-full duration-500", className)}>
 
-            <div className="bg-puzzle pl-3 p-4 flex gap-4 items-center  z-10" style={{ paddingTop: "calc(16px + env(safe-area-inset-top))" }}>
-                <ShowMenuButton onClick={onBack} />
-                <div className={cn("transition-all duration-500 overflow-hidden flex-1 text-right text-white flex flex-col",
-                    erased && "opacity-0 scale-y-0 duration-200",
-                )}>
-                    <div className="">&nbsp;</div>
-                    <div className={cn("-my-1 text-[150%]")}>{title}</div>
-                    <div dir="rtl" className="uppercase font-semibold opacity-70 whitespace-nowrap text-ellipsis overflow-hidden">
-                        {!!subtitle ? subtitle : <>&nbsp;</>}
-                    </div>
-                </div>
+            <div className="bg-puzzle text-white xpl-3 p-6 flex gap-0 items-center  z-10" style={{ paddingTop: "calc(24px + env(safe-area-inset-top))" }}>
+                <RoundButton onClick={onBack} className="ring-0 text-2xl bg-white text-puzzle"><SvgMenu /></RoundButton>
+                <BigTitled className={"text-right flex-1"} title={title}>{!!subtitle ? subtitle : <>&nbsp;</>}</BigTitled>
+                {/* <Titled className={"text-right flex-1"} title={<span className="text-[120%] font-bold">{title}</span>}>{!!subtitle ? subtitle : <>&nbsp;</>}</Titled> */}
             </div>
 
             {!!subheader && <div className={cn('bg-white z-10 overflow-hidden')}>

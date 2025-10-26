@@ -1,7 +1,7 @@
 import { use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { cn } from './utils/cn.ts'
 import { PagePlay } from './PagePlay';
-import { PageMenu, PageModes } from './PageMenu';
+import { PageMenu } from './PageMenu';
 import { PageTest } from './PageTest';
 import { createGame } from './game/gamecreate.ts';
 import { usePageHistory } from './components/PageHistory.tsx';
@@ -74,13 +74,16 @@ function App() {
         onMenu={handleMenu} />
 
       <PageMenu shown={(isPaused && menuPage === MENU_MAIN)}
+        modePlaying={mode}
         onBack={goBack}
         onRating={() => setMenuPage(MENU_RATING)}
         onSettings={() => setMenuPage(MENU_SETTINGS)}
         onAbout={() => setMenuPage(MENU_ABOUT)}
         onModes={() => setMenuPage(MENU_MODES)}
+        onModeSelect={(idx) => { if (menuPlayMode !== idx) { setMenuPlayMode(idx); setMenuPlayLevel(-1); } setMenuPage(MENU_LEVELS); }}
       />
 
+      {/* 
       <PageSettings shown={(isPaused && menuPage === MENU_SETTINGS)}
         onClose={goBack}
         onBack={() => setMenuPage(MENU_MAIN)}
@@ -88,16 +91,18 @@ function App() {
 
       <PageModes shown={(isPaused && menuPage === MENU_MODES)}
         selected={menuPlayMode}
-        onModeSelect={(idx) => { setMenuPlayMode(idx); setMenuPage(MENU_LEVELS); }}
+        playingMode={mode}
+        onModeSelect={(idx) => { if (menuPlayMode !== idx) { setMenuPlayMode(idx); setMenuPlayLevel(-1); } setMenuPage(MENU_LEVELS); }}
         onBack={() => setMenuPage(MENU_MAIN)}
-        onClose={goBack} />
+        onClose={goBack} /> */}
 
       <PageLevels shown={(isPaused && menuPage === MENU_LEVELS)}
         mode={menuPlayMode}
-        selected={menuPlayLevel}
+        selectedLevel={menuPlayLevel}
+        levelPlaying={menuPlayMode === mode ? level : -1}
         onClose={goBack}
         onLevelSelect={handleLevelSelect}
-        onBack={() => setMenuPage(MENU_MODES)} />
+        onBack={() => setMenuPage(MENU_MAIN)} />
 
       {/*         
       <PageAbout shown={(currentPage === PAGE_ABOUT)} onBack={goBack} onClose={() => { goBack(2) }} />
