@@ -1,5 +1,5 @@
 // SettingsContext.js
-import { createContext, use, useContext, useEffect, useState } from 'react';
+import { createContext, use, useContext, useEffect, useMemo, useState } from 'react';
 import { GetSettings } from './game/gamestats';
 import { BEEP } from './utils/beep';
 import { loadFromLocalStorage, saveToLocalStorage } from './utils/storage';
@@ -13,28 +13,59 @@ const SETTINGS_STORAGE_KEY = "netwalk_game_settings";
 const PROGRESS_STORAGE_KEY = "netwalk_game_progress";
 const CURRENT_STORAGE_KEY = "netwalk_game_current";
 
+const STORAGE_KEY = "netwalk_data";
+const STORAGE_VERSION = "0.0.1";
+
+const DEFAULT_DATA = {
+    settings: {
+        sound: true,
+        music: false,
+        vibro: true,
+        lang: "en",
+        name: "SimplePlayer",
+    },
+    progress: [],
+    current: { mode: 0, level: 0 },
+};
+
+function loadGameData() {
+    const savedData = loadFromLocalStorage(STORAGE_KEY, {});
+    const data = savedData[STORAGE_VERSION] || DEFAULT_DATA;
+
+    data.settings = data.settings || DEFAULT_DATA.settings;
+    data.progress = data.progress || DEFAULT_DATA.progress;
+    data.current = data.current || DEFAULT_DATA.current;
+
+    data.settings.sound = data.settings.sound ?? true;
+    data.settings.music = data.settings.music ?? false;
+    data.settings.vibro = data.settings.vibro ?? true;
+    data.settings.lang = data.settings.lang ?? "en";
+    data.settings.name = data.settings.name ?? "SimplePlayer";
+    data.current.mode = data.current.mode || 0;
+    data.current.level = data.current.level || 0;
+    if (!Array.isArray(data.progress)) {
+        data.progress = [];
+    }
+    return data;
+}
+
+function savedGameData(data) {
+    saveToLocalStorage(STORAGE_KEY, { [STORAGE_VERSION]: data });
+}
+
 // Create a provider component
 export function GameProvider({ children }) {
-    const [settings, setSettings] = useState({});
-    const [progress, setProgress] = useState([]);
-    const [current, setCurrent] = useState({});
+    const [gameData, setGameData] = useState(DEFAULT_DATA);
+    const settings = gameData.settings || DEFAULT_DATA.settings;
+    const progress = gameData.progress || DEFAULT_DATA.progress;
+    const current = gameData.current || DEFAULT_DATA.current;
 
     useEffect(() => {
-        const savedProgress = loadFromLocalStorage(PROGRESS_STORAGE_KEY, []);
-        const savedSettings = loadFromLocalStorage(SETTINGS_STORAGE_KEY, {});
-
-        setSettings({
-            sound: savedSettings.sound ?? true,
-            music: savedSettings.music ?? false,
-            vibro: savedSettings.vibro ?? true,
-            lang: savedSettings.lang ?? "en",
-            name: savedSettings.name ?? "SimplePlayer"
-        });
-
-        if (Array.isArray(savedProgress)) {
-            setProgress(savedProgress);
-        }
+        setGameData(loadGameData());
     }, []);
+    useEffect(() => {
+        savedGameData(gameData);
+    }, [gameData]);
 
     const markLevelSolved = (mode, level, taps) => {
         const modeProgress = progress[mode] || [];
@@ -58,8 +89,8 @@ export function GameProvider({ children }) {
 
         progress[mode] = modeProgress;
         progress[mode][level] = levelProgress;
-        saveToLocalStorage(PROGRESS_STORAGE_KEY, progress);
-        setProgress([...progress]);
+
+        setGameData({ ...gameData, progress: [...progress] });
     }
 
     const getLevelsSolved = (mode) => {
@@ -80,28 +111,26 @@ export function GameProvider({ children }) {
         };
     }
 
-    // const getModeProgress = (mode) => {
-    //     return progress[mode] || [];
-    // }
-
-
-    // const updateProgress = (newProgress) => {
-    //     //saveToLocalStorage(PROGRESS_STORAGE_KEY, { ...progress, ...newProgress });
-    //     //setProgress((prev) => ({ ...prev, ...newProgress }));
-    // };
-
+    const updateCurrent = (currentGame) => {
+        console.log("Updating current game:", currentGame);
+        setGameData({ ...gameData, current: { ...current, ...currentGame } });
+    }
     const updateSettings = (newSettings) => {
-        if (newSettings.name === "!!!") {
-            //reset all data on secret name, need to restart/refresh to apply
-            saveToLocalStorage(PROGRESS_STORAGE_KEY, []);
-            saveToLocalStorage(SETTINGS_STORAGE_KEY, {});
-            saveToLocalStorage(CURRENT_STORAGE_KEY, {});
-        } else {
-            saveToLocalStorage(SETTINGS_STORAGE_KEY, { ...settings, ...newSettings });
-            saveToLocalStorage(CURRENT_STORAGE_KEY, current);
-            saveToLocalStorage(PROGRESS_STORAGE_KEY, progress);
-        }
-        setSettings((prev) => ({ ...prev, ...newSettings }));
+
+        console.log("Updating settings:", newSettings);
+        setGameData({ ...gameData, settings: { ...settings, ...newSettings } });
+
+        // if (newSettings.name === "!!!") {
+        //     //reset all data on secret name, need to restart/refresh to apply
+        //     saveToLocalStorage(PROGRESS_STORAGE_KEY, []);
+        //     saveToLocalStorage(SETTINGS_STORAGE_KEY, {});
+        //     saveToLocalStorage(CURRENT_STORAGE_KEY, {});
+        // } else {
+        //     saveToLocalStorage(SETTINGS_STORAGE_KEY, { ...settings, ...newSettings });
+        //     saveToLocalStorage(CURRENT_STORAGE_KEY, current);
+        //     saveToLocalStorage(PROGRESS_STORAGE_KEY, progress);
+        // }
+        // setSettings((prev) => ({ ...prev, ...newSettings }));
     };
 
     useEffect(() => {
@@ -111,8 +140,10 @@ export function GameProvider({ children }) {
         // MUSIC.off = !settings.music;
     }, [settings.sound, settings.vibro, settings.music]);
 
+
+
     return (
-        <GameContext.Provider value={{ settings, getLevelsSolved, getLevelStats, markLevelSolved, updateSettings }}>
+        <GameContext.Provider value={{ settings, current, getLevelsSolved, getLevelStats, markLevelSolved, updateSettings, updateCurrent }}>
             {children}
         </GameContext.Provider>
     );

@@ -80,10 +80,10 @@ export function PageLevels({ shown, onLevelSelect, onBack, onClose, levelPlaying
         )
     }
 
-    const solved = getLevelsSolved(currentMode) + 10;
+    const solved = getLevelsSolved(currentMode);
     const [selectedIndex, setSelectedIndex] = useState(-1);
     useEffect(() => {
-        const solved = getLevelsSolved(currentMode) + 10;
+        const solved = getLevelsSolved(currentMode);
         setSelectedIndex(levelPlaying < 0 ? solved : levelPlaying);
 
     }, [levelPlaying, currentMode])

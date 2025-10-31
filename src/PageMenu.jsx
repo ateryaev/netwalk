@@ -99,11 +99,11 @@ export function PageMenu({ shown, modePlaying, onBack, onAbout, onSettings, onMo
                     subtitle={"tactile feedback"}
                 >vibrations</DetailedButton>
 
-                <DetailedButton onClick={() => updateSettings({ vibro: !settings.vibro })}
+                {/* <DetailedButton onClick={() => updateSettings({ vibro: !settings.vibro })}
                     value={"BlackShark"}
                     subvalue={""}
                     subtitle={"visible in leaderboard"}
-                >nickname</DetailedButton>
+                >nickname</DetailedButton> */}
             </SubContent>
 
 
@@ -113,68 +113,23 @@ export function PageMenu({ shown, modePlaying, onBack, onAbout, onSettings, onMo
             <SubContent>
 
 
-                <p className="p-6">
+                <p className="p-6 text-[90%] uppercasex text-puzzle-700">
 
-                    Test modal content about the game.
-                    <br />
-                    <br />
-                    More text to test scrolling behavior. More text to test scrolling behavior. More text to test scrolling behavior. More text to test scrolling behavior. More text to test scrolling behavior. More text to test scrolling behavior. More text to test scrolling behavior. More text to test scrolling behavior.
+                    Rotate the tiles to connect each core with paths of the same color.
+                    All links must form complete networks — no open ends.
+                    When every core is connected, the puzzle is solved.
                     <br /><br />
+                    Use simple logic, stay focused, and find the flow.
+                    <br /><br />
+
                 </p>
-                <hr className="text-puzzle-200" />
-                <p className="p-6 ">
-                    Created by Anton in 2025.
-                </p>
+
+                <SubHeader className="opacity-50 saturate-50xx hue-rotate-180">
+                    <div className="flex-1">Anton Teryaev</div> 2025
+                </SubHeader>
 
             </SubContent>
 
-        </Modal>
+        </Modal >
     );
 }
-
-
-
-// export function PageModes({ shown, onModeSelect, onBack, onClose, selected, playingMode, ...props }) {
-//     const { getLevelsSolved } = useGame();
-
-//     function ModeButton({ mode, points, emptyFrom, emptyTo, toUnlock, bordered, ...props }) {
-//         let subtitle = null;
-//         if (toUnlock > 100) subtitle = "play more to unlock"
-//         else if (toUnlock > 0) subtitle = <>solve <Inv>{toUnlock}</Inv> more to unlock</>
-//         else subtitle = <>{(bordered ? "bordered" : "looped")} <Inv>{emptyFrom}-{emptyTo}%</Inv> empty</>;
-
-//         return (<DetailedButton
-//             className={cn(selected === mode && "bg-puzzle/10 xring-2 ring-puzzle rounded-xs",
-//                 mode === playingMode && "border-l-8 -ml-2 border-puzzle/30"
-//             )}
-//             disabled={toUnlock > 0}
-//             subtitle={subtitle}
-//             //value={points > 0 && points.toLocaleString('en-US') || toUnlock <= 0 && <LabelNew />}
-//             value={points > 0 && points.toLocaleString('en-US')}
-//             subvalue={points === 0 ? (toUnlock <= 0 ? <Blink><Inv>new</Inv></Blink> : "locked") : "points"}
-//             //subvalue={points === 0 ? (toUnlock <= 0 ? "" : "locked") : "points"}
-//             {...props}>
-//             {GAME_MODES[mode]}
-//         </DetailedButton>)
-//     }
-
-//     return (
-//         <Modal shown={shown} title={"Netwalk"} subtitle={"choose game mode"} onBack={onBack} onClose={onClose}>
-//             <div className='p-2 flex flex-col gap-0 items-stretch'>
-//                 {GAME_MODES.map((modeName, index) => (
-//                     <ModeButton key={index}
-//                         toUnlock={GAME_MODE_TO_UNLOCK(index, getLevelsSolved(index - 1))}
-//                         mode={index}
-//                         //points={GAME_MODE_SCORE(index, GetLevelsSolved(index))}
-//                         points={GAME_MODE_SCORE(index, getLevelsSolved(index))}
-//                         emptyFrom={GAME_MODE_EMPTIES[index][0]}
-//                         emptyTo={GAME_MODE_EMPTIES[index][1]}
-//                         bordered={GAME_MODE_BORDERED[index]}
-//                         onClick={() => onModeSelect?.(index)}
-//                     />))}
-
-//             </div>
-//         </Modal >
-//     );
-// }
-

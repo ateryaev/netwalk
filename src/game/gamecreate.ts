@@ -99,15 +99,6 @@ export function createGame(mode: number, level: number): GameData {
         ...createArray2d(size)
     };
 
-
-
-
-
-    // const sourceXY1 = operXY(Math.floor, toXY((cols - 1) / 2, (rows - 0) / 2));
-    // const sourceXY2 = operXY(Math.floor, toXY((cols - 1) / 2, (rows - 0) / 4));
-    // const sourceXY3 = operXY(Math.floor, toXY((cols - 1) / 2, (rows - 0) * 3 / 4));
-
-
     const firstColor = rndFunc(1);
     let ends: XY[] = [];
 
@@ -120,7 +111,6 @@ export function createGame(mode: number, level: number): GameData {
 
     let colorsPool = colors;
     let trialsPool = colors * 4;
-
 
     while (colorsPool > 0 && trialsPool > 0) {
         trialsPool--;
@@ -135,7 +125,6 @@ export function createGame(mode: number, level: number): GameData {
             colorsPool--;
         }
     }
-    console.log("SOURCE ENDS CREATED, REMAINING COLORS/TRIALS:", colorsPool, trialsPool);
 
     //TODO: make sure all sources having at least one exit
     //TODO: make sure no sources using all exits
@@ -143,8 +132,6 @@ export function createGame(mode: number, level: number): GameData {
     for (let i = 0; i < cols * rows * 2 && ends.length > 0; i++) {
         ends = generateNewEnd(game, ends, rndFunc, bordered);
     }
-
-    //console.log("GAME CREATED1:", game.data()[0].figure.toString(2).padStart(4, "0"))
 
     //REMOVE SOME ENDS:
 

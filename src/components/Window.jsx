@@ -24,15 +24,14 @@ export function Window({ onBack, title, subtitle, footer, subheader, className, 
     return (
         <div className={cn("flex flex-col bg-[#333] size-full duration-500", className)}>
 
-            <div className="bg-puzzle text-white xpl-3 p-6 flex gap-0 items-center  z-10" style={{ paddingTop: "calc(24px + env(safe-area-inset-top))" }}>
-                <RoundButton onClick={onBack} className="ring-0 text-2xl bg-white text-puzzle"><SvgMenu /></RoundButton>
-                <BigTitled className={"text-right flex-1"} title={title}>{!!subtitle ? subtitle : <>&nbsp;</>}</BigTitled>
-                {/* <Titled className={"text-right flex-1"} title={<span className="text-[120%] font-bold">{title}</span>}>{!!subtitle ? subtitle : <>&nbsp;</>}</Titled> */}
+            <div className="bg-puzzle text-white xpl-3 p-6 flex items-center z-10">
+                <RoundButton onClick={onBack} className={cn("text-2xl -my-2 delay-0 duration-200 bg-white text-puzzle", erased && "opacity-50")}><SvgMenu /></RoundButton>
+                <BigTitled className={cn("text-right flex-1 delay-0 duration-200 transition-all", erased && "translate-y-4 opacity-0")} title={title}>{!!subtitle ? subtitle : <>&nbsp;</>}</BigTitled>
             </div>
 
             {!!subheader && <div className={cn('bg-white z-10 overflow-hidden')}>
-                <div className={cn('transition-all duration-500 bg-white p-2 flex gap-2 ',
-                    erased && "scale-y-0 opacity-0  duration-200",
+                <div className={cn('transition-all  delay-300 duration-200 bg-white p-2 flex gap-2 ',
+                    erased && "translate-y-4 opacity-0  xduration-200",
                 )}>
                     {subheader}
                 </div>
@@ -61,8 +60,8 @@ export function Window({ onBack, title, subtitle, footer, subheader, className, 
             </div>
 
             {!!footer && <div className='text-puzzle  font-semibold  bg-white uppercase whitespace-nowrap'>
-                <div className={cn('duration-500 transition-all flex items-center justify-center p-2 gap-2 ps-3 pe-2',
-                    erased && "opacity-0 scale-y-0  duration-200"
+                <div className={cn('delay-300 duration-200 transition-all flex items-center justify-center p-2 gap-2 ps-3 pe-2',
+                    erased && "translate-y-4 opacity-0 duration-200"
                 )}>{footer}</div>
             </div>}
         </div>

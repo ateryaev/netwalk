@@ -106,9 +106,10 @@ export function GAME_MODE_AVAILABLE(mode: number, preSolved: number): boolean {
 }
 
 export function GAME_MODE_TO_UNLOCK(mode: number, preSolved: number): number {
-    if (mode !== 4) return 0;
-    //if (mode === 0) return 0;
 
+    //if (mode !== 4) return 0;
+    if (mode === 0) return 0;
+    return 1;
     if (preSolved === 0) return Infinity;
     const needed = [10, 10, 10, 10];
     return Math.max(needed[mode - 1] - preSolved, 0);

@@ -7,7 +7,7 @@ import { SvgClose, SvgBack } from './Svg';
 
 export function SubHeader({ className, children }) {
     return (<div
-        className={cn('uppercase text-puzzle-600 mx-0 px-6 py-4 sticky top-0 z-10',
+        className={cn('uppercase text-puzzle-600 mx-0 px-6 py-4 sticky top-0 z-10 flex',
             ' bg-puzzle-50', className)}>
         {children}
     </div>)
@@ -66,9 +66,9 @@ const Modal = ({ shown, onBack, onClose, title, subtitle, children, reversed }) 
             className="backdrop:bg-black/0 z-10 bg-white/0 select-none p-0 xtext-[16px]
              grid min-w-svw  min-h-svh max-h-svh  justify-center items-center ">
 
-            <div className={cn("flex-1 ring-2 ring-black/10 scale-90 border-puzzle-200",
+            <div className={cn("flex-1 ring-4 ring-black/10 scale-90 border-puzzle-200",
                 "opacity-10 duration-200 transition-all overflow-hidden",
-                "flex flex-col max-h-[min(600px,90svh)] max-w-[90svw] w-xl",
+                "flex flex-col h-[min(600px,90svh)] max-w-[90svw] w-xl",
                 (reallyShown) && "scale-100 opacity-100",
                 (!shown) && "scale-90 opacity-10",
                 "outline-none"
