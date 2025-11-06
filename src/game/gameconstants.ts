@@ -30,15 +30,6 @@ export const GAME_MODE_BORDERED = [true, true, false, false, false];
 
 export const GAME_COLORS = 4;
 
-//sizes: 5x5, 5x6, 6x6, 6x7, 7x7, 7x8, 8x8, 8x9, 9x9, 9x10, 10x10, 10x11, 11x11, 11x12, 12x12
-//times:   5,   6,   6,   7,   7,   8,    8,   9,    9,   10,    10,   11,    11,   12,    12
-//every size must be played GAME_SIZE(idx+1) - GAME_SIZE(idx) times
-// export function GAME_SIZE(index: number): XY {
-//     const size = 5 + Math.floor(index / 2);
-//     const extra = index % 2;
-//     return toXY(size, size + extra);
-// }
-
 export function GAME_LEVEL_SIZE(mode: number, level: number): XY {
     mode;
     const startSize = 5;
@@ -109,8 +100,8 @@ export function GAME_MODE_TO_UNLOCK(mode: number, preSolved: number): number {
 
     //if (mode !== 4) return 0;
     if (mode === 0) return 0;
-    return 1;
+    //return 1;
     if (preSolved === 0) return Infinity;
-    const needed = [10, 10, 10, 10];
+    const needed = [2, 2, 2, 2];
     return Math.max(needed[mode - 1] - preSolved, 0);
 }

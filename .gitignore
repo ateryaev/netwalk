@@ -26,5 +26,3 @@ dist-ssr
 .firebaserc
 firebase.json
 .firebase
-
-*.mp3

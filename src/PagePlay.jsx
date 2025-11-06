@@ -17,7 +17,7 @@ import { GameSubHeader } from './components/GameSubHeader';
 import { GameOverBar } from './components/GameOverBar';
 import { GAME_LEVEL_RANDOM, GAME_LEVEL_SIZE, GAME_MODE_BORDERED, GAME_MODE_TUTORIALS, GAME_MODES } from './game/gameconstants';
 import { GetLevelsSolved } from './game/gamestats';
-import { beepButton, beepLevelComplete, beepLevelStart, preBeepButton } from './utils/beep';
+import { beepButton, beepLevelComplete, preBeepButton } from './utils/beep';
 import { createEffect, playRotatedFx, produceEndingEffect } from './game/gameeffects';
 import { useGame } from './GameContext';
 
@@ -446,7 +446,7 @@ export function PagePlay({ mode, level, onMenu, onNext, className, ...props }) {
                 onResize={handleResize}
                 onPanZoomChange={handlePanZoomChange}
             >
-                <canvas ref={canvasRef} className={cn('contain-size rotate-0x scale-100 rotate-0 duration-500 transition-all', restarting && 'duration-200 rotate-3 scale-125')}></canvas>
+                <canvas ref={canvasRef} className={cn('contain-size scale-100 rotate-0 duration-500 transition-transform', restarting && 'duration-200 rotate-3 scale-125')}></canvas>
             </PanZoomView >
 
         </Window >

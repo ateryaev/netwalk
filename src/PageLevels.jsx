@@ -100,10 +100,8 @@ export function PageLevels({ shown, onLevelSelect, onBack, onClose, levelPlaying
     const bordered = GAME_MODE_BORDERED[mode];
     const subtitle = <>{(bordered ? "bordered" : "looped")} <Inv>{emptyFrom}-{emptyTo}%</Inv> empty</>;
     return (
-        <Modal xreversed={true} shown={shown} title="Netwalk" subtitle={GAME_MODES[currentMode]} isbottom={true} onBack={onBack} onClose={onClose}>
-            {/* <SubHeader className={"flex justify-betweenx gap-1"}>
-                {subtitle}
-            </SubHeader> */}
+        <Modal shown={shown} title="Netwalk" subtitle={GAME_MODES[currentMode]} isbottom={true} onBack={onBack} onClose={onClose}>
+
             <SubContent>
                 {Array.from({ length: solved + 1 }, (_, level) => (
                     <LevelButton key={level} level={level}

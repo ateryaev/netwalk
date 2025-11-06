@@ -96,7 +96,7 @@ export function GameProvider({ children }) {
     const getLevelsSolved = (mode) => {
         //return 25; //hardcoded for now
         const modeProgress = progress[mode] || [];
-        return modeProgress.filter(level => level && level.bestTaps < Infinity).length;
+        return 50 + modeProgress.filter(level => level && level.bestTaps < Infinity).length;
     }
 
     const getLevelStats = (mode, level) => {
