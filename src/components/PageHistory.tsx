@@ -30,7 +30,7 @@ export const usePageHistory = () => {
 
     const pushPage = useCallback((pageName: string, data: any) => {
         console.log("usePageHistory.pushPage", pageName, data)
-        window.history.pushState({ page: pageName }, "");
+        window.history.pushState({ page: pageName, data }, "");
         const event = new PopStateEvent("popstate", { state: { page: pageName, data: data } });
         window.dispatchEvent(event);
     }, []);
