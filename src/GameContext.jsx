@@ -1,9 +1,6 @@
-// SettingsContext.js
 import { createContext, use, useContext, useEffect, useMemo, useState } from 'react';
-import { GetSettings } from './game/gamestats';
 import { BEEP } from './utils/beep';
 import { loadFromLocalStorage, saveToLocalStorage } from './utils/storage';
-//import { MUSIC } from './utils/bgmusic';
 import { createGameTutorial0 } from './game/gametutorials';
 
 // Create the context
@@ -96,7 +93,7 @@ export function GameProvider({ children }) {
     const getLevelsSolved = (mode) => {
         //return 25; //hardcoded for now
         const modeProgress = progress[mode] || [];
-        return 50 + modeProgress.filter(level => level && level.bestTaps < Infinity).length;
+        return modeProgress.filter(level => level && level.bestTaps < Infinity).length;
     }
 
     const getLevelStats = (mode, level) => {

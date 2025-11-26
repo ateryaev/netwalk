@@ -1,10 +1,9 @@
 import { use, useEffect, useState } from "react";
 import { DetailedButton, SvgPlay } from "./components/Button";
-import { ModalContent } from "./components/Modal";
+import { ModalContent, SubHeader } from "./components/Modal";
 import { Blink, Inv, LabelNew, LabelPlay } from "./components/UI";
 import { cn } from "./utils/cn";
 import { GAME_LEVEL_COLORS, GAME_LEVEL_EMPTY, GAME_LEVEL_RANDOM, GAME_LEVEL_SIZE, GAME_MODE_BORDERED, GAME_MODE_EMPTIES, GAME_MODE_SCORE, GAME_MODE_TO_UNLOCK, GAME_MODE_TUTORIALS, GAME_MODES } from "./game/gameconstants";
-import { GetLevelsSolved } from "./game/gamestats";
 import { rnd } from "./utils/numbers";
 import { useGame } from "./GameContext";
 import { usePageHistory } from "./components/PageHistory";
@@ -82,7 +81,8 @@ export function PageLevels({ onLevelSelect }) {
         element?.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });
     }, [selectedIndex]);
 
-    return (
+    return (<>
+        <SubHeader>{GAME_MODES[mode]}</SubHeader>
         <ModalContent>
             {Array.from({ length: solved + 1 }, (_, level) => (
                 <LevelButton key={level} level={level}
@@ -97,6 +97,6 @@ export function PageLevels({ onLevelSelect }) {
                 />
             ))}
             <LevelButton disabled level={solved + 1} />
-        </ModalContent>
+        </ModalContent></>
     );
 }

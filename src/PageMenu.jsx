@@ -1,14 +1,13 @@
 import { use, useEffect, useMemo, useState } from "react";
-import { BaseButton, CheckBox, DetailedButton, PinkButton, RoundButton, SvgBell, SvgRestart } from "./components/Button";
+import { BaseButton, CheckBox, DetailedButton, MenuButton, PinkButton, RoundButton, SvgBell, SvgRestart } from "./components/Button";
 import Modal, { ModalContent, SubHeader, SubContent } from "./components/Modal";
-import { Blink, Inv, LabelNew, LabelPlay } from "./components/UI";
+import { Blink, Inv, LabelNew, LabelPlay, Titled } from "./components/UI";
 import { cn } from "./utils/cn";
 import { GAME_MODE_BORDERED, GAME_MODE_EMPTIES, GAME_MODE_SCORE, GAME_MODE_TO_UNLOCK, GAME_MODES } from "./game/gameconstants";
-import { GetAvailableModes, GetLevelsSolved, GetTotalScores } from "./game/gamestats";
 import { useGame } from "./GameContext";
 import { SvgCheck, SvgClose, SvgRates, SvgUnCheck } from "./components/Svg";
 
-export function PageMenu({ onModeSelect }) {
+export function PageMenu({ onModeSelect, onLeaderboard }) {
     const { settings, getLevelsSolved, updateSettings, current } = useGame();
 
     const totalScore = useMemo(() => {
@@ -49,9 +48,39 @@ export function PageMenu({ onModeSelect }) {
                         onClick={() => onModeSelect?.(index)}
                     />
                 ))}
+                {/* <SubHeader>online player rank</SubHeader> */}
+                {/* <DetailedButton onClick={() => { onLeaderboard(); }}
+                    className={"bg-puzzle xhue-rotate-90 text-white"}
+                    subtitle={"check your global rank"}
+                    value={totalScore.toLocaleString("us")}
+                    subvalue={"total"} >
+                    Leaderboard</DetailedButton> */}
+
+                <MenuButton className={"bg-puzzle-100 hue-rotate-180 m-3 p-3 rounded-sm ring-4 ring-puzzle-200"}
+                    onClick={() => { onLeaderboard(); }} >
+                    <Titled title={"Leaderboard"}>check your global rank</Titled>
+                </MenuButton>
+
+                {/* <DetailedButton onClick={() => { onLeaderboard(); }}
+                    className={"bg-puzzle xhue-rotate-90 text-white"}
+                    subtitle={"check your global rank"}
+                >
+                    Leaderboard</DetailedButton> */}
 
             </SubContent>
 
+            {/* 
+            <SubContent>
+                <DetailedButton onClick={() => updateSettings({ sound: !settings.sound })}
+                    subtitle={"Your public leaderboard name"}
+                    icon={<CheckBox checked={settings.sound} />}
+                >SuperMan</DetailedButton>
+                <DetailedButton onClick={() => { onLeaderboard(); }}
+                    subtitle={"compete global rankings"}
+                    value={"#21"}
+                    subvalue={""} >
+                    Leaderboard</DetailedButton>
+            </SubContent> */}
             <SubHeader>settings</SubHeader>
 
             <SubContent>
@@ -95,7 +124,7 @@ export function PageMenu({ onModeSelect }) {
             <SubHeader className="opacity-50 saturate-50xx hue-rotate-180">
                 <div className="flex-1">Anton Teryaev</div> 2025
             </SubHeader>
-        </ModalContent>
+        </ModalContent >
 
     );
 }

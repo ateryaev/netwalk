@@ -16,7 +16,6 @@ import { GameFooter } from './components/GameFooter';
 import { GameSubHeader } from './components/GameSubHeader';
 import { GameOverBar } from './components/GameOverBar';
 import { GAME_LEVEL_RANDOM, GAME_LEVEL_SIZE, GAME_MODE_BORDERED, GAME_MODE_TUTORIALS, GAME_MODES } from './game/gameconstants';
-import { GetLevelsSolved } from './game/gamestats';
 import { beepButton, beepLevelComplete, preBeepButton } from './utils/beep';
 import { createEffect, playRotatedFx, produceEndingEffect } from './game/gameeffects';
 import { useGame } from './GameContext';

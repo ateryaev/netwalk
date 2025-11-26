@@ -1,3 +1,4 @@
+//import { ViewTransition, startTransition } from 'react';
 import { use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { cn } from './utils/cn.ts'
 import { PagePlay } from './PagePlay';
@@ -10,13 +11,14 @@ import { MenuButton } from './components/Button.jsx';
 import { GAME_LEVEL_SIZE, GAME_MODE_BORDERED, GAME_MODES } from './game/gameconstants.ts';
 import { PageLevels } from './PageLevels.jsx';
 import { PageRating } from './PageRating.jsx';
-import { GetSettings, SetLevelSolved } from './game/gamestats.ts';
 import { useGame } from './GameContext.jsx';
 import { useGameMusic } from './GameMusic.jsx';
+import { useOnline } from './OnlineContext.jsx';
 
 const PAGE_START = "/";
 const PAGE_MENU = "Menu";
 const PAGE_LEVELS = "Levels";
+const PAGE_LEADERBOARD = "Leaderboard";
 
 const MENU_MAIN = "MENU_MAIN";
 const MENU_MODES = "MENU_MODES";
@@ -27,6 +29,7 @@ const MENU_ABOUT = "MENU_ABOUT";
 
 function App() {
   const { settings, current, updateCurrent } = useGame();
+  const online = useOnline();
   const { currentPage, currentData, pushPage, goBack } = usePageHistory();
   const music = useGameMusic();
 
@@ -40,6 +43,7 @@ function App() {
 
   useEffect(() => {
     music.setModeLevel(current);
+    //console.log("ONLINE:", online.scores)
   }, [current.mode, current.level]);
 
   function handleMenu() {
@@ -61,8 +65,19 @@ function App() {
     goBack(2); //close levels
   }
 
+  function handleLeaderboard() {
+    pushPage(PAGE_LEADERBOARD);
+  }
+
   function handleNext() {
     updateCurrent({ mode: current.mode, level: current.level + 1 });
+  }
+
+  let subtitle = "relax no stress";
+  if (currentPage === PAGE_LEVELS) {
+    subtitle = "choose level to play";//GAME_MODES[menuPlayMode];
+  } else if (currentPage === PAGE_LEADERBOARD) {
+    subtitle = "global player rank";
   }
   // + "(" + currentData?.mode + ") (" + current.mode + ") (" + menuPlayMode + ")"
   return (
@@ -76,12 +91,14 @@ function App() {
 
       <Modal shown={currentPage != PAGE_START}
         title={"Netwalk"}
-        subtitle={currentPage !== PAGE_LEVELS ? "relax no stress" : GAME_MODES[menuPlayMode]}
+        subtitle={subtitle}
         onClose={currentPage === PAGE_MENU || currentPage === PAGE_START ? goBack : undefined}
         //onBack={() => setMenuPage(MENU_MAIN)}>
         onBack={currentPage !== PAGE_MENU && currentPage !== PAGE_START && goBack}>
 
-        {currentPage === PAGE_MENU && <PageMenu onModeSelect={handleModeSelect} />}
+        {currentPage === PAGE_MENU && <PageMenu onModeSelect={handleModeSelect} onLeaderboard={handleLeaderboard} />}
+
+        {currentPage === PAGE_LEADERBOARD && <PageRating />}
 
         {currentPage === PAGE_LEVELS && <PageLevels
           //mode={menuPlayMode}
