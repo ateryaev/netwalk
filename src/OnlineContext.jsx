@@ -1,13 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import {
     auth, db, signInAnonymously, onAuthStateChanged,
     ref, set, query, orderByChild, limitToLast, onValue, runTransaction, getCurrentUid
 } from './firebaseConfig';
-import { serverTimestamp } from 'firebase/database';
-import { DEFAULT_COUNTRY } from './utils/country';
-
-const DEFAULT_PLAYER_NAME = "Anonymous Player";
-const LOCAL_NAME_KEY = 'game_player_name';
+import { push, serverTimestamp } from 'firebase/database';
+import { fetchCountry } from './utils/country';
 
 const OnlineContext = createContext();
 
@@ -18,55 +15,44 @@ export function useOnline() {
 export function OnlineProvider({ children }) {
     const [loading, setLoading] = useState(true); //auth loading
     const [currentUser, setCurrentUser] = useState(null); //auth user, has currentUser.uid
+    const uid = currentUser?.uid;
+    const hash = uid?.substr(-4) || "????";
     const [isConnected, setIsConnected] = useState(false); //has real online db connection
 
-    const [playerName, setPlayerName] = useState(localStorage.getItem(LOCAL_NAME_KEY) || DEFAULT_PLAYER_NAME);
-    const [playerCountry, setPlayerCountry] = useState(DEFAULT_COUNTRY);
+    const [scores, setScores] = useState(null); //list of best scores from db
+    const [scoresLoading, setScoresLoading] = useState(true); //loading best scores
 
-    // 3. Game Data State
-    const [scores, setScores] = useState(null);
-    const [scoresLoading, setScoresLoading] = useState(true);
-
-    function updatePlayerName(name) {
-        if (name && name.trim().length > 3) {
-            setPlayerName(name);
-            localStorage.setItem(LOCAL_NAME_KEY, name);
-            // Also update the profile in the DB if authenticated
-            const uid = getCurrentUid();
-            if (uid) {
-                set(ref(db, `users/${uid}/name`), name).catch(console.error);
-            }
-        }
-    };
-
-    // --- Core Logic Functions ---
-
-    const submitScore = useCallback(async (newScore) => {
-        const uid = currentUser?.uid;
+    const submitTaps = useCallback(async (playerName, mode, level, taps) => {
         if (!uid || !isConnected) return;
         const country = await fetchCountry();
+        const submitsRef = ref(db, 'submits');
+        const newSubmitRef = push(submitsRef);
+        set(newSubmitRef, {
+            player: uid,
+            name: playerName,
+            country: country,
+            at: serverTimestamp(),
+            mode, level, taps
+        });
+    }, [uid, isConnected]);
 
-        const userRef = ref(db, `users/${uid}`);
+    const submitScore = useCallback(async (playerName, newScore) => {
+        if (!uid || !isConnected) return;
+
+        const country = await fetchCountry();
         const bestScoreRef = ref(db, `bestScores/${uid}`);
-        const submitsRef = ref(db, `submits`);
 
         try {
-            await set(userRef, { name: playerName, country: country });
-
-            //store for history, cheating check
-            const newSubmitRef = ref(db, 'submits').push();
-            await set(newSubmitRef, { id: newSubmitRef.key, player: uid, at: serverTimestamp(), score: newScore });
-
-
-            //write to bestScore
+            let delta = 0;
             const success = await runTransaction(bestScoreRef, (currentData) => {
                 const existingScore = currentData?.score || 0;
                 if (newScore <= existingScore) return;
+                delta = newScore - existingScore;
                 return {
                     score: newScore,
                     name: playerName,
                     country: country,
-                    updatedAt: serverTimestamp(),
+                    at: serverTimestamp(),
                 };
             });
 
@@ -80,7 +66,7 @@ export function OnlineProvider({ children }) {
             console.error("Error submitting score:", error);
         }
 
-    }, [currentUser, playerName, isConnected]);
+    }, [uid, isConnected]);
 
     // Firebase Auth Listener
     useEffect(() => {
@@ -97,7 +83,6 @@ export function OnlineProvider({ children }) {
         });
     }, []);
 
-
     // Connection Listener
     useEffect(() => {
         const connectedRef = ref(db, '.info/connected');
@@ -106,7 +91,6 @@ export function OnlineProvider({ children }) {
         });
         return unsubscribeConn;
     }, []);
-
 
     // Leader Board Listener
     useEffect(() => {
@@ -135,30 +119,20 @@ export function OnlineProvider({ children }) {
 
     }, []);
 
-
-    // useEffect(() => {
-    //     if (isConnected && currentUser && !loading) {
-    //         submitScore(1)
-    //     }
-
-    // }, [isConnected, currentUser, loading])
-
     const value = {
-        playerName,
-        playerCountry,
-        updatePlayerName,
-        submitScore,
+        submitScore, //(playerName, score)
+        submitTaps, //(playerName, mode, level, taps)
         scores,
         scoresLoading, //loading in progress
-        isConnected,
-        isOnline: isConnected && currentUser && !loading,
-        uid: currentUser?.uid
+        isOnline: isConnected && currentUser && !loading, //do is online, user is set, auth completed
+        hash,
+        uid
     };
 
     // Only render children after initial authentication load
     return (
         <OnlineContext.Provider value={value}>
-            {!loading && children}
+            {children}
         </OnlineContext.Provider>
     );
 }

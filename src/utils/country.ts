@@ -1,4 +1,4 @@
-export const DEFAULT_COUNTRY = "XX";
+const DEFAULT_COUNTRY = "XX";
 
 let country = DEFAULT_COUNTRY;
 

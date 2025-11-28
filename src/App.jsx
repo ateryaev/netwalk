@@ -14,6 +14,7 @@ import { PageRating } from './PageRating.jsx';
 import { useGame } from './GameContext.jsx';
 import { useGameMusic } from './GameMusic.jsx';
 import { useOnline } from './OnlineContext.jsx';
+import { Hash } from './components/Hash.tsx';
 
 const PAGE_START = "/";
 const PAGE_MENU = "Menu";
@@ -73,13 +74,13 @@ function App() {
     updateCurrent({ mode: current.mode, level: current.level + 1 });
   }
 
-  let subtitle = "relax no stress";
+  let subtitle = <>Welcome {settings.name}<Hash uid={online.uid} /></>;
   if (currentPage === PAGE_LEVELS) {
-    subtitle = "choose level to play";//GAME_MODES[menuPlayMode];
+    subtitle = "choose level to play";
   } else if (currentPage === PAGE_LEADERBOARD) {
     subtitle = "global player rank";
   }
-  // + "(" + currentData?.mode + ") (" + current.mode + ") (" + menuPlayMode + ")"
+
   return (
     <>
       <PagePlay

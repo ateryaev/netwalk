@@ -8,7 +8,6 @@ export const usePageHistory = () => {
         const handlePopState = (event: any) => {
             const newPage = (event.state && event.state.page) ? event.state.page : "/";
             const newData = (event.state && event.state.data) ? event.state.data : null;
-            console.log("usePageHistory.handlePopState", newPage, newData)
             setCurrentPage(newPage); // Update internal hook state
             setCurrentData(newData);
         };
@@ -29,14 +28,12 @@ export const usePageHistory = () => {
     }, [currentPage]);
 
     const pushPage = useCallback((pageName: string, data: any) => {
-        console.log("usePageHistory.pushPage", pageName, data)
         window.history.pushState({ page: pageName, data }, "");
         const event = new PopStateEvent("popstate", { state: { page: pageName, data: data } });
         window.dispatchEvent(event);
     }, []);
 
     const replacePage = useCallback((pageName: string, data: any) => {
-        console.log("usePageHistory.replacePage", pageName, data)
         window.history.replaceState({ page: pageName, data: data }, "");
         const event = new PopStateEvent("popstate", { state: { page: pageName, data: data } });
         window.dispatchEvent(event);

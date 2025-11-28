@@ -5,15 +5,12 @@ import { Blink, Inv, LabelNew, LabelPlay, Titled } from "./components/UI";
 import { cn } from "./utils/cn";
 import { GAME_MODE_BORDERED, GAME_MODE_EMPTIES, GAME_MODE_SCORE, GAME_MODE_TO_UNLOCK, GAME_MODES } from "./game/gameconstants";
 import { useGame } from "./GameContext";
-import { SvgCheck, SvgClose, SvgRates, SvgUnCheck } from "./components/Svg";
+import { SvgCheck, SvgClose, SvgLoad, SvgRates, SvgUnCheck } from "./components/Svg";
+import { useOnline } from "./OnlineContext";
 
 export function PageMenu({ onModeSelect, onLeaderboard }) {
-    const { settings, getLevelsSolved, updateSettings, current } = useGame();
-
-    const totalScore = useMemo(() => {
-        return GAME_MODES.reduce((total, _, mode) =>
-            total + GAME_MODE_SCORE(mode, getLevelsSolved(mode)), 0);
-    }, [getLevelsSolved]);
+    const online = useOnline();
+    const { settings, getLevelsSolved, totalScore, updateSettings, current } = useGame();
 
     function ModeButton({ mode, points, emptyFrom, emptyTo, toUnlock, bordered, ...props }) {
         let subtitle = null;
@@ -56,9 +53,16 @@ export function PageMenu({ onModeSelect, onLeaderboard }) {
                     subvalue={"total"} >
                     Leaderboard</DetailedButton> */}
 
-                <MenuButton className={"bg-puzzle-100 hue-rotate-180 m-3 p-3 rounded-sm ring-4 ring-puzzle-200"}
+                <MenuButton
+                    className={cn("bg-puzzle-100 hue-rotate-180 m-3 p-3 rounded-sm ring-4 ring-puzzle-200",
+                        ""
+                    )}
+                    disabled={!online.isOnline}
                     onClick={() => { onLeaderboard(); }} >
-                    <Titled title={"Leaderboard"}>check your global rank</Titled>
+                    <Titled title={"Leaderboard"}>
+                        {online.isOnline && "check your global rank"}
+                        {!online.isOnline && <SvgLoad />}
+                    </Titled>
                 </MenuButton>
 
                 {/* <DetailedButton onClick={() => { onLeaderboard(); }}

@@ -1,17 +1,16 @@
-import { createContext, use, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, use, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { BEEP } from './utils/beep';
 import { loadFromLocalStorage, saveToLocalStorage } from './utils/storage';
 import { createGameTutorial0 } from './game/gametutorials';
+import { normalizeNickname } from './utils/nickname';
+import { GAME_MODE_SCORE, GAME_MODES } from './game/gameconstants';
+import { useOnline } from './OnlineContext';
 
 // Create the context
 const GameContext = createContext();
 
-const SETTINGS_STORAGE_KEY = "netwalk_game_settings";
-const PROGRESS_STORAGE_KEY = "netwalk_game_progress";
-const CURRENT_STORAGE_KEY = "netwalk_game_current";
-
 const STORAGE_KEY = "netwalk_data";
-const STORAGE_VERSION = "0.0.1";
+const STORAGE_VERSION = "0.0.1a";
 
 const DEFAULT_DATA = {
     settings: {
@@ -19,7 +18,7 @@ const DEFAULT_DATA = {
         music: false,
         vibro: true,
         lang: "en",
-        name: "SimplePlayer",
+        name: null,
     },
     progress: [],
     current: { mode: 0, level: 0 },
@@ -27,7 +26,7 @@ const DEFAULT_DATA = {
 
 function loadGameData() {
     const savedData = loadFromLocalStorage(STORAGE_KEY, {});
-    const data = savedData[STORAGE_VERSION] || DEFAULT_DATA;
+    const data = savedData?.[STORAGE_VERSION] || DEFAULT_DATA;
 
     data.settings = data.settings || DEFAULT_DATA.settings;
     data.progress = data.progress || DEFAULT_DATA.progress;
@@ -37,7 +36,7 @@ function loadGameData() {
     data.settings.music = data.settings.music ?? false;
     data.settings.vibro = data.settings.vibro ?? true;
     data.settings.lang = data.settings.lang ?? "en";
-    data.settings.name = data.settings.name ?? "SimplePlayer";
+    data.settings.name = normalizeNickname(data.settings.name); //check/generate/trim
     data.current.mode = data.current.mode || 0;
     data.current.level = data.current.level || 0;
     if (!Array.isArray(data.progress)) {
@@ -46,23 +45,38 @@ function loadGameData() {
     return data;
 }
 
-function savedGameData(data) {
+function saveGameData(data) {
     saveToLocalStorage(STORAGE_KEY, { [STORAGE_VERSION]: data });
 }
 
 // Create a provider component
 export function GameProvider({ children }) {
-    const [gameData, setGameData] = useState(DEFAULT_DATA);
+    const online = useOnline();
+    const [gameData, setGameData] = useState(loadGameData);
+    //const [gameData, setGameData] = useState(DEFAULT_DATA);
+
     const settings = gameData.settings || DEFAULT_DATA.settings;
     const progress = gameData.progress || DEFAULT_DATA.progress;
     const current = gameData.current || DEFAULT_DATA.current;
 
     useEffect(() => {
-        setGameData(loadGameData());
-    }, []);
-    useEffect(() => {
-        savedGameData(gameData);
+        saveGameData(gameData);
     }, [gameData]);
+
+    const getLevelsSolved = useCallback((mode) => {
+        //return 25; //hardcoded for now
+        const modeProgress = gameData.progress[mode] || [];
+        return modeProgress.filter(level => level && level.bestTaps < Infinity).length;
+    }, [gameData.progress]);
+
+    const totalScore = useMemo(() => {
+        return GAME_MODES.reduce((total, _, mode) =>
+            total + GAME_MODE_SCORE(mode, getLevelsSolved(mode)), 0);
+    }, [gameData.progress]);
+
+    useEffect(() => {
+        online.submitScore(gameData.settings.name, totalScore);
+    }, [totalScore])
 
     const markLevelSolved = (mode, level, taps) => {
         const modeProgress = progress[mode] || [];
@@ -78,6 +92,7 @@ export function GameProvider({ children }) {
         const isNewBest = taps < levelProgress.bestTaps;
 
         if (isNewBest) {
+            online.submitTaps(gameData.settings.name, mode, level, taps);
             levelProgress.bestSolvedWhen = Date.now();
             levelProgress.bestTaps = taps;
         }
@@ -90,11 +105,7 @@ export function GameProvider({ children }) {
         setGameData({ ...gameData, progress: [...progress] });
     }
 
-    const getLevelsSolved = (mode) => {
-        //return 25; //hardcoded for now
-        const modeProgress = progress[mode] || [];
-        return modeProgress.filter(level => level && level.bestTaps < Infinity).length;
-    }
+
 
     const getLevelStats = (mode, level) => {
         const modeProgress = progress[mode] || [];
@@ -140,7 +151,7 @@ export function GameProvider({ children }) {
 
 
     return (
-        <GameContext.Provider value={{ settings, current, getLevelsSolved, getLevelStats, markLevelSolved, updateSettings, updateCurrent }}>
+        <GameContext.Provider value={{ settings, current, totalScore, getLevelsSolved, getLevelStats, markLevelSolved, updateSettings, updateCurrent }}>
             {children}
         </GameContext.Provider>
     );
