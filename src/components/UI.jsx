@@ -10,9 +10,9 @@ export function Inv({ children, className, ...props }) {
     )
 }
 export function Titled({ children, title, className, ...props }) {
-    return (<div className={cn("uppercase", className)}>
-        <div className="text-[100%]">{title}</div>
-        <div className="opacity-60 text-[85%] lowercasex -mt-1">{children}</div>
+    return (<div className={cn("uppercase overflow-hidden", className)}>
+        <div className="text-[100%] overflow-hidden  text-ellipsis">{title}</div>
+        <div className="opacity-60 text-[85%] lowercasex -mt-1 overflow-hidden text-ellipsis">{children}</div>
     </div>)
 }
 

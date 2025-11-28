@@ -181,7 +181,7 @@ export function DetailedButton({ children, special, safe, className, subtitle, v
         setIsFocused(true);
     }
     return (
-        <MenuButton className={cn("px-6 py-6 pb-4 flex gap-0 items-center justify-between",
+        <MenuButton className={cn("px-6 py-6 pb-4 flex gap-2 items-center justify-between",
             special && "border-l-8 pl-4 x-ml-2 border-ipuzzle", className)}
             {...props}
             onBlur={handleBlur}

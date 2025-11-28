@@ -20,18 +20,17 @@ function RankRecord({ rank, name, uid, country, special, at, score, ...props }) 
                 <div className="h-0 invisible">0000</div>
             </div>
 
-            <div className={cn("bg-whitex p-2 text-darkpuzzle bg-white flex-1", special && "bg-puzzle-50 text-darkpuzzle")}>
+            <div className={cn("bg-whitex p-2 overflow-hidden text-darkpuzzle bg-white flex-1", special && "bg-puzzle-50 text-darkpuzzle")}>
                 <div className="flex gap-2 uppercase">
-                    <div className="flex gap-0 items-center flex-1">
+                    <div className="flex gap-0 items-center flex-1 overflow-hidden">
                         <Flag code={country} />
-                        {name}
-                        <Hash uid={uid} />
+                        <div className="text-ellipsis overflow-hidden">{name}<Hash uid={uid} /></div>
                     </div>
                     <Inv>{score.toLocaleString('en-US')}</Inv>
                 </div>
                 <div className="flex gap-2 text-[85%] xuppercase opacity-60 -mt-1">
-                    <div className="flex-1">
-                        {special && <Inv>THIS IS YOUR RECORD</Inv>}
+                    <div className="flex-1 text-ellipsis overflow-hidden whitespace-nowrap">
+                        {special && <>THIS IS <Inv>YOUR</Inv> RECORD</>}
                         {!special && <Ago at={at} />}
                     </div>
                     POINTS

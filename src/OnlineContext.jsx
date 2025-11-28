@@ -108,8 +108,15 @@ export function OnlineProvider({ children }) {
                 });
             });
 
-            // Reverse to get descending order (highest score first)
+            scoresList.push({ uid: "1b2c", at: 1763800000000, country: "US", name: "SirSnortsalot", score: 100 });
+            scoresList.push({ uid: "4d5e", at: 1763900000000, country: "GB", name: "DukeQuackenstein", score: 200 });
+            scoresList.push({ uid: "7f8g", at: 1764000000000, country: "CA", name: "ProfessorNoodlepants", score: 400 });
+            scoresList.push({ uid: "9h0i", at: 1764100000000, country: "DE", name: "BaronvonBubblewrap", score: 800 });
+            scoresList.push({ uid: "abc1", at: 1764200000000, country: "FR", name: "LadyGigglemuffin", score: 1600 });
+
+            scoresList.sort((a, b) => a.score > b.score ? 1 : -1);
             setScores(scoresList.reverse());
+
             setScoresLoading(false);
         }, (error) => {
             console.error("Error fetching scores:", error);
