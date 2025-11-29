@@ -67,7 +67,7 @@ const Modal = ({ shown, onBack, onClose, title, subtitle, children, reversed }) 
             className="backdrop:bg-black/0 z-10 bg-white/0 select-none p-0 xtext-[16px]
              grid min-w-svw  min-h-svh max-h-svh  justify-center items-center ">
 
-            <div className={cn("flex-1 ring-4 ring-black/10 scale-90 border-puzzle-200 bg-white",
+            <div className={cn("flex-1 ring-4 rounded-md ring-black/10 scale-90 border-puzzle-200 bg-white",
                 "opacity-10 duration-1000 transition-all overflow-hidden",
                 "flex flex-col h-[min(600px,90svh)] max-w-[90svw] w-xl",
                 "scale-100 opacity-100",

@@ -12,6 +12,7 @@ export class GameManager {
     private colors: Array2d<number>;
     private counters: Map<number, number>;
     private connections: Array2d<number>;
+    private preConnections: Array2d<number>;
 
     private preColors: Array2d<number>;
 
@@ -23,6 +24,7 @@ export class GameManager {
         this.counters = this.calcCounters();
         this.connections = this.calcConnections();
         this.preColors = this.colors;
+        this.preConnections = this.connections;
     }
 
     // constructor(game: GameData) {
@@ -38,8 +40,12 @@ export class GameManager {
     }
 
     connectionAt(xy: XY, rotateAt: XY) {
-        if (rotateAt && isSameXY(xy, rotateAt)) return 0;
+        rotateAt;
+        // if (rotateAt && isSameXY(xy, rotateAt)) return 0;
         return this.connections.get(xy) || 0;
+    }
+    preConnectionAt(xy: XY) {
+        return this.preConnections.get(xy) || 0;
     }
 
     level() { return this.game.level; }
@@ -103,24 +109,29 @@ export class GameManager {
         return sources;
     }
 
-    getRotatedFigureAt(x: number, y: number): number {
+    getRotatedFigureAt(x: number, y: number): { figure: number, conn: number } {
         const xy = toXY(x, y);
         const cell = this.cellAt(xy);
-        if (!cell.source) return rotateFigure(cell.figure);
+        const conn = this.connections?.get(xy) || 0;
+        if (!cell.source) return { figure: rotateFigure(cell.figure), conn: rotateFigure(conn) };
 
         let newFigure = 0;
+        let newConn = 0;
 
         const dirs: DIR[] = [TOP, RIGHT, BOTTOM, LEFT];
         dirs.forEach((dir) => {
             const neib = this.cellAt(moveXY(xy, dir));
+            const neibConn = this.connections.get(moveXY(xy, dir));
             if (neib.source === cell.source) {
                 newFigure |= (neib.figure & rotateFigure(dir)) | dir;
+                newConn |= (neibConn & rotateFigure(dir)) | dir;
             } else {
                 newFigure |= rotateFigure(cell.figure & dir);
+                newConn |= rotateFigure(conn & dir);
             }
         });
 
-        return newFigure;
+        return { figure: newFigure, conn: newConn };
     }
 
     canRotateAt(xy: XY): boolean {
@@ -139,14 +150,19 @@ export class GameManager {
 
         loopXY(rect.size, (dxy: XY) => {
             const cellXY = addXY(dxy, rect.at);
-            newFigures.push({ xy: cellXY, figure: this.getRotatedFigureAt(cellXY.x, cellXY.y) })
+            const rotated = this.getRotatedFigureAt(cellXY.x, cellXY.y);
+            newFigures.push({ xy: cellXY, rotated })
         });
 
         newFigures.forEach((item: any) => {
-            this.cellAt(item.xy).figure = item.figure;
+            this.cellAt(item.xy).figure = item.rotated.figure;
+            this.connections?.set(item.xy, item.rotated.conn);
         });
 
         this.preColors = this.colors;
+
+        this.preConnections = this.connections;
+
         this.colors = this.calcColors();
         this.connections = this.calcConnections();
         this.counters = this.calcCounters();

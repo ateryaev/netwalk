@@ -278,7 +278,9 @@ export function PagePlay({ mode, level, onMenu, onNext, className, ...props }) {
 
                 const isRotating = rotation && manager.isSameCell(cellXY, rotation.at)
                 const rotateProgress = isRotating ? globalRotateProgress : 0;
+                const pr = progress(rotation?.when || 0, TRANS_DURATION)
                 const conns = manager.connectionAt(cellXY, rotation?.at || null);// connections.get(cellXY) || 0;
+                const preConns = manager.preConnectionAt(cellXY);
 
                 const alpha = isOuter ? 0.3 : 1;
                 if (cell.source) {
@@ -312,12 +314,12 @@ export function PagePlay({ mode, level, onMenu, onNext, className, ...props }) {
                     const moveDist = SIZE * rotateProgress;
 
                     const currentColor = COLOR(color + (isOuter ? 100 : 0));
-                    drawTransform(ctx, toXY(0, moveDist), () => drawNewFigure(ctx, figure2move & RIGHT, conns, currentColor));
-                    drawTransform(ctx, toXY(0, -moveDist), () => drawNewFigure(ctx, figure2move & LEFT, conns, currentColor));
-                    drawTransform(ctx, toXY(moveDist, 0), () => drawNewFigure(ctx, figure2move & TOP, conns, currentColor));
-                    drawTransform(ctx, toXY(-moveDist, 0), () => drawNewFigure(ctx, figure2move & BOTTOM, conns, currentColor));
+                    drawTransform(ctx, toXY(0, moveDist), () => drawNewFigure(ctx, figure2move & RIGHT, conns, currentColor, preConns, pr));
+                    drawTransform(ctx, toXY(0, -moveDist), () => drawNewFigure(ctx, figure2move & LEFT, conns, currentColor, preConns, pr));
+                    drawTransform(ctx, toXY(moveDist, 0), () => drawNewFigure(ctx, figure2move & TOP, conns, currentColor, preConns, pr));
+                    drawTransform(ctx, toXY(-moveDist, 0), () => drawNewFigure(ctx, figure2move & BOTTOM, conns, currentColor, preConns, pr));
 
-                    drawRotated(ctx, rotateProgress * Math.PI / 2, () => drawNewFigure(ctx, figure2rotate, conns, currentColor));
+                    drawRotated(ctx, rotateProgress * Math.PI / 2, () => drawNewFigure(ctx, figure2rotate, conns, currentColor, preConns, pr));
                 } else {
                     const switchingDelta = color !== preColor ? minmax(rotateProgress + 1, 0, 1) : 1;
                     let currentColor = COLOR(color);
@@ -325,7 +327,12 @@ export function PagePlay({ mode, level, onMenu, onNext, className, ...props }) {
                     else currentColor = midColor(COLOR(preColor), COLOR(color), switchingDelta);
 
                     drawRotated(ctx, rotateProgress * Math.PI / 2, () => {
-                        drawNewFigure(ctx, cell.figure, conns, currentColor);
+                        if (!isRotating)
+                            drawNewFigure(ctx, cell.figure, conns, currentColor, preConns, pr);
+                        if (isRotating && pr < 0.5)
+                            drawNewFigure(ctx, cell.figure, 0, currentColor, preConns, pr * 2);
+                        if (isRotating && pr >= 0.5)
+                            drawNewFigure(ctx, cell.figure, conns, currentColor, 0, pr * 2 - 1);
                     });
                     if (end) {
                         drawCircle(ctx, SIZE / 2, SIZE / 2, 25, currentColor);

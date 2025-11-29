@@ -1,7 +1,7 @@
 import { COLOR, SIZE } from "./cfg";
 import { drawTransform, midColor } from "../utils/canvas";
 import type { GameManager } from "./gamemanager";
-import { progressToCurve } from "../utils/numbers";
+import { fromto, progressToCurve } from "../utils/numbers";
 import { addXY, bymodXY, isSameXY, loopXY, mulXY, subXY, toXY, type XY } from "../utils/xy";
 import { drawCircle, drawRoundRect, strokeCircle, strokeLine } from "../utils/canvas";
 import { BOTTOM, LEFT, RIGHT, TOP } from "./gamedata";
@@ -173,7 +173,7 @@ export function renderSourceFgs(ctx: any, manager: GameManager, viewGridSize: XY
 
 }
 
-export function drawNewFigure(ctx: any, figure: number, conns: number, color: string) {
+export function drawNewFigure(ctx: any, figure: number, conns: number, color: string, preConns = 0, transition = 1) {
     const d = 12;
     const r = 25;
     const s2 = SIZE / 2;
@@ -189,22 +189,34 @@ export function drawNewFigure(ctx: any, figure: number, conns: number, color: st
 
     ctx.beginPath();
 
+
+    //const ct = (1 - transition) * d;//
+    const ct = fromto((preConns & TOP) ? 0 : d, (conns & TOP) ? 0 : d, transition);
+    const cb = fromto((preConns & BOTTOM) ? 0 : d, (conns & BOTTOM) ? 0 : d, transition);
+
+    const cr = fromto((preConns & RIGHT) ? 0 : d, (conns & RIGHT) ? 0 : d, transition);
+    const cl = fromto((preConns & LEFT) ? 0 : d, (conns & LEFT) ? 0 : d, transition);
+
+
+
     if (figure & TOP) {
-        ctx.moveTo(s2, conns & TOP ? 0 : d);
+        //ctx.moveTo(s2, conns & TOP ? 0 : d);
+        ctx.moveTo(s2, ct);
         ctx.lineTo(s2, s2 - r);
     }
 
     if (figure & RIGHT) {
-        ctx.moveTo(SIZE - (conns & RIGHT ? 0 : d), s2);
+        ctx.moveTo(SIZE - cr, s2);
         ctx.lineTo(s2 + r, s2);
     }
 
     if (figure & BOTTOM) {
-        ctx.moveTo(s2, SIZE - (conns & BOTTOM ? 0 : d));
+        //ctx.moveTo(s2, SIZE - (conns & BOTTOM ? 0 : d));
+        ctx.moveTo(s2, SIZE - cb);
         ctx.lineTo(s2, s2 + r);
     }
     if (figure & LEFT) {
-        ctx.moveTo((conns & LEFT ? 0 : d), s2);
+        ctx.moveTo(cl, s2);
         ctx.lineTo(s2 - r, s2);
     }
     if (figure & BOTTOM && figure & LEFT) {
