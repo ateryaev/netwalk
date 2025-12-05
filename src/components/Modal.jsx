@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, ViewTransition } from 'react';
 import { BaseButton, MainButton, MenuButton, PinkButton, RoundButton, TabButton } from './Button';
 import { cn } from '../utils/cn';
 import { preBeepButton } from '../utils/beep';
@@ -7,7 +7,7 @@ import { SvgClose, SvgBack } from './Svg';
 
 export function SubHeader({ className, children }) {
     return (<div
-        className={cn('uppercase text-gray-600 mx-0 px-4 py-2 sticky top-0 z-10 flex',
+        className={cn('uppercase text-gray-600 mx-0 px-4 py-2.5 sticky top-0 z-10 flex',
             ' bg-gray-100 hue-rotate-180', className)}>
         {children}
     </div>)
@@ -30,6 +30,8 @@ export function ModalContent({ className, children }) {
 const Modal = ({ shown, onBack, onClose, title, subtitle, children, reversed }) => {
     const dialogRef = useRef(null);
 
+    const [dialogState, setDialogState] = useState(0); //0-hidden, 1-showing, 2-hidding
+
     //const [reallyShown, setReallyShown] = useState(shown);
 
     // useEffect(() => {
@@ -42,8 +44,11 @@ const Modal = ({ shown, onBack, onClose, title, subtitle, children, reversed }) 
     useEffect(() => {
         if (shown) {
             dialogRef.current?.showModal();
+            setDialogState(1);
         } else {
-            dialogRef.current?.close();
+            setDialogState(2);
+            window.setTimeout(() => { dialogRef.current?.close(); }, 300);
+            //console.log("dialogRef.current", dialogRef.current.open)
         }
     }, [shown]);
 
@@ -59,41 +64,42 @@ const Modal = ({ shown, onBack, onClose, title, subtitle, children, reversed }) 
         }
     }
     //if (!reallyShown && !shown) return null;
-    if (!shown) return null;
+    //if (!shown && !dialogRef.current?.open) return null;
     return (
         <dialog ref={dialogRef} onCancel={handleCancel}
             onClick={handleBackdropClick}
             onPointerDown={(e) => e.target === dialogRef.current && preBeepButton()}
-            className="backdrop:bg-black/0 z-10 bg-white/0 select-none p-0 xtext-[16px]
-             grid min-w-svw  min-h-svh max-h-svh  justify-center items-center ">
+            className={cn("starting:backdrop:bg-black/0 backdrop:bg-black/50 z-10 bg-white/0 min-w-svw  min-h-svh max-h-svh",
+                !shown && "backdrop:bg-black/0",
+                "grid justify-center items-center overflow-hidden not-open:hidden"
+            )}>
 
-            <div className={cn("flex-1 ring-4 rounded-xs ring-black/10 scale-90 bg-white",
-                "opacity-10 duration-1000 transition-all overflow-hidden",
-                "flex flex-col h-[min(600px,90svh)] max-w-[90svw] w-xl",
-                "scale-100 opacity-100",
-                // (reallyShown) && "scale-100 opacity-100",
-                //(!shown) && "scale-90 opacity-10",
-                "outline-none"
-            )} tabIndex={0}>
-                <div className="flex items-center gap-3 text-white puzzle-100 z-10 bg-ipuzzle -600 ipuzzle -500
-                justify-center p-4  pt-6 text-left ">
+            <div className={cn("h-[90svh] max-w-[90svw]  w-xl  transition-all outline-none bg-white flex flex-col",
+                "rounded-xs overflow-hidden border-b-8 border-gray-100 ring-4 ring-black/10 origin-center",
+                !shown && "opacity-0 translate-y-10 scale-100",
+                "starting:opacity-0 starting:-translate-y-10  starting:scale-110",
+                shown && "opacity-100 translate-0 scale-100"
+            )}
+                tabIndex={0}>
+                <div className="flex items-center gap-2 text-white z-10 bg-puzzle
+                justify-center p-4  pt-5 text-left ">
 
-                    {/* {onBack && <RoundButton className={cn("bg-white/50 text-puzzle-600")} onClick={onBack}><SvgBack /></RoundButton>} */}
 
                     <BigTitled title={title}
-                        className={cn("flex-1 text-left", onBack && "xtext-right")}>
+                        className={cn("flex-1 text-left")}>
                         {subtitle}
                     </BigTitled>
 
                     {onBack && <RoundButton className={cn("bg-white/10 text-white -xme-2")} onClick={onBack}><SvgBack /></RoundButton>}
                     {onClose && <RoundButton className={"bg-white/10 text-white -xme-2"} onClick={onClose}><SvgClose /></RoundButton>}
-                    {/* {onClose && <RoundButton className={"xrounded-sm xrounded-r-none bg-white/50 text-puzzle-600"} onClick={onClose}><SvgClose /></RoundButton>} */}
+
                 </div>
 
-                <div className='flex-1 flex flex-col overflow-hidden ring-2 ring-black w-full items-stretch'>
+                <div className='flex-1 flex flex-col overflow-hiddenx w-full overflow-auto items-stretch'>
                     {children}
                 </div>
-
+                {/* <div className='h-2 bg-puzzle'>
+                </div> */}
             </div>
         </dialog >
     );

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-
+//import { startTransition, ViewTransition } from "react";
 export const usePageHistory = () => {
     const [currentPage, setCurrentPage] = useState(window.history.state?.page ? window.history.state.page : location.pathname);
     const [currentData, setCurrentData] = useState(window.history.state?.data ? window.history.state.data : null);
@@ -8,6 +8,7 @@ export const usePageHistory = () => {
         const handlePopState = (event: any) => {
             const newPage = (event.state && event.state.page) ? event.state.page : "/";
             const newData = (event.state && event.state.data) ? event.state.data : null;
+
             setCurrentPage(newPage); // Update internal hook state
             setCurrentData(newData);
         };
