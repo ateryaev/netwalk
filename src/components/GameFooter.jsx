@@ -1,43 +1,118 @@
+import { startTransition, useEffect, useMemo, useState, ViewTransition } from "react";
+import { useOnline } from "../OnlineContext";
+import { Ago } from "./Ago";
+import { Flag } from "./Flag";
 import { Inv } from "./UI";
+import { Hash } from "./Hash";
+
+export function Removing({ children, className, ...props }) {
+    const [] = useState(false);
+    return (<div className={cn("opacity-100", className)}>{children}</div>);
+}
+
+// 0 - Event ready to be loaded
+// 1 - Event loaded and shown (for 3s)
+// 2 - Event hidden to show regular status (for 1s)
+
+
 
 export function GameFooter({ taps, bordered, random, solved, tutorial, size, ...props }) {
+    const online = useOnline();
+
+    const [event, setEvent] = useState(null);
+    const [shownEvent, setShownEvent] = useState(false); //0 - no event, 1- shown, 2
+    const [lastEvent, setLastEvent] = useState(null);
+    const [eventState, setEventState] = useState(0); //0 - waiting, 1- shown, 2 - hidden
+
+    const eventReady = useMemo(() => event && eventState === 1, [event, eventState]);
+
+    useEffect(() => {
+
+        const interval = setInterval(() => {
+
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    // set curent visible event
+    useEffect(() => {
+        if (!online.events?.[0]) return;
+        if (eventState !== 0) return;
+        const newEvent = online.events?.[0];
+        if (event?.at === newEvent.at) return;
+
+        startTransition(() => {
+            setEvent(newEvent);
+            setEventState(1);
+        });
+
+    }, [online.events, eventState, event]);
+
+    useEffect(() => {
+        if (eventState === 1) {
+            const to = setTimeout(() => { startTransition(() => setEventState(2)) }, 2000);
+            return () => clearTimeout(to);
+        } else if (eventState === 2) {
+            const to = setTimeout(() => { startTransition(() => setEventState(0)) }, 2000);
+            return () => clearTimeout(to);
+        }
+    }, [eventState]);
+
+    function handleShowEvent() {
+        if (eventState === 1) {
+            setEventState(2);
+        } else {
+            setEvent(null);
+            setEventState(0);
+        }
+
+    }
+
     if (tutorial) return (
         <>
             {tutorial}
-            {/* <Inv className="flex-1 text-right">
-                {tutorial}
-            </Inv> */}
         </>
     );
 
-    return (
-        <>
-            <div>
-                {bordered ? "bordered" : "looped"}
+    return (<>
+
+        {/* <ViewTransition enter='slide-in' exit='slide-out' xxupdate={eventVisible ? "slide-in" : "slide-out"}> */}
+        <div className="flex flex-1 items-center justify-center  gap-2 w-full"
+            onClick={handleShowEvent} key={123}>
+
+            <ViewTransition enter='slide-in' exit='slide-out'>
+                <div className="flex gap-2 items-center flex-1">
+                    {!eventReady && <>
+                        <div>
+                            {bordered ? "bordered" : "looped"}
+                        </div>
+
+                        <div className='flex items-center lowercasex'>
+                            {size.x}<Inv>x</Inv>{size.y}</div>
+                        <div>
+                            {!solved && <Inv>NEW</Inv>}
+                            {solved && !random && <Inv>SOLVED</Inv>}
+                            {solved && random && <Inv>RANDOM</Inv>}
+                        </div>
+                    </>}
+                    {eventReady && <>
+                        <Flag code={event.country} />
+                        {event.name}
+                        <Inv>{event.msg}</Inv>
+                        <Ago at={event.at} />
+                    </>}
+                </div>
+            </ViewTransition>
+
+            <div className="min-w-[55px] rounded-lg text-ipuzzle bg-ipuzzle/20 px-2 py-0.5 -my-0.5 text-center">
+                <ViewTransition enter='slide-in' exit='slide-out'>{taps}</ViewTransition>
             </div>
-
-            <div className='flex items-center lowercasex'>
-                {size.x}<Inv>x</Inv>{size.y}</div>
-            <div>
-                {!solved && <Inv>NEW</Inv>}
-                {solved && !random && <Inv>SOLVED</Inv>}
-                {solved && random && <Inv>RANDOM</Inv>}
-            </div>
-
-            <div className='flex-1'></div>
-
-            <div className="
-            
-            min-w-[55px] rounded-lg text-ipuzzle bg-ipuzzle/20 px-2 py-0.5 -my-0.5 text-center">
-                {taps}</div>
             <div className=" text-ipuzzle opacity-45x text-xs py-1 -my-1 lowercase">
                 taps
-                {/* <svg width="1em" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-pointer"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3.039 4.277l3.904 13.563c.185 .837 .92 1.516 1.831 1.642l.17 .016a2.2 2.2 0 0 0 1.982 -1.006l.045 -.078l1.4 -2.072l4.05 4.05a2.067 2.067 0 0 0 2.924 0l1.047 -1.047c.388 -.388 .606 -.913 .606 -1.461l-.008 -.182a2.067 2.067 0 0 0 -.598 -1.28l-4.047 -4.048l2.103 -1.412c.726 -.385 1.18 -1.278 1.053 -2.189a2.2 2.2 0 0 0 -1.701 -1.845l-13.524 -3.89a1 1 0 0 0 -1.236 1.24z" /></svg> */}
             </div>
-
-            {/* 
-            <div className=" text-ipuzzle/30 px-0">taps</div> */}
-
-        </>
+        </div>
+        {/* </ViewTransition> */}
+    </>
     )
 }

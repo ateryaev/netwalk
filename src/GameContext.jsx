@@ -92,7 +92,7 @@ export function GameProvider({ children }) {
         const isNewBest = taps < levelProgress.bestTaps;
 
         if (isNewBest) {
-            online.submitTaps(gameData.settings.name, mode, level, taps);
+            //online.submitTaps(gameData.settings.name, mode, level, taps);
             levelProgress.bestSolvedWhen = Date.now();
             levelProgress.bestTaps = taps;
         }

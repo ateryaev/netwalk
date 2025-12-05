@@ -24,8 +24,8 @@ export function Window({ onBack, title, subtitle, footer, subheader, className, 
     return (
         <div className={cn("flex flex-col bg-[#333] size-full duration-500", className)}>
 
-            <div className="bg-puzzle text-white xpl-3 p-6 flex items-center z-10">
-                <RoundButton onClick={onBack} className={cn("text-2xl -my-2 delay-0 duration-200 bg-white text-puzzle", erased && "opacity-50")}><SvgMenu /></RoundButton>
+            <div className="bg-puzzle text-white p-4 pt-6 flex items-center z-10">
+                <RoundButton onClick={onBack} className={cn("text-xl -my-2 delay-0 duration-200 text-white bg-puzzle", erased && "opacity-50")}><SvgMenu /></RoundButton>
                 <BigTitled className={cn("text-right flex-1 delay-0 duration-200 transition-all", erased && "translate-y-4 opacity-0")} title={title}>{!!subtitle ? subtitle : <>&nbsp;</>}</BigTitled>
             </div>
 
@@ -51,7 +51,7 @@ export function Window({ onBack, title, subtitle, footer, subheader, className, 
                 {children}
 
                 <div className="h-0">
-                    <div className={cn(" transition-all bg-[#181818]/80 text-center hue-rotate-180 text-white p-4 select-none",
+                    <div className={cn(" transition-all bg-[#181818]/80 text-center hue-rotate-180 text-white p-2 select-none",
                         !erased && infoOn ? "-translate-y-full opacity-100" : "opacity-0 -translate-y-0"
                     )}>
                         <span className="animate-pulse">CONGRATULATION</span>
@@ -60,7 +60,7 @@ export function Window({ onBack, title, subtitle, footer, subheader, className, 
             </div>
 
             {!!footer && <div className='text-puzzle  font-semibold  bg-white uppercase whitespace-nowrap'>
-                <div className={cn('delay-300 duration-200 transition-all flex items-center justify-center p-2 gap-2 ps-3 pe-2',
+                <div className={cn('delay-300 duration-200 transition-all flex flex-col items-center justify-center p-2 gap-2 ps-3 pe-2',
                     erased && "translate-y-4 opacity-0 duration-200"
                 )}>{footer}</div>
             </div>}

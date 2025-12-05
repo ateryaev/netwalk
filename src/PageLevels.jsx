@@ -48,8 +48,8 @@ export function PageLevels({ onLevelSelect }) {
 
         return (
             <DetailedButton
-                special={level === levelPlaying}
-                className={cn(selected && "bg-ipuzzle text-white scroll-m-2 scrolltoitem")}
+                special={level === levelPlaying && !selected}
+                className={cn(selected && "bg-puzzle-50 hue-rotate-180 text-darkpuzzle", false && "bg-ipuzzle text-white scroll-m-2 scrolltoitem")}
                 subtitle={subtitle}
                 value={isRandom && times > 0 && times}
                 subvalue={subvalue}

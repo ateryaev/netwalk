@@ -20,23 +20,25 @@ export function OnlineProvider({ children }) {
     const [isConnected, setIsConnected] = useState(false); //has real online db connection
 
     const [scores, setScores] = useState(null); //list of best scores from db
+    const [events, setEvents] = useState([]); //list of best scores from db
+
     const [scoresLoading, setScoresLoading] = useState(true); //loading best scores
 
-    const submitTaps = useCallback(async (playerName, mode, level, taps) => {
-        if (!uid || !isConnected) return;
-        const country = await fetchCountry();
-        const submitsRef = ref(db, 'submits');
-        const newSubmitRef = push(submitsRef);
-        set(newSubmitRef, {
-            player: uid,
-            name: playerName,
-            country: country,
-            at: serverTimestamp(),
-            mode, level, taps
-        });
-    }, [uid, isConnected]);
+    // const submitTaps = useCallback(async (playerName, mode, level, taps) => {
+    //     if (!uid || !isConnected) return;
+    //     const country = await fetchCountry();
+    //     const submitsRef = ref(db, 'submits');
+    //     const newSubmitRef = push(submitsRef);
+    //     set(newSubmitRef, {
+    //         player: uid,
+    //         name: playerName,
+    //         country: country,
+    //         at: serverTimestamp(),
+    //         mode, level, taps
+    //     });
+    // }, [uid, isConnected]);
 
-    const submitScore = useCallback(async (playerName, newScore) => {
+    const submitScore = useCallback(async (playerName, score) => {
         if (!uid || !isConnected) return;
 
         const country = await fetchCountry();
@@ -46,21 +48,15 @@ export function OnlineProvider({ children }) {
             let delta = 0;
             const success = await runTransaction(bestScoreRef, (currentData) => {
                 const existingScore = currentData?.score || 0;
-                if (newScore <= existingScore) return;
-                delta = newScore - existingScore;
-                return {
-                    score: newScore,
-                    name: playerName,
-                    country: country,
-                    at: serverTimestamp(),
-                };
+                if (score <= existingScore) return;
+                delta = score - existingScore;
+                return { score, name: playerName, country, at: serverTimestamp() };
             });
 
-            if (success.committed) {
-                console.log("Score submitted successfully or updated as new high score!");
-            } else {
-                console.log("Score not submitted: It was not a high score.");
-            }
+            if (!success.committed) return;
+
+            const newEventRef = push(ref(db, 'events'));
+            set(newEventRef, { player: uid, name: playerName, country, at: serverTimestamp(), msg: "+" + delta });
 
         } catch (error) {
             console.error("Error submitting score:", error);
@@ -126,9 +122,41 @@ export function OnlineProvider({ children }) {
 
     }, []);
 
+    // Events Listener
+    useEffect(() => {
+
+        // Use RTDB Query: Order by "at" and limit to the top 10
+        const eventsQuery = query(ref(db, 'events'), orderByChild('at'), limitToLast(10));
+
+        // onValue loads once and then updates in real-time
+        return onValue(eventsQuery, (snapshot) => {
+            const eventList = [];
+            snapshot.forEach((childSnapshot) => {
+                eventList.push({
+                    id: childSnapshot.key,
+                    ...childSnapshot.val()
+                });
+            });
+
+            // Add some seeded events for demo/offline use
+            eventList.push({ id: 'e1', player: '1b2c', name: 'SirSnortsalot', country: 'US', at: 1763800000000, msg: '+100' });
+            eventList.push({ id: 'e2', player: '4d5e', name: 'DukeQuackenstein', country: 'GB', at: 1763900000000, msg: '+200' });
+            eventList.push({ id: 'e3', player: '7f8g', name: 'ProfessorNoodlepants', country: 'CA', at: 1764000000000, msg: '+400' });
+            eventList.push({ id: 'e4', player: '9h0i', name: 'BaronvonBubblewrap', country: 'DE', at: 1764100000000, msg: '+800' });
+            eventList.push({ id: 'e5', player: 'abc1', name: 'LadyGigglemuffin', country: 'FR', at: 1764200000000, msg: '+1600' });
+
+            // Sort by timestamp (oldest -> newest) then reverse so newest appear first
+            eventList.sort((a, b) => (a.at || 0) > (b.at || 0) ? 1 : -1);
+            setEvents(eventList.reverse());
+        }, (error) => {
+            console.error("Error fetching events:", error);
+        });
+
+    }, []);
+
     const value = {
         submitScore, //(playerName, score)
-        submitTaps, //(playerName, mode, level, taps)
+        events,
         scores,
         scoresLoading, //loading in progress
         isOnline: isConnected && currentUser && !loading, //do is online, user is set, auth completed

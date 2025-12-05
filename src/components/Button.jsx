@@ -132,7 +132,7 @@ export function PinkButton({ Svg, className, blink, children, ...props }) {
 export function MenuButton({ Svg, children, className, ...props }) {
     return (
         <BaseButton className={cn("items-center uppercase p-6 flex gap-2 justify-center",
-            "text-darkpuzzle whitespace-nowrap",
+            "text-gray-700 darkpuzzle whitespace-nowrap",
             "focus:opacity-75 disabled:opacity-50",
             "active:opacity-75",
             className)}
@@ -181,8 +181,8 @@ export function DetailedButton({ children, special, safe, className, subtitle, v
         setIsFocused(true);
     }
     return (
-        <MenuButton className={cn("px-6 py-6 pb-4 flex gap-2 items-center justify-between",
-            special && "border-l-8 pl-4 x-ml-2 border-ipuzzle", className)}
+        <MenuButton className={cn("px-4 py-4 flex gap-2 items-center justify-between",
+            special && "border-l-6 pl-2.5 border-ipuzzle", className)}
             {...props}
             onBlur={handleBlur}
             onClick={handleClick}>

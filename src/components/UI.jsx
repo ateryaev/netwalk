@@ -4,7 +4,7 @@ import { SvgBell, SvgPlay } from "./Button";
 
 export function Inv({ children, className, ...props }) {
     return (
-        <span className={cn("hue-rotate-180 ", className)} {...props}>
+        <span className={cn("hue-rotate-180 text-darkpuzzle ", className)} {...props}>
             {children}
         </span>
     )

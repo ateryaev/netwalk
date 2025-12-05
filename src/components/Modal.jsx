@@ -7,8 +7,8 @@ import { SvgClose, SvgBack } from './Svg';
 
 export function SubHeader({ className, children }) {
     return (<div
-        className={cn('uppercase text-puzzle-600 mx-0 px-6 py-4 sticky top-0 z-10 flex',
-            ' bg-puzzle-50', className)}>
+        className={cn('uppercase text-gray-600 mx-0 px-4 py-2 sticky top-0 z-10 flex',
+            ' bg-gray-100 hue-rotate-180', className)}>
         {children}
     </div>)
 }
@@ -67,7 +67,7 @@ const Modal = ({ shown, onBack, onClose, title, subtitle, children, reversed }) 
             className="backdrop:bg-black/0 z-10 bg-white/0 select-none p-0 xtext-[16px]
              grid min-w-svw  min-h-svh max-h-svh  justify-center items-center ">
 
-            <div className={cn("flex-1 ring-4 rounded-md ring-black/10 scale-90 border-puzzle-200 bg-white",
+            <div className={cn("flex-1 ring-4 rounded-xs ring-black/10 scale-90 bg-white",
                 "opacity-10 duration-1000 transition-all overflow-hidden",
                 "flex flex-col h-[min(600px,90svh)] max-w-[90svw] w-xl",
                 "scale-100 opacity-100",
@@ -75,16 +75,19 @@ const Modal = ({ shown, onBack, onClose, title, subtitle, children, reversed }) 
                 //(!shown) && "scale-90 opacity-10",
                 "outline-none"
             )} tabIndex={0}>
-                <div className="flex items-center gap-3 text-white puzzle-100 z-10 bg-puzzle-500
-                justify-center p-6 text-left ">
+                <div className="flex items-center gap-3 text-white puzzle-100 z-10 bg-ipuzzle -600 ipuzzle -500
+                justify-center p-4  pt-6 text-left ">
+
+                    {/* {onBack && <RoundButton className={cn("bg-white/50 text-puzzle-600")} onClick={onBack}><SvgBack /></RoundButton>} */}
 
                     <BigTitled title={title}
                         className={cn("flex-1 text-left", onBack && "xtext-right")}>
                         {subtitle}
                     </BigTitled>
 
-                    {onBack && <RoundButton className={cn("bg-white/50 text-puzzle-600")} onClick={onBack}><SvgBack /></RoundButton>}
-                    {onClose && <RoundButton className={"bg-white/50 text-puzzle-600"} onClick={onClose}><SvgClose /></RoundButton>}
+                    {onBack && <RoundButton className={cn("bg-white/10 text-white -xme-2")} onClick={onBack}><SvgBack /></RoundButton>}
+                    {onClose && <RoundButton className={"bg-white/10 text-white -xme-2"} onClick={onClose}><SvgClose /></RoundButton>}
+                    {/* {onClose && <RoundButton className={"xrounded-sm xrounded-r-none bg-white/50 text-puzzle-600"} onClick={onClose}><SvgClose /></RoundButton>} */}
                 </div>
 
                 <div className='flex-1 flex flex-col overflow-hidden ring-2 ring-black w-full items-stretch'>

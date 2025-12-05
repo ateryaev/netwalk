@@ -54,7 +54,7 @@ export function PageMenu({ onModeSelect, onLeaderboard }) {
                     Leaderboard</DetailedButton> */}
 
                 <MenuButton
-                    className={cn("bg-puzzle-100 hue-rotate-180 m-3 p-3 rounded-sm ring-4 ring-puzzle-200",
+                    className={cn("bg-puzzle-50 border-4 rounded-lg m-4 my-2 border-puzzle hue-rotate-180 p-2 text-darkpuzzle",
                         ""
                     )}
                     disabled={!online.isOnline}
@@ -116,7 +116,7 @@ export function PageMenu({ onModeSelect, onLeaderboard }) {
             <SubHeader>about</SubHeader>
 
             <SubContent>
-                <p className="p-6 text-[90%] uppercasex text-puzzle-700">
+                <p className="p-4 text-[90%] uppercase text-gray-700">
                     Rotate the tiles to connect each core with paths of the same color.
                     All links must form complete networks — no open ends.
                     When every core is connected, the puzzle is solved.
@@ -125,7 +125,7 @@ export function PageMenu({ onModeSelect, onLeaderboard }) {
                     <br />
                 </p>
             </SubContent>
-            <SubHeader className="opacity-50 saturate-50xx hue-rotate-180">
+            <SubHeader className="">
                 <div className="flex-1">Anton Teryaev</div> 2025
             </SubHeader>
         </ModalContent >
