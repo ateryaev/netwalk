@@ -1,4 +1,4 @@
-import { startTransition, useEffect, useMemo, useState, ViewTransition } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useOnline } from "../OnlineContext";
 import { Ago } from "./Ago";
 import { Flag } from "./Flag";
@@ -41,20 +41,16 @@ export function GameFooter({ taps, bordered, random, solved, tutorial, size, ...
         if (eventState !== 0) return;
         const newEvent = online.events?.[0];
         if (event?.at === newEvent.at) return;
-
-        startTransition(() => {
-            setEvent(newEvent);
-            setEventState(1);
-        });
-
+        setEvent(newEvent);
+        setEventState(1);
     }, [online.events, eventState, event]);
 
     useEffect(() => {
         if (eventState === 1) {
-            const to = setTimeout(() => { startTransition(() => setEventState(2)) }, 2000);
+            const to = setTimeout(() => { setEventState(2) }, 2000);
             return () => clearTimeout(to);
         } else if (eventState === 2) {
-            const to = setTimeout(() => { startTransition(() => setEventState(0)) }, 2000);
+            const to = setTimeout(() => { setEventState(0) }, 2000);
             return () => clearTimeout(to);
         }
     }, [eventState]);
@@ -81,32 +77,32 @@ export function GameFooter({ taps, bordered, random, solved, tutorial, size, ...
         <div className="flex flex-1 items-center justify-center  gap-2 w-full"
             onClick={handleShowEvent} key={123}>
 
-            <ViewTransition enter='slide-in' exit='slide-out'>
-                <div className="flex gap-2 items-center flex-1">
-                    {!eventReady && <>
-                        <div>
-                            {bordered ? "bordered" : "looped"}
-                        </div>
+            <div key={eventReady} className="flex gap-2 items-center flex-1 
+                starting:translate-y-1 starting:opacity-0 transition-all xduration-700">
+                {!eventReady && <>
+                    <div>
+                        {bordered ? "bordered" : "looped"}
+                    </div>
 
-                        <div className='flex items-center lowercasex'>
-                            {size.x}<Inv>x</Inv>{size.y}</div>
-                        <div>
-                            {!solved && <Inv>NEW</Inv>}
-                            {solved && !random && <Inv>SOLVED</Inv>}
-                            {solved && random && <Inv>RANDOM</Inv>}
-                        </div>
-                    </>}
-                    {eventReady && <>
-                        <Flag code={event.country} />
-                        {event.name}
-                        <Inv>{event.msg}</Inv>
-                        <Ago at={event.at} />
-                    </>}
-                </div>
-            </ViewTransition>
+                    <div className='flex items-center lowercasex'>
+                        {size.x}<Inv>x</Inv>{size.y}</div>
+                    <div>
+                        {!solved && <Inv>NEW</Inv>}
+                        {solved && !random && <Inv>SOLVED</Inv>}
+                        {solved && random && <Inv>RANDOM</Inv>}
+                    </div>
+                </>}
+                {eventReady && <>
+                    <Flag code={event.country} />
+                    {event.name}
+                    <Inv>{event.msg}</Inv>
+                    <Ago at={event.at} />
+                </>}
+            </div>
 
-            <div className="min-w-[55px] rounded-lg text-ipuzzle bg-ipuzzle/20 px-2 py-0.5 -my-0.5 text-center">
-                <ViewTransition enter='slide-in' exit='slide-out'>{taps}</ViewTransition>
+            <div key={taps} className="min-w-[55px] rounded-lg text-ipuzzle/80 bg-ipuzzle/20 px-2 py-0.5 -my-0.5 text-center
+            starting:scale-105 starting:text-ipuzzle transition-all xduration-1000">
+                {taps}
             </div>
             <div className=" text-ipuzzle opacity-45x text-xs py-1 -my-1 lowercase">
                 taps

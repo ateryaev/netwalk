@@ -1,6 +1,6 @@
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useState, ViewTransition } from "react";
 import { DetailedButton, SvgPlay } from "./components/Button";
-import { ModalContent, SubHeader } from "./components/Modal";
+import { ModalContent, SubContent, SubHeader } from "./components/Modal";
 import { Blink, Inv, LabelNew, LabelPlay } from "./components/UI";
 import { cn } from "./utils/cn";
 import { GAME_LEVEL_COLORS, GAME_LEVEL_EMPTY, GAME_LEVEL_RANDOM, GAME_LEVEL_SIZE, GAME_MODE_BORDERED, GAME_MODE_EMPTIES, GAME_MODE_SCORE, GAME_MODE_TO_UNLOCK, GAME_MODE_TUTORIALS, GAME_MODES } from "./game/gameconstants";
@@ -49,7 +49,8 @@ export function PageLevels({ onLevelSelect }) {
         return (
             <DetailedButton
                 special={level === levelPlaying && !selected}
-                className={cn(selected && "bg-puzzle-50 hue-rotate-180 text-darkpuzzle", false && "bg-ipuzzle text-white scroll-m-2 scrolltoitem")}
+                className={cn("",
+                    selected && "bg-ipuzzle text-white scroll-m-2 scrolltoitem")}
                 subtitle={subtitle}
                 value={isRandom && times > 0 && times}
                 subvalue={subvalue}
@@ -78,12 +79,15 @@ export function PageLevels({ onLevelSelect }) {
 
     useEffect(() => {
         const element = document.querySelector(".scrolltoitem");
-        element?.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });
+        if (!element) return;
+        element.parentNode.scrollTop = element.offsetTop;
+        //   element?.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });
     }, [selectedIndex]);
 
     return (<>
-        <SubHeader>{GAME_MODES[mode]}</SubHeader>
-        <ModalContent>
+        <SubHeader className={""}>{GAME_MODES[mode]}</SubHeader>
+
+        <SubContent key="LevelsKey" className={""}>
             {Array.from({ length: solved + 1 }, (_, level) => (
                 <LevelButton key={level} level={level}
                     selected={level === selectedIndex}
@@ -97,6 +101,8 @@ export function PageLevels({ onLevelSelect }) {
                 />
             ))}
             <LevelButton disabled level={solved + 1} />
-        </ModalContent></>
+        </SubContent>
+
+    </>
     );
 }

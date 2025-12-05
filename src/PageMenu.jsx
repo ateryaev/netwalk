@@ -53,8 +53,19 @@ export function PageMenu({ onModeSelect, onLeaderboard }) {
                     subvalue={"total"} >
                     Leaderboard</DetailedButton> */}
 
-                <MenuButton
+                {/* <MenuButton
                     className={cn("bg-puzzle-50 border-4 rounded-lg m-4 my-2 border-puzzle hue-rotate-180 p-2 text-darkpuzzle",
+                        ""
+                    )}
+                    disabled={!online.isOnline}
+                    onClick={() => { onLeaderboard(); }} >
+                    <Titled title={"Leaderboard"}>
+                        {online.isOnline && "check your global rank"}
+                        {!online.isOnline && <SvgLoad />}
+                    </Titled>
+                </MenuButton> */}
+                <MenuButton
+                    className={cn("bg-ipuzzle text-white p-4",
                         ""
                     )}
                     disabled={!online.isOnline}
@@ -65,11 +76,6 @@ export function PageMenu({ onModeSelect, onLeaderboard }) {
                     </Titled>
                 </MenuButton>
 
-                {/* <DetailedButton onClick={() => { onLeaderboard(); }}
-                    className={"bg-puzzle xhue-rotate-90 text-white"}
-                    subtitle={"check your global rank"}
-                >
-                    Leaderboard</DetailedButton> */}
 
             </SubContent>
 

@@ -3,7 +3,7 @@ import Modal, { ModalContent, SubContent, SubHeader } from "./components/Modal";
 import { Inv, Titled } from "./components/UI";
 import { cn } from "./utils/cn";
 import { useOnline } from "./OnlineContext";
-import { useState, ViewTransition, startTransition, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Ago } from "./components/Ago";
 import { SvgLoad } from "./components/Svg";
 import { Hash } from "./components/Hash";
@@ -101,7 +101,7 @@ export function PageRating({ shown, onBack, onClose }) {
 
 
             <SubHeader>TOP Players</SubHeader>
-            <SubContent className={"xm-3 p-0 gap-0 py-2"}>
+            <SubContent className={"py-2"}>
 
                 {online.scores?.map((record, index) => (
                     <RankRecord

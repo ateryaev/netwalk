@@ -1,4 +1,3 @@
-//import { ViewTransition, startTransition } from 'react';
 import { use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { cn } from './utils/cn.ts'
 import { PagePlay } from './PagePlay';
@@ -74,7 +73,7 @@ function App() {
     updateCurrent({ mode: current.mode, level: current.level + 1 });
   }
 
-  let subtitle = <>Welcome {settings.name}<Hash uid={online.uid} /></>;
+  let subtitle = `Welcome ${settings.name}`;
   if (currentPage === PAGE_LEVELS) {
     subtitle = "choose level to play";
   } else if (currentPage === PAGE_LEADERBOARD) {
@@ -83,11 +82,12 @@ function App() {
 
   return (
     <>
+      <div className='w-lg aspect-square bg-red-500/50 fixed top-0 z-40' popover></div>
       <PagePlay
         mode={current.mode}
         level={current.level}
         onNext={handleNext}
-        className={cn("transition-all", (isPaused) && "brightness-50 contrast-75 grayscale-50")}
+        className={cn("transition-all", (false && isPaused) && "brightness-50 contrast-75 grayscale-50")}
         onMenu={handleMenu} />
 
       <Modal shown={currentPage != PAGE_START}
@@ -97,7 +97,7 @@ function App() {
         //onBack={() => setMenuPage(MENU_MAIN)}>
         onBack={currentPage !== PAGE_MENU && currentPage !== PAGE_START && goBack}>
 
-        {currentPage === PAGE_MENU && <PageMenu onModeSelect={handleModeSelect} onLeaderboard={handleLeaderboard} />}
+        {(currentPage === PAGE_MENU || currentPage === PAGE_START) && <PageMenu onModeSelect={handleModeSelect} onLeaderboard={handleLeaderboard} />}
 
         {currentPage === PAGE_LEADERBOARD && <PageRating />}
 

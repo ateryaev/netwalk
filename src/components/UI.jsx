@@ -17,7 +17,7 @@ export function Titled({ children, title, className, ...props }) {
 }
 
 export function BigTitled({ children, title, className, ...props }) {
-    return (<div className={cn("uppercase", className)}>
+    return (<div className={cn("uppercase", className)} {...props}>
         <div className="text-[125%] font-bold">{title}</div>
         <div className="opacity-60 uppercase text-[90%] -mt-1">{children}</div>
     </div>)
