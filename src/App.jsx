@@ -82,7 +82,6 @@ function App() {
 
   return (
     <>
-      <div className='w-lg aspect-square bg-red-500/50 fixed top-0 z-40' popover></div>
       <PagePlay
         mode={current.mode}
         level={current.level}
