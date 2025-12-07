@@ -1,6 +1,6 @@
 import { use, useEffect, useState, ViewTransition } from "react";
 import { DetailedButton, SvgPlay } from "./components/Button";
-import { ModalContent, SubContent, SubHeader } from "./components/Modal";
+import { SubContent, SubHeader } from "./components/Modal";
 import { Blink, Inv, LabelNew, LabelPlay } from "./components/UI";
 import { cn } from "./utils/cn";
 import { GAME_LEVEL_COLORS, GAME_LEVEL_EMPTY, GAME_LEVEL_RANDOM, GAME_LEVEL_SIZE, GAME_MODE_BORDERED, GAME_MODE_EMPTIES, GAME_MODE_SCORE, GAME_MODE_TO_UNLOCK, GAME_MODE_TUTORIALS, GAME_MODES } from "./game/gameconstants";

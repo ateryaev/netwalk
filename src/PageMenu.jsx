@@ -1,6 +1,6 @@
 import { use, useEffect, useMemo, useState } from "react";
 import { BaseButton, CheckBox, DetailedButton, MenuButton, PinkButton, RoundButton, SvgBell, SvgRestart } from "./components/Button";
-import Modal, { ModalContent, SubHeader, SubContent } from "./components/Modal";
+import Modal, { SubHeader, SubContent } from "./components/Modal";
 import { Blink, Inv, LabelNew, LabelPlay, Titled } from "./components/UI";
 import { cn } from "./utils/cn";
 import { GAME_MODE_BORDERED, GAME_MODE_EMPTIES, GAME_MODE_SCORE, GAME_MODE_TO_UNLOCK, GAME_MODES } from "./game/gameconstants";
@@ -30,7 +30,7 @@ export function PageMenu({ onModeSelect, onLeaderboard }) {
     }
 
     return (
-        <ModalContent>
+        <>
             <SubHeader>game modes</SubHeader>
 
             <SubContent>
@@ -134,7 +134,7 @@ export function PageMenu({ onModeSelect, onLeaderboard }) {
             <SubHeader className="">
                 <div className="flex-1">Anton Teryaev</div> 2025
             </SubHeader>
-        </ModalContent >
+        </ >
 
     );
 }

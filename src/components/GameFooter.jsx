@@ -74,10 +74,11 @@ export function GameFooter({ taps, bordered, random, solved, tutorial, size, ...
     return (<>
 
         {/* <ViewTransition enter='slide-in' exit='slide-out' xxupdate={eventVisible ? "slide-in" : "slide-out"}> */}
-        <div className="flex flex-1 items-center justify-center  gap-2 w-full"
+        <div className="flex flex-1 items-center justify-center overflow-hidden gap-2 w-full"
             onClick={handleShowEvent} key={123}>
 
             <div key={eventReady} className="flex gap-2 items-center flex-1 
+                overflow-hidden text-ellipsis
                 starting:translate-y-1 starting:opacity-0 transition-all xduration-700">
                 {!eventReady && <>
                     <div>

@@ -23,28 +23,16 @@ export function SubContent({ className, children }) {
     </div>)
 }
 
-export function ModalContent({ className, children }) {
-    return (<div
-        className={cn('flex-1 overflow-y-auto overflow-x-hidden w-full flex items-stretch flex-col')}>
-        {children}
-    </div>)
-}
-
-
 const Modal = ({ shown, onBack, onClose, title, subtitle, children, reversed }) => {
     const dialogRef = useRef(null);
 
-    const [dialogState, setDialogState] = useState(0); //0-hidden, 1-showing, 2-hidding
+    const [useSubTransition, setUseSubTransition] = useState(false);
 
+    const isStartPage = subtitle?.toLowerCase().includes("welcome");
     useEffect(() => {
-        if (shown) {
-            dialogRef.current?.showModal();
-            setDialogState(1);
-        } else {
-            setDialogState(2);
-            window.setTimeout(() => { dialogRef.current?.close(); }, 300);
-            //console.log("dialogRef.current", dialogRef.current.open)
-        }
+        shown && dialogRef.current?.showModal();
+        !shown && dialogRef.current?.close();
+        setUseSubTransition(shown);
     }, [shown]);
 
     function handleCancel(e) {
@@ -58,22 +46,23 @@ const Modal = ({ shown, onBack, onClose, title, subtitle, children, reversed }) 
             handleCancel(e)
         }
     }
-    //if (!reallyShown && !shown) return null;
-    //if (!shown && !dialogRef.current?.open) return null;
+
     return (
         <dialog ref={dialogRef} onCancel={handleCancel}
             onClick={handleBackdropClick}
             onPointerDown={(e) => e.target === dialogRef.current && preBeepButton()}
-            className={cn("starting:backdrop:bg-black/0 backdrop:bg-black/50 z-10 bg-white/0 min-w-svw  min-h-svh max-h-svh",
-                !shown && "backdrop:bg-black/0",
-                "grid justify-center items-center overflow-hidden not-open:hidden"
+            className={cn(
+                "transition-all duration-1000x select-none",
+                "z-10 bg-black/50",
+                "backdrop:bg-black/0",
+                "overflow-hidden",
+                "starting:translate-y-20 starting:opacity-0",
+                "not-open:translate-y-20 not-open:hidden not-open:opacity-0 transition-discrete",
+                "min-w-svw -my-20 min-h-[calc(100svh+80px)] grid items-end justify-center",
             )}>
 
-            <div className={cn("h-[90svh] max-w-[90svw]  w-xl  transition-all outline-none bg-white flex flex-col",
-                "rounded-xs overflow-hidden border-b-8 border-gray-100 ring-4 ring-black/10 origin-center",
-                !shown && "opacity-0 scale-y-75 xxscale-95",
-                "starting:opacity-0 starting:scale-y-75  xxxstarting:scale-110",
-                shown && "opacity-100 translate-0 scale-100"
+            <div className={cn("h-[80svh] max-w-[100svw] w-xl outline-none bg-white flex flex-col",
+                "rounded-t-xs overflow-hidden ring-4 ring-black/10"
             )}
                 tabIndex={0}>
                 <div className="flex items-center gap-2 text-white z-10 bg-puzzle
@@ -84,7 +73,6 @@ const Modal = ({ shown, onBack, onClose, title, subtitle, children, reversed }) 
                         <div key={subtitle}
                             className={cn("transition-all",
                                 "starting:opacity-50 starting:scale-y-0 ",
-                                //subtitle.includes("Welcome") && "starting:-translate-x-2"
                             )}>
                             {subtitle}
                         </div>
@@ -97,16 +85,14 @@ const Modal = ({ shown, onBack, onClose, title, subtitle, children, reversed }) 
 
                 <div
                     key={subtitle}
-                    className={cn('origin-right flex-1 flex flex-col overflow-x-hidden w-full overflow-y-auto items-stretch',
-                        // 'starting:scale-x-95 starting:opacity-20 xduration-1000 transition-all',
-                        // subtitle.includes("Welcome") && "starting:scale-x-100 starting:-translate-x-10"
+                    className={cn('origin-right flex-1 flex flex-col overflow-x-hidden w-full xoverflow-y-auto items-stretch',
                         'starting:translate-x-10 starting:opacity-20 xduration-1000 transition-all',
-                        subtitle.includes("Welcome") && "starting:scale-x-100 starting:-translate-x-10"
+                        !useSubTransition && "starting:-translate-x-0",
+                        isStartPage && useSubTransition && "starting:-translate-x-10",
                     )}>
                     {children}
+                    <div className='bg-black/5 sticky bottom-0 z-50 min-h-1 w-full'></div>
                 </div>
-                {/* <div className='h-2 bg-puzzle'>
-                </div> */}
             </div>
         </dialog >
     );

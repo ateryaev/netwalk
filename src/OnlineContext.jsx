@@ -111,7 +111,7 @@ export function OnlineProvider({ children }) {
             scoresList.push({ uid: "abc1", at: 1764200000000, country: "FR", name: "LadyGigglemuffin", score: 1600 });
 
             scoresList.sort((a, b) => a.score > b.score ? 1 : -1);
-            setScores(scoresList.reverse());
+            setScores(scoresList.reverse().slice(0, 100));
 
             setScoresLoading(false);
         }, (error) => {
@@ -147,7 +147,7 @@ export function OnlineProvider({ children }) {
 
             // Sort by timestamp (oldest -> newest) then reverse so newest appear first
             eventList.sort((a, b) => (a.at || 0) > (b.at || 0) ? 1 : -1);
-            setEvents(eventList.reverse());
+            setEvents(eventList.reverse().slice(0, 10));
         }, (error) => {
             console.error("Error fetching events:", error);
         });

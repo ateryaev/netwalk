@@ -57,7 +57,7 @@ body {
         transform: scale(1);
         opacity: 1;
     }
-} */
+} 
 
 ::view-transition-new(.slide-in) {
     animation: slide-in cubic-bezier(.83, .15, 0, .98) 0.5s forwards;
@@ -95,3 +95,5 @@ body {
         opacity: 0;
     }
 }
+
+*/

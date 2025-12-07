@@ -1,5 +1,5 @@
 import { DetailedButton } from "./components/Button";
-import Modal, { ModalContent, SubContent, SubHeader } from "./components/Modal";
+import Modal, { SubContent, SubHeader } from "./components/Modal";
 import { Inv, Titled } from "./components/UI";
 import { cn } from "./utils/cn";
 import { useOnline } from "./OnlineContext";
@@ -48,10 +48,9 @@ function RankRecord({ rank, name, uid, country, special, at, score, ...props }) 
 
 
             <Flag code={country} />
-            <div className="flex-1">
+            <div className="flex-1 overflow-hidden ">
                 <div className="flex gap-2 uppercase">
-                    <div className="flex gap-2 items-center flex-1 overflow-hidden">
-
+                    <div className="flex gap-2 items-center flex-1 overflow-hidden select-text">
                         <div className="text-ellipsis overflow-hidden">{name}<Hash uid={uid} /></div>
                     </div>
                     <Inv>{rank.toString().padStart(1, 0)}</Inv>
@@ -93,7 +92,7 @@ export function PageRating({ shown, onBack, onClose }) {
         </div>)
     }
     return (
-        <ModalContent>
+        <>
 
             {/* {me && <SubContent className={"xm-3 xp-1 gap-1 xbg-puzzle-100"}>
                 <RankRecord special={true} {...me} />
@@ -120,9 +119,10 @@ export function PageRating({ shown, onBack, onClose }) {
                 {online.events?.map((record, index) => (
                     <div key={index} className={cn("p-2 px-4 gap-2 text-gray-600 flex items-start ")}>
                         <Flag className="" code={record.country} />
-                        <div className="flex-1">
+                        <div className="flex-1 overflow-hidden">
                             <div className="flex gap-2 uppercase items-center">
-                                <div className="flex-1 text-ellipsis overflow-hidden">{record.name}<Hash uid={record.uid} /></div>
+                                <div className="flex-1 text-ellipsis overflow-hidden select-text">
+                                    {record.name}<Hash uid={record.player} /></div>
                                 <Inv>{record.msg}</Inv>
                             </div>
                             <div className="flex gap-2 text-[85%] xuppercase opacity-60">
@@ -148,7 +148,7 @@ export function PageRating({ shown, onBack, onClose }) {
             </SubContent>
 
             <SubHeader className={""}>Own stats</SubHeader>
-            {!me && <SubContent className={""}>
+            {!me && <SubContent className={"select-text"}>
                 <div className="text-gray-600 px-4 py-2 uppercase text-center">No data yet</div>
             </SubContent>}
             {me && <SubContent className={"uppercase text-gray-600 p-4 gap-2"}>
@@ -199,5 +199,5 @@ export function PageRating({ shown, onBack, onClose }) {
                 </div>
 
             </SubHeader> */}
-        </ModalContent>);
+        </>);
 }
