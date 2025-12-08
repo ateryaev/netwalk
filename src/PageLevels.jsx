@@ -15,7 +15,7 @@ export function PageLevels({ onLevelSelect }) {
     const mode = currentData ? currentData.mode : 0;
     const levelPlaying = mode === current.mode ? current.level : -1;
 
-    function LevelButton({ level, disabled, size, colors, empties, times, isRandom, selected, isNewest, ...props }) {
+    function LevelButton({ level, disabled, className, size, colors, empties, times, isRandom, selected, isNewest, ...props }) {
         let subvalue;
         const isNew = isNewest;//times === 0 && !disabled;
 
@@ -50,7 +50,7 @@ export function PageLevels({ onLevelSelect }) {
             <DetailedButton
                 special={level === levelPlaying && !selected}
                 className={cn("",
-                    selected && "bg-ipuzzle text-white scroll-m-2 scrolltoitem")}
+                    selected && "bg-ipuzzle text-white scroll-m-2", className)}
                 subtitle={subtitle}
                 value={isRandom && times > 0 && times}
                 subvalue={subvalue}
@@ -62,7 +62,9 @@ export function PageLevels({ onLevelSelect }) {
     }
 
     const solved = getLevelsSolved(mode);
-    const defaultIndex = levelPlaying < 0 ? solved : levelPlaying;
+    const defaultIndex = levelPlaying;// < 0 ? solved : levelPlaying;
+    const scrollIndex = levelPlaying < 0 ? solved : levelPlaying;
+
     const [selectedIndex, setSelectedIndex] = useState(defaultIndex);
 
     useEffect(() => {
@@ -81,7 +83,7 @@ export function PageLevels({ onLevelSelect }) {
         const element = document.querySelector(".scrolltoitem");
         if (!element) return;
         element.parentNode.scrollTop = element.offsetTop;
-        //   element?.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });
+        element?.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });
     }, [selectedIndex]);
 
     return (<>
@@ -98,6 +100,7 @@ export function PageLevels({ onLevelSelect }) {
                     isRandom={GAME_LEVEL_RANDOM(mode, level)}
                     onClick={() => handleLevelSelect(level)}
                     isNewest={level === solved}
+                    className={scrollIndex === level && "scrolltoitem"}
                 />
             ))}
             <LevelButton disabled level={solved + 1} />

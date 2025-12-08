@@ -61,12 +61,12 @@ const Modal = ({ shown, onBack, onClose, title, subtitle, children, reversed }) 
                 "min-w-svw -my-20 min-h-[calc(100svh+80px)] grid items-end justify-center",
             )}>
 
-            <div className={cn("h-[80svh] max-w-[100svw] w-xl outline-none bg-white flex flex-col",
+            <div className={cn("h-[80svh] max-w-svw w-xl outline-none bg-white flex flex-col",
                 "rounded-t-xs overflow-hidden ring-4 ring-black/10"
             )}
                 tabIndex={0}>
                 <div className="flex items-center gap-2 text-white z-10 bg-puzzle
-                justify-center p-4  pt-5 text-left ">
+                justify-center p-4  pt-5 text-left sticky left-0">
 
                     <BigTitled title={title}
                         className={cn("flex-1 text-left")}>
@@ -85,9 +85,9 @@ const Modal = ({ shown, onBack, onClose, title, subtitle, children, reversed }) 
 
                 <div
                     key={subtitle}
-                    className={cn('origin-right flex-1 flex flex-col overflow-x-hidden w-full xoverflow-y-auto items-stretch',
+                    className={cn('sticky left-0 origin-right flex-1 flex flex-col overflow-x-hidden xhidden w-full overflow-y-auto items-stretch',
                         'starting:translate-x-10 starting:opacity-20 xduration-1000 transition-all',
-                        !useSubTransition && "starting:-translate-x-0",
+                        !useSubTransition && "starting:translate-x-0",
                         isStartPage && useSubTransition && "starting:-translate-x-10",
                     )}>
                     {children}
