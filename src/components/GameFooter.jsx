@@ -22,18 +22,11 @@ export function GameFooter({ taps, bordered, random, solved, tutorial, size, ...
     const [event, setEvent] = useState(null);
     const [shownEvent, setShownEvent] = useState(false); //0 - no event, 1- shown, 2
     const [lastEvent, setLastEvent] = useState(null);
-    const [eventState, setEventState] = useState(0); //0 - waiting, 1- shown, 2 - hidden
+    const [eventState, setEventState] = useState(2); //0 - waiting, 1- shown, 2 - hidden
 
     const eventReady = useMemo(() => event && eventState === 1, [event, eventState]);
 
-    useEffect(() => {
 
-        const interval = setInterval(() => {
-
-        }, 1000);
-
-        return () => clearInterval(interval);
-    }, []);
 
     // set curent visible event
     useEffect(() => {

@@ -69,17 +69,19 @@ const Modal = ({ shown, onBack, onClose, title, subtitle, children, reversed }) 
                 justify-center p-4  pt-5 text-left sticky left-0">
 
                     <BigTitled title={title}
+                        subtitle={subtitle}
                         className={cn("flex-1 text-left")}>
+                        {/*                             
                         <div key={subtitle}
                             className={cn("transition-all",
                                 "starting:opacity-50 starting:scale-y-0 ",
                             )}>
                             {subtitle}
-                        </div>
+                        </div> */}
                     </BigTitled>
 
-                    {onBack && <RoundButton className={cn("bg-white/10 text-white", "starting:text-white/50 starting:-rotate-180 transition-all")} onClick={onBack}><SvgBack /></RoundButton>}
-                    {onClose && <RoundButton className={cn("bg-white/10 text-white", "starting:text-white/50 starting:rotate-180 transition-all")} onClick={onClose}><SvgClose /></RoundButton>}
+                    {onBack && <RoundButton onClick={onBack}><SvgBack /></RoundButton>}
+                    {onClose && <RoundButton onClick={onClose}><SvgClose /></RoundButton>}
 
                 </div>
 

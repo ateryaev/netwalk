@@ -1,4 +1,4 @@
-import { use, useEffect, useState, ViewTransition } from "react";
+import { use, useEffect, useMemo, useState, ViewTransition } from "react";
 import { DetailedButton, SvgPlay } from "./components/Button";
 import { SubContent, SubHeader } from "./components/Modal";
 import { Blink, Inv, LabelNew, LabelPlay } from "./components/UI";
@@ -62,14 +62,10 @@ export function PageLevels({ onLevelSelect }) {
     }
 
     const solved = getLevelsSolved(mode);
-    const defaultIndex = levelPlaying;// < 0 ? solved : levelPlaying;
-    const scrollIndex = levelPlaying < 0 ? solved : levelPlaying;
+    //const defaultIndex = levelPlaying;// < 0 ? solved : levelPlaying;
 
-    const [selectedIndex, setSelectedIndex] = useState(defaultIndex);
+    const [selectedIndex, setSelectedIndex] = useState(levelPlaying);
 
-    useEffect(() => {
-        setSelectedIndex(defaultIndex);
-    }, [current, currentData]);
 
     function handleLevelSelect(level) {
         if (level === selectedIndex && level >= 0) {
@@ -100,7 +96,7 @@ export function PageLevels({ onLevelSelect }) {
                     isRandom={GAME_LEVEL_RANDOM(mode, level)}
                     onClick={() => handleLevelSelect(level)}
                     isNewest={level === solved}
-                    className={scrollIndex === level && "scrolltoitem"}
+                    className={(selectedIndex === level || (level == solved && selectedIndex < 0)) && "scrolltoitem"}
                 />
             ))}
             <LevelButton disabled level={solved + 1} />
