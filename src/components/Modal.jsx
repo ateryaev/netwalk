@@ -83,6 +83,7 @@ const Modal = ({ shown, onBack, onClose, title, subtitle, children, reversed }) 
                         isStartPage && useSubTransition && "starting:-translate-x-10",
                     )}>
                     {children}
+                    <div className='flex-1'></div>
                     <div className='bg-black/5 sticky bottom-0 z-50 min-h-1 w-full'></div>
                 </div>
             </div>

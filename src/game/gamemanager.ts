@@ -1,5 +1,5 @@
 import type { Cell, GameData } from "./gamedata";
-import { BOTTOM, invertFigure, isEnd, isMix, isOn, LEFT, moveXY, RIGHT, rotateFigure, toDirs, TOP, type DIR } from "./gamedata";
+import { BOTTOM, invertFigure, isEnd, isLine, isMix, isOn, LEFT, moveXY, RIGHT, rotateFigure, toDirs, TOP, type DIR } from "./gamedata";
 import { addXY, bymodXY, distXY, isSameXY, loopXY, toXY, type RectXY, type XY } from "../utils/xy";
 import { createArray2d, type Array2d } from "../utils/array2d";
 import { createGame } from "./gamecreate";
@@ -16,6 +16,8 @@ export class GameManager {
 
     private preColors: Array2d<number>;
 
+    private tapHistory: XY[] = [];
+
     constructor(mode: number, level: number) {
         console.log("CREATE", mode, level)
         this.game = createGame(mode, level);
@@ -25,6 +27,7 @@ export class GameManager {
         this.connections = this.calcConnections();
         this.preColors = this.colors;
         this.preConnections = this.connections;
+        this.tapHistory = [];
     }
 
     endCounters(): Map<number, number> {
@@ -104,6 +107,9 @@ export class GameManager {
     getRotatedFigureAt(x: number, y: number): { figure: number, conn: number } {
         const xy = toXY(x, y);
         const cell = this.cellAt(xy);
+        if (!this.connections) return { figure: cell.figure, conn: 0 };
+        // if (!this.connections) console.error("NO CONNECTIONS 1", cell, { x, y });
+        // if (this.connections) console.log("YES CONNECTIONS 1", { x, y });
         const conn = this.connections?.get(xy) || 0;
         if (!cell.source) return { figure: rotateFigure(cell.figure), conn: rotateFigure(conn) };
 
@@ -113,7 +119,7 @@ export class GameManager {
         const dirs: DIR[] = [TOP, RIGHT, BOTTOM, LEFT];
         dirs.forEach((dir) => {
             const neib = this.cellAt(moveXY(xy, dir));
-            const neibConn = this.connections.get(moveXY(xy, dir));
+            const neibConn = this.connections.get(moveXY(xy, dir)) || 0;
             if (neib.source === cell.source) {
                 newFigure |= (neib.figure & rotateFigure(dir)) | dir;
                 newConn |= (neibConn & rotateFigure(dir)) | dir;
@@ -164,9 +170,34 @@ export class GameManager {
             this.game.hintXY = this.game.hintXY.filter((hxy) => !isSameXY(hxy, xy));
         }
 
-        // make it work for 1111 or 0000 in big source
-        // const figure = this.figureAt(xy);
-        // if (figure !== 0b1111) 
+        const cell = this.cellAt(xy);
+        if (cell.source) return; //don't count taps on source cells
+        if (cell.figure === 0) return; //don't count taps on empty cells
+        if (cell.figure === 0b1111) return; //don't count taps on full cells
+
+        if (isLine(cell.figure) && this.tapHistory.length >= 1) {
+            //don't count taps on line cells if user is tapping the same cell multiple times
+            const prevXY = this.tapHistory[this.tapHistory.length - 1];
+            if (isSameXY(prevXY, xy)) {
+                this.game.taps--;
+                this.tapHistory.pop();
+                return;
+            }
+        } else if (!isLine(cell.figure) && this.tapHistory.length >= 3) {
+            const prevXY1 = this.tapHistory[this.tapHistory.length - 1];
+            const prevXY2 = this.tapHistory[this.tapHistory.length - 2];
+            const prevXY3 = this.tapHistory[this.tapHistory.length - 3];
+            if (isSameXY(prevXY1, xy) && isSameXY(prevXY2, xy) && isSameXY(prevXY3, xy)) {
+                //don't count taps on non-line cells if user is tapping the same cell multiple times
+                this.game.taps -= 3;
+                this.tapHistory.pop();
+                this.tapHistory.pop();
+                this.tapHistory.pop();
+                return;
+            }
+        }
+
+        this.tapHistory.push({ ...xy });
         this.game.taps++;
     }
 

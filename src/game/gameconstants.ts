@@ -18,13 +18,13 @@ export const GAME_MODE_TUTORIALS = [
     "not so obvious"
 ];
 
-export const GAME_MODE_EMPTIES = [
-    [30, 50],
-    [10, 40],
-    [20, 40],
-    [10, 20],
-    [0, 10]
-];
+export const GAME_MODE_EMPTIES = [50, 40, 30, 20, 10];
+export const GAME_MODE_EMPTIES_NAMES = [
+    "many",
+    "some",
+    "moderate",
+    "few",
+    "almost no"];
 
 export const GAME_MODE_BORDERED = [true, true, false, false, false];
 
@@ -42,7 +42,7 @@ export function GAME_LEVEL_SIZE(mode: number, level: number): XY {
 export function GAME_LEVEL_RANDOM(mode: number, level: number): boolean {
     mode;
     if (level === 0) return false;
-    if (level === 1) return true;
+    //if (level === 1) return true;
     const startSize = 5;
     const clampLevel = startSize * startSize + level;
     const x = Math.floor(Math.sqrt(clampLevel));
@@ -77,9 +77,15 @@ export function GAME_LEVEL_SOURCES(mode: number, level: number): XY[] {
     return result;
 }
 
+
+
+
 export function GAME_LEVEL_EMPTY(mode: number, level: number): number {
     const rndFunc = CREATE_RND_FUNC(mode, level, 211);
-    const [min, max] = GAME_MODE_EMPTIES[mode];
+
+    const max = Math.max(1, GAME_MODE_EMPTIES[mode] - Math.floor(level / 10)); //-1% every 10 levels
+    const min = Math.max(0, max / 2);
+
     const size = GAME_LEVEL_SIZE(mode, level);
     const minEmpty = Math.floor(size.x * size.y * min / 100);
     const maxEmpty = Math.floor(size.x * size.y * max / 100);
@@ -87,12 +93,12 @@ export function GAME_LEVEL_EMPTY(mode: number, level: number): number {
 }
 
 export function GAME_MODE_SCORE(mode: number, levels: number): number {
-    return (mode + 1) * levels * 100;
+    return [100, 150, 350, 600, 1000][mode] * levels;
 }
 
 export function GAME_MODE_TO_UNLOCK(mode: number, preSolved: number): number {
     if (mode === 0) return 0;
     if (preSolved === 0) return Infinity;
-    const needed = [2, 2, 2, 2];
+    const needed = [2, 2, 2, 2]; //TODO: test values, one number is enough to unlock next mode
     return Math.max(needed[mode - 1] - preSolved, 0);
 }

@@ -10,12 +10,12 @@ import { useOnline } from './OnlineContext';
 const GameContext = createContext();
 
 const STORAGE_KEY = "netwalk_data";
-const STORAGE_VERSION = "0.0.1a";
+const STORAGE_VERSION = "0.0.1b";
 
 const DEFAULT_DATA = {
     settings: {
         sound: true,
-        music: false,
+        music: true,
         vibro: true,
         lang: "en",
         name: null,
@@ -69,14 +69,20 @@ export function GameProvider({ children }) {
         return modeProgress.filter(level => level && level.bestTaps < Infinity).length;
     }, [gameData.progress]);
 
-    const totalScore = useMemo(() => {
-        return GAME_MODES.reduce((total, _, mode) =>
-            total + GAME_MODE_SCORE(mode, getLevelsSolved(mode)), 0);
-    }, [gameData.progress]);
+    // const totalScore = useMemo(() => {
+    //     return GAME_MODES.reduce((total, _, mode) =>
+    //         total + GAME_MODE_SCORE(mode, getLevelsSolved(mode)), 0);
+    // }, [gameData.progress]);
+
+    // useEffect(() => {
+    //     online.submitScore(gameData.settings.name, totalScore);
+    // }, [totalScore])
 
     useEffect(() => {
+        const totalScore = GAME_MODES.reduce((total, _, mode) =>
+            total + GAME_MODE_SCORE(mode, getLevelsSolved(mode)), 0);
         online.submitScore(gameData.settings.name, totalScore);
-    }, [totalScore])
+    }, [gameData.progress])
 
     const markLevelSolved = (mode, level, taps) => {
         const modeProgress = progress[mode] || [];
@@ -151,7 +157,7 @@ export function GameProvider({ children }) {
 
 
     return (
-        <GameContext.Provider value={{ settings, current, totalScore, getLevelsSolved, getLevelStats, markLevelSolved, updateSettings, updateCurrent }}>
+        <GameContext.Provider value={{ settings, current, getLevelsSolved, getLevelStats, markLevelSolved, updateSettings, updateCurrent }}>
             {children}
         </GameContext.Provider>
     );

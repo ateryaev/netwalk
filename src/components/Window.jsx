@@ -16,7 +16,7 @@ export function WindowHeader({ children, ...props }) {
 
 export function Window({ onBack, title, subtitle, footer, subheader, className, infobar, erased, children, ...props }) {
 
-    const { settings, getLevelsSolved, totalScore, updateSettings, current } = useGame();
+    const { settings, getLevelsSolved, updateSettings, current } = useGame();
     //GAME_MODES.map((modeName, index) => (
     // const points=GAME_MODE_SCORE(index, getLevelsSolved(index));
     // const toUnlock= GAME_MODE_TO_UNLOCK(index, getLevelsSolved(index - 1));

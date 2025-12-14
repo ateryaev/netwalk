@@ -44,6 +44,10 @@ export function isEnd(figure: number): boolean {
     return (figure === 0b1000 || figure === 0b0100 || figure === 0b0010 || figure === 0b0001)
 }
 
+export function isLine(figure: number): boolean {
+    return (figure === 0b1010 || figure === 0b0101);
+}
+
 export function isOn(color: number): boolean {
     return (color & (color - 1)) === 0 && color > 0;
 }

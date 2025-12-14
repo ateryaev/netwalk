@@ -3,20 +3,22 @@ import { BaseButton, CheckBox, DetailedButton, MenuButton, PinkButton, RoundButt
 import Modal, { SubHeader, SubContent } from "./components/Modal";
 import { Blink, Inv, LabelNew, LabelPlay, Titled } from "./components/UI";
 import { cn } from "./utils/cn";
-import { GAME_MODE_BORDERED, GAME_MODE_EMPTIES, GAME_MODE_SCORE, GAME_MODE_TO_UNLOCK, GAME_MODES } from "./game/gameconstants";
+import { GAME_MODE_BORDERED, GAME_MODE_EMPTIES, GAME_MODE_EMPTIES_NAMES, GAME_MODE_SCORE, GAME_MODE_TO_UNLOCK, GAME_MODES } from "./game/gameconstants";
 import { useGame } from "./GameContext";
 import { SvgCheck, SvgClose, SvgLoad, SvgRates, SvgUnCheck } from "./components/Svg";
 import { useOnline } from "./OnlineContext";
 
 export function PageMenu({ onModeSelect, onLeaderboard }) {
     const online = useOnline();
-    const { settings, getLevelsSolved, totalScore, updateSettings, current } = useGame();
+    const { settings, getLevelsSolved, updateSettings, current } = useGame();
 
-    function ModeButton({ mode, points, emptyFrom, emptyTo, toUnlock, bordered, ...props }) {
+    function ModeButton({ mode, points, emptyTo, toUnlock, bordered, ...props }) {
         let subtitle = null;
         if (toUnlock > 100) subtitle = "play more to unlock"
         else if (toUnlock > 0) subtitle = <>solve <Inv>{toUnlock}</Inv> more to unlock</>
-        else subtitle = <>{(bordered ? "bordered" : "looped")} <Inv>{emptyFrom}-{emptyTo}%</Inv> empty</>;
+        //else subtitle = <>{(bordered ? "bordered" : "looped")} <Inv>up to {emptyTo}%</Inv> empty</>;
+        else subtitle = <>{(bordered ? "bordered" : "looped")} <Inv>{GAME_MODE_EMPTIES_NAMES[mode]}</Inv> empties</>;
+
 
         return (<DetailedButton
             special={mode === current.mode}
@@ -39,31 +41,12 @@ export function PageMenu({ onModeSelect, onLeaderboard }) {
                         toUnlock={GAME_MODE_TO_UNLOCK(index, getLevelsSolved(index - 1))}
                         mode={index}
                         points={GAME_MODE_SCORE(index, getLevelsSolved(index))}
-                        emptyFrom={GAME_MODE_EMPTIES[index][0]}
-                        emptyTo={GAME_MODE_EMPTIES[index][1]}
+                        emptyTo={GAME_MODE_EMPTIES[index]}
                         bordered={GAME_MODE_BORDERED[index]}
                         onClick={() => onModeSelect?.(index)}
                     />
                 ))}
-                {/* <SubHeader>online player rank</SubHeader> */}
-                {/* <DetailedButton onClick={() => { onLeaderboard(); }}
-                    className={"bg-puzzle xhue-rotate-90 text-white"}
-                    subtitle={"check your global rank"}
-                    value={totalScore.toLocaleString("us")}
-                    subvalue={"total"} >
-                    Leaderboard</DetailedButton> */}
 
-                {/* <MenuButton
-                    className={cn("bg-puzzle-50 border-4 rounded-lg m-4 my-2 border-puzzle hue-rotate-180 p-2 text-darkpuzzle",
-                        ""
-                    )}
-                    disabled={!online.isOnline}
-                    onClick={() => { onLeaderboard(); }} >
-                    <Titled title={"Leaderboard"}>
-                        {online.isOnline && "check your global rank"}
-                        {!online.isOnline && <SvgLoad />}
-                    </Titled>
-                </MenuButton> */}
                 <MenuButton
                     className={cn("bg-ipuzzle text-white p-4",
                         ""

@@ -48,15 +48,24 @@ export function OnlineProvider({ children }) {
             let delta = 0;
             const success = await runTransaction(bestScoreRef, (currentData) => {
                 const existingScore = currentData?.score || 0;
-                if (score <= existingScore) return;
                 delta = score - existingScore;
+                if (score <= existingScore) return;
                 return { score, name: playerName, country, at: serverTimestamp() };
             });
 
             if (!success.committed) return;
 
-            const newEventRef = push(ref(db, 'events'));
-            set(newEventRef, { player: uid, name: playerName, country, at: serverTimestamp(), msg: "+" + delta });
+            if (delta > 0) {
+                const eventRef = ref(db, `events/${uid}`);
+                await set(eventRef, {
+                    name: playerName,
+                    country,
+                    at: serverTimestamp(),
+                    msg: "+" + delta
+                });
+            }
+            // const allEventRef = push(ref(db, 'allevents'));
+            // set(allEventRef, { player: uid, at: serverTimestamp(), delta });
 
         } catch (error) {
             console.error("Error submitting score:", error);
@@ -104,11 +113,11 @@ export function OnlineProvider({ children }) {
                 });
             });
 
-            scoresList.push({ uid: "1b2c", at: 1763800000000, country: "US", name: "SirSnortsalot", score: 100 });
-            scoresList.push({ uid: "4d5e", at: 1763900000000, country: "GB", name: "DukeQuackenstein", score: 200 });
-            scoresList.push({ uid: "7f8g", at: 1764000000000, country: "CA", name: "ProfessorNoodlepants", score: 400 });
-            scoresList.push({ uid: "9h0i", at: 1764100000000, country: "DE", name: "BaronvonBubblewrap", score: 800 });
-            scoresList.push({ uid: "abc1", at: 1764200000000, country: "FR", name: "LadyGigglemuffin", score: 1600 });
+            // scoresList.push({ uid: "1b2c", at: 1763800000000, country: "US", name: "SirSnortsalot", score: 100 });
+            // scoresList.push({ uid: "4d5e", at: 1763900000000, country: "GB", name: "DukeQuackenstein", score: 200 });
+            // scoresList.push({ uid: "7f8g", at: 1764000000000, country: "CA", name: "ProfessorNoodlepants", score: 400 });
+            // scoresList.push({ uid: "9h0i", at: 1764100000000, country: "DE", name: "BaronvonBubblewrap", score: 800 });
+            // scoresList.push({ uid: "abc1", at: 1764200000000, country: "FR", name: "LadyGigglemuffin", score: 1600 });
 
             scoresList.sort((a, b) => a.score > b.score ? 1 : -1);
             setScores(scoresList.reverse().slice(0, 100));
@@ -139,14 +148,15 @@ export function OnlineProvider({ children }) {
             });
 
             // Add some seeded events for demo/offline use
-            eventList.push({ id: 'e1', player: '1b2c', name: 'SirSnortsalot', country: 'US', at: 1763800000000, msg: '+100' });
-            eventList.push({ id: 'e2', player: '4d5e', name: 'DukeQuackenstein', country: 'GB', at: 1763900000000, msg: '+200' });
-            eventList.push({ id: 'e3', player: '7f8g', name: 'ProfessorNoodlepants', country: 'CA', at: 1764000000000, msg: '+400' });
-            eventList.push({ id: 'e4', player: '9h0i', name: 'BaronvonBubblewrap', country: 'DE', at: 1764100000000, msg: '+800' });
-            eventList.push({ id: 'e5', player: 'abc1', name: 'LadyGigglemuffin', country: 'FR', at: 1764200000000, msg: '+1600' });
+            // eventList.push({ id: 'e1', player: '1b2c', name: 'SirSnortsalot', country: 'US', at: 1763800000000, msg: '+100' });
+            // eventList.push({ id: 'e2', player: '4d5e', name: 'DukeQuackenstein', country: 'GB', at: 1763900000000, msg: '+200' });
+            // eventList.push({ id: 'e3', player: '7f8g', name: 'ProfessorNoodlepants', country: 'CA', at: 1764000000000, msg: '+400' });
+            // eventList.push({ id: 'e4', player: '9h0i', name: 'BaronvonBubblewrap', country: 'DE', at: 1764100000000, msg: '+800' });
+            // eventList.push({ id: 'e5', player: 'abc1', name: 'LadyGigglemuffin', country: 'FR', at: 1764200000000, msg: '+1600' });
 
             // Sort by timestamp (oldest -> newest) then reverse so newest appear first
             eventList.sort((a, b) => (a.at || 0) > (b.at || 0) ? 1 : -1);
+            console.log("eventList", eventList);
             setEvents(eventList.reverse().slice(0, 10));
         }, (error) => {
             console.error("Error fetching events:", error);

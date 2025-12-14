@@ -3,7 +3,7 @@ import { DetailedButton, SvgPlay } from "./components/Button";
 import { SubContent, SubHeader } from "./components/Modal";
 import { Blink, Inv, LabelNew, LabelPlay } from "./components/UI";
 import { cn } from "./utils/cn";
-import { GAME_LEVEL_COLORS, GAME_LEVEL_EMPTY, GAME_LEVEL_RANDOM, GAME_LEVEL_SIZE, GAME_MODE_BORDERED, GAME_MODE_EMPTIES, GAME_MODE_SCORE, GAME_MODE_TO_UNLOCK, GAME_MODE_TUTORIALS, GAME_MODES } from "./game/gameconstants";
+import { GAME_LEVEL_COLORS, GAME_LEVEL_EMPTY, GAME_LEVEL_RANDOM, GAME_LEVEL_SIZE, GAME_MODE_BORDERED, GAME_MODE_SCORE, GAME_MODE_TO_UNLOCK, GAME_MODE_TUTORIALS, GAME_MODES } from "./game/gameconstants";
 import { rnd } from "./utils/numbers";
 import { useGame } from "./GameContext";
 import { usePageHistory } from "./components/PageHistory";
@@ -34,7 +34,7 @@ export function PageLevels({ onLevelSelect }) {
         else if (selected) subtitle = <Blink>tap again to play</Blink>;
         else if (isRandom) subtitle = <>size:{size.x}<Inv>&times;</Inv>{size.y},&nbsp;<Inv>every time new</Inv></>;
         else subtitle = <>
-            size:{size.x}<Inv>&times;</Inv>{size.y},&nbsp;
+            size: {size.x}<Inv>&times;</Inv>{size.y},&nbsp;
             colors: <Inv>{colors}</Inv>,
             empty: <Inv>{empties}</Inv>
         </>;

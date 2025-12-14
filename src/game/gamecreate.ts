@@ -102,7 +102,6 @@ export function createGame(mode: number, level: number): GameData {
     const firstColor = rndFunc(1);
     let ends: XY[] = [];
 
-
     game.forEach((_, index) => { game.set(index, { figure: 0, source: 0 }) })
 
     const sourceSizes = GAME_LEVEL_SOURCES(mode, level);
@@ -164,7 +163,7 @@ export function createGame(mode: number, level: number): GameData {
         game.forEach((cell, xy) => {
             if ((xy.x + xy.y) % 2 === even) return;
             if (cell.source > 0) return;
-            if (rndFunc(5) !== 0) return;
+            if (rndFunc(4) !== 0) return; //25% chance
             if (isEnd(cell.figure)) return;
             const overFigure = rndFunc(8);
             if (cell.figure === 0 && isEnd(overFigure)) return;
@@ -172,6 +171,7 @@ export function createGame(mode: number, level: number): GameData {
         });
     }
     if (mode === 4) doNightmare();
+
     return game;
 }
 
