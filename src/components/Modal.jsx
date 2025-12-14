@@ -66,22 +66,12 @@ const Modal = ({ shown, onBack, onClose, title, subtitle, children, reversed }) 
             )}
                 tabIndex={0}>
                 <div className="flex items-center gap-2 text-white z-10 bg-puzzle
-                justify-center p-4  pt-5 text-left sticky left-0">
+                justify-center p-4 pr-2  pt-5 text-left sticky left-0 ">
 
-                    <BigTitled title={title}
-                        subtitle={subtitle}
-                        className={cn("flex-1 text-left")}>
-                        {/*                             
-                        <div key={subtitle}
-                            className={cn("transition-all",
-                                "starting:opacity-50 starting:scale-y-0 ",
-                            )}>
-                            {subtitle}
-                        </div> */}
-                    </BigTitled>
+                    <BigTitled title={title} subtitle={subtitle} className={cn("flex-1 text-left")} />
 
-                    {onBack && <RoundButton onClick={onBack}><SvgBack /></RoundButton>}
-                    {onClose && <RoundButton onClick={onClose}><SvgClose /></RoundButton>}
+                    {onBack && <RoundButton className={"-my-3"} onClick={onBack}><SvgBack /></RoundButton>}
+                    {onClose && <RoundButton className={"-my-3"} onClick={onClose}><SvgClose /></RoundButton>}
 
                 </div>
 

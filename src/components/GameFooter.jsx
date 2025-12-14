@@ -14,14 +14,14 @@ export function Removing({ children, className, ...props }) {
 // 1 - Event loaded and shown (for 3s)
 // 2 - Event hidden to show regular status (for 1s)
 
-
+let LAST_EVENT = null;
 
 export function GameFooter({ taps, bordered, random, solved, tutorial, size, ...props }) {
     const online = useOnline();
 
-    const [event, setEvent] = useState(null);
+    const [event, setEvent] = useState(LAST_EVENT);
     const [shownEvent, setShownEvent] = useState(false); //0 - no event, 1- shown, 2
-    const [lastEvent, setLastEvent] = useState(null);
+    //const [lastEvent, setLastEvent] = useState(null);
     const [eventState, setEventState] = useState(2); //0 - waiting, 1- shown, 2 - hidden
 
     const eventReady = useMemo(() => event && eventState === 1, [event, eventState]);
@@ -30,13 +30,17 @@ export function GameFooter({ taps, bordered, random, solved, tutorial, size, ...
 
     // set curent visible event
     useEffect(() => {
+        if (tutorial) return;
         if (!online.events?.[0]) return;
         if (eventState !== 0) return;
         const newEvent = online.events?.[0];
-        if (event?.at === newEvent.at) return;
+
+        if (LAST_EVENT?.at === newEvent.at) return;
+        LAST_EVENT = newEvent;
+
         setEvent(newEvent);
         setEventState(1);
-    }, [online.events, eventState, event]);
+    }, [online.events, eventState, tutorial, event]);
 
     useEffect(() => {
         if (eventState === 1) {
@@ -53,9 +57,9 @@ export function GameFooter({ taps, bordered, random, solved, tutorial, size, ...
             setEventState(2);
         } else {
             setEvent(null);
+            LAST_EVENT = null;
             setEventState(0);
         }
-
     }
 
     if (tutorial) return (

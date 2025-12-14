@@ -93,7 +93,7 @@ export function RoundButton({ onClick, className, children, ...props }) {
 
     }
     return (
-        <BaseButton className={cn("rounded-full text-white p-3 bg-white/10",
+        <BaseButton className={cn("rounded-full text-white p-4 bg-white/10",
             "starting:text-white/50 starting:-rotate-180 transition-all",
             " disabled:invisible stroke-3 active:bg-white/20 focus:bg-white/20 flex justify-center items-center gap-3",
             className)}

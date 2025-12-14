@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react"
 import { cn } from "../utils/cn"
 import { MenuButton, RoundButton, ShowMenuButton } from "./Button"
-import { BigTitled, Blink, Titled } from "./UI";
+import { BigTitled, Blink, Inv, Titled } from "./UI";
 import { SvgMenu } from "./Svg";
+import { useGame } from "../GameContext";
+import { GAME_MODE_SCORE, GAME_MODE_TO_UNLOCK, GAME_MODES } from "../game/gameconstants";
 
 export function WindowHeader({ children, ...props }) {
     return (
@@ -14,6 +16,22 @@ export function WindowHeader({ children, ...props }) {
 
 export function Window({ onBack, title, subtitle, footer, subheader, className, infobar, erased, children, ...props }) {
 
+    const { settings, getLevelsSolved, totalScore, updateSettings, current } = useGame();
+    //GAME_MODES.map((modeName, index) => (
+    // const points=GAME_MODE_SCORE(index, getLevelsSolved(index));
+    // const toUnlock= GAME_MODE_TO_UNLOCK(index, getLevelsSolved(index - 1));
+    // const isNewMode =  points === 0  && toUnlock <= 0;
+    // detect new game modes
+    const hasNewMode = Array.isArray(GAME_MODES) && GAME_MODES.some((modeName, index) => {
+        if (index === current.mode) return false;
+        const solvedForThis = getLevelsSolved(index);
+        const solvedForPrev = getLevelsSolved(index - 1);
+        const points = GAME_MODE_SCORE(index, solvedForThis);
+        const toUnlock = GAME_MODE_TO_UNLOCK(index, solvedForPrev);
+        return points === 0 && toUnlock <= 0;
+    });
+
+
     const [infoCurrent, setInfoCurrent] = useState(infobar);
     const [infoOn, setInfoOn] = useState(!!infobar);
     useEffect(() => {
@@ -24,18 +42,19 @@ export function Window({ onBack, title, subtitle, footer, subheader, className, 
     return (
         <div className={cn("flex flex-col bg-[#333] size-full duration-500", className)}>
 
-            <div className="bg-puzzle text-white p-4 pt-6 flex items-center z-10">
-                <RoundButton onClick={onBack} className={cn("-my-2 delay-0 duration-200 text-whitex")}><SvgMenu /></RoundButton>
-                <BigTitled className={cn("text-right flex-1")}
-                    title={title} subtitle={subtitle} />
+            <div className="bg-puzzle text-white p-4 pt-5 pl-2 flex items-center z-10 gap-2">
+                <RoundButton onClick={onBack} className={cn("-my-3 delay-0 duration-200 text-whitex")}>
+                    <SvgMenu />
+                </RoundButton>
+
+                {hasNewMode && <BigTitled className={cn("text-left animate-pulse")} title={<>&nbsp;</>} subtitle={"NEW MODE"} />}
+                <BigTitled className={cn("text-right flex-1")} title={title} subtitle={subtitle} />
             </div>
 
             <div className={cn('bg-white z-10 overflow-hidden')}>
                 <div
                     key={title + subtitle}
-                    className={cn('transition-all  delay-300 xduration-200 bg-white p-2 flex gap-2 ',
-                        'starting:scale-y-0 starting:opacity-30',
-                        // erased && "translate-y-4 opacity-0  xduration-200",
+                    className={cn('transition-all delay-300 bg-white p-2 flex gap-2 starting:scale-y-0 starting:opacity-30'
                     )}>
                     {subheader}
                 </div>

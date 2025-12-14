@@ -55,7 +55,6 @@ export function PagePlay({ mode, level, onMenu, onNext, className, ...props }) {
     useEffect(() => {
         setTimeout(() => {
             setRestarting(false);
-            console.log("EFFF")
             setProgressFX(createEffect(1000));
         }, 500);
     }, []);

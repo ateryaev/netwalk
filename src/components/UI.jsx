@@ -17,9 +17,9 @@ export function Titled({ children, title, className, ...props }) {
 }
 
 export function BigTitled({ children, title, subtitle, className, ...props }) {
-    return (<div className={cn("uppercase", className)} {...props}>
+    return (<div className={cn("uppercase overflow-hidden", className)} {...props}>
         <div key={title} className="transition-all text-[125%] font-bold starting:scale-y-0 starting:opacity-30">{title}</div>
-        <div key={subtitle} className="transition-all delay-150 opacity-60 uppercase text-[90%] -mt-1 starting:scale-y-0 starting:opacity-30">{subtitle}</div>
+        <div key={subtitle} className="whitespace-nowrap overflow-hidden text-ellipsis transition-all delay-150 opacity-60 uppercase text-[90%] -mt-1 starting:scale-y-0 starting:opacity-30">{subtitle}</div>
     </div>)
 }
 

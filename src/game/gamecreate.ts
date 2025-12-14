@@ -158,8 +158,20 @@ export function createGame(mode: number, level: number): GameData {
             deleteEnd(allEnds[rndFunc(allEnds.length - 1)])
     }
 
-    // shufleGame(game);
-    // game.taps = 0;
+
+    function doNightmare() {
+        const even = rndFunc(1);
+        game.forEach((cell, xy) => {
+            if ((xy.x + xy.y) % 2 === even) return;
+            if (cell.source > 0) return;
+            if (rndFunc(5) !== 0) return;
+            if (isEnd(cell.figure)) return;
+            const overFigure = rndFunc(8);
+            if (cell.figure === 0 && isEnd(overFigure)) return;
+            cell.figure = cell.figure | overFigure;
+        });
+    }
+    if (mode === 4) doNightmare();
     return game;
 }
 

@@ -27,14 +27,6 @@ export class GameManager {
         this.preConnections = this.connections;
     }
 
-    // constructor(game: GameData) {
-    //     this.game = game;
-    //     this.colors = this.calcColors();
-    //     this.counters = this.calcCounters();
-    //     this.connections = this.calcConnections();
-    //     this.preColors = this.colors;
-    // }
-
     endCounters(): Map<number, number> {
         return this.counters;
     }

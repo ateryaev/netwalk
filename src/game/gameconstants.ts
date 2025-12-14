@@ -19,11 +19,11 @@ export const GAME_MODE_TUTORIALS = [
 ];
 
 export const GAME_MODE_EMPTIES = [
-    [25, 50],
-    [10, 25],
-    [5, 10],
-    [0, 5],
-    [0, 1]
+    [30, 50],
+    [10, 40],
+    [20, 40],
+    [10, 20],
+    [0, 10]
 ];
 
 export const GAME_MODE_BORDERED = [true, true, false, false, false];
@@ -90,17 +90,8 @@ export function GAME_MODE_SCORE(mode: number, levels: number): number {
     return (mode + 1) * levels * 100;
 }
 
-export function GAME_MODE_AVAILABLE(mode: number, preSolved: number): boolean {
-    if (mode === 0) return true;
-    const needed = [10, 10, 10, 10];
-    return preSolved >= needed[mode - 1];
-}
-
 export function GAME_MODE_TO_UNLOCK(mode: number, preSolved: number): number {
-
-    //if (mode !== 4) return 0;
     if (mode === 0) return 0;
-    //return 1;
     if (preSolved === 0) return Infinity;
     const needed = [2, 2, 2, 2];
     return Math.max(needed[mode - 1] - preSolved, 0);
