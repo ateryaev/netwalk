@@ -42,11 +42,13 @@ export function Window({ onBack, title, subtitle, footer, subheader, className, 
     return (
         <div className={cn("flex flex-col bg-[#333] size-full duration-500", className)}>
 
-            <div className="bg-puzzle text-white p-4 pt-5 pl-2 flex items-center z-10 gap-2">
-                <RoundButton onClick={onBack} className={cn("-my-3 delay-0 duration-200 text-whitex")}>
+            <div className="bg-puzzle text-white p-4 pt-[calc(20px+var(--safe-area-top,0px))] pl-2 flex items-center z-10 gap-2">
+                <RoundButton onClick={onBack}
+                    //className={cn("-my-3 delay-0 duration-200 bg-white/40  text-xl")}
+                    className={cn("-my-4 delay-0 duration-200 text-puzzle bg-white/50 text-lg")}
+                >
                     <SvgMenu />
                 </RoundButton>
-
                 {hasNewMode && <BigTitled className={cn("text-left animate-pulse")} title={<>&nbsp;</>} subtitle={"NEW MODE"} />}
                 <BigTitled className={cn("text-right flex-1")} title={title} subtitle={subtitle} />
             </div>
@@ -82,7 +84,7 @@ export function Window({ onBack, title, subtitle, footer, subheader, className, 
                 </div>
             </div>
 
-            <div className='text-puzzle  font-semibold  bg-white uppercase whitespace-nowrap'>
+            <div className='text-puzzle  font-semibold  bg-white uppercase whitespace-nowrap pb-[calc(var(--safe-area-bottom,0px))]'>
                 <div key={title + subtitle}
                     className={cn('delay-300 transition-all flex flex-col items-center justify-center p-2 gap-2 ps-3 pe-2',
                         'starting:scale-y-0 starting:opacity-30'

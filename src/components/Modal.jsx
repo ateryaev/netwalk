@@ -62,7 +62,8 @@ const Modal = ({ shown, onBack, onClose, title, subtitle, children, reversed }) 
             )}>
 
             <div className={cn("h-[80svh] max-w-svw w-xl outline-none bg-white flex flex-col",
-                "rounded-t-xs overflow-hidden ring-4 ring-black/10"
+                "rounded-t-xs overflow-hidden ring-4 ring-black/10",
+                ""
             )}
                 tabIndex={0}>
                 <div className="flex items-center gap-2 text-white z-10 bg-puzzle
@@ -84,7 +85,9 @@ const Modal = ({ shown, onBack, onClose, title, subtitle, children, reversed }) 
                     )}>
                     {children}
                     <div className='flex-1'></div>
-                    <div className='bg-black/5 sticky bottom-0 z-50 min-h-1 w-full'></div>
+                    <div className='bg-black/5 sticky bottom-0 z-50 min-h-1 w-full pb-(--safe-area-bottom,0px)'></div>
+
+
                 </div>
             </div>
         </dialog >
