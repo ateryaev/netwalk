@@ -96,7 +96,7 @@ export function PageLevels({ onLevelSelect }) {
                     isRandom={GAME_LEVEL_RANDOM(mode, level)}
                     onClick={() => handleLevelSelect(level)}
                     isNewest={level === solved}
-                    className={(selectedIndex === level || (level == solved && selectedIndex < 0)) && "scrolltoitem"}
+                    className={(selectedIndex === level || (level == solved && selectedIndex < 0)) && "scrolltoitem scroll-m-(--safe-area-bottom,0px)"}
                 />
             ))}
             <LevelButton disabled level={solved + 1} />

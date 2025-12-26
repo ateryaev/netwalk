@@ -40,16 +40,13 @@ export function Window({ onBack, title, subtitle, footer, subheader, className, 
     }, [infobar]);
 
     return (
-        <div className={cn("flex flex-col bg-[#333] size-full duration-500", className)}>
+        <div className={cn("flex flex-col bg-[#333] size-full", className)}>
 
-            <div className="bg-puzzle text-white p-4 pt-[calc(20px+var(--safe-area-top,0px))] pl-2 flex items-center z-10 gap-2">
-                <RoundButton onClick={onBack}
-                    //className={cn("-my-3 delay-0 duration-200 bg-white/40  text-xl")}
-                    className={cn("-my-4 delay-0 duration-200 text-puzzle bg-white/50 text-lg")}
-                >
+            <div className="bg-puzzle text-white p-4 pt-[calc(20px+var(--safe-area-top,0px))] pl-2xx flex items-center z-10 gap-2">
+                <RoundButton onClick={onBack}>
                     <SvgMenu />
+                    {hasNewMode && <Blink className="w-1 h-1 rounded-full bg-puzzle/80 absolute ml-6 mb-6"></Blink>}
                 </RoundButton>
-                {hasNewMode && <BigTitled className={cn("text-left animate-pulse")} title={<>&nbsp;</>} subtitle={"NEW MODE"} />}
                 <BigTitled className={cn("text-right flex-1")} title={title} subtitle={subtitle} />
             </div>
 

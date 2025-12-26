@@ -86,28 +86,22 @@ function App() {
         mode={current.mode}
         level={current.level}
         onNext={handleNext}
-        className={cn("transition-all", (false && isPaused) && "brightness-50 contrast-75 grayscale-50")}
+        className={cn("transition-all", (isPaused) && "blur-[2px] contrast-50 grayscale-75")}
         onMenu={handleMenu} />
 
       <Modal shown={currentPage != PAGE_START}
         title={"Netwalk"}
         subtitle={subtitle}
         onClose={currentPage === PAGE_MENU || currentPage === PAGE_START ? goBack : undefined}
-        //onBack={() => setMenuPage(MENU_MAIN)}>
         onBack={currentPage !== PAGE_MENU && currentPage !== PAGE_START && goBack}>
 
-        {(currentPage === PAGE_MENU || currentPage === PAGE_START) && <PageMenu onModeSelect={handleModeSelect} onLeaderboard={handleLeaderboard} />}
-
+        {currentPage === PAGE_MENU && <PageMenu onModeSelect={handleModeSelect} onLeaderboard={handleLeaderboard} />}
         {currentPage === PAGE_LEADERBOARD && <PageRating />}
-
         {currentPage === PAGE_LEVELS && <PageLevels
-          //mode={menuPlayMode}
           mode={currentData?.mode || 0}
           selectedLevel={menuPlayLevel}
           levelPlaying={menuPlayMode === current.mode ? current.level : -1}
-          //onClose={goBack}
           onLevelSelect={handleLevelSelect}
-        //onBack={() => setMenuPage(MENU_MAIN)}
         />}
       </Modal>
     </>
