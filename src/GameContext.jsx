@@ -10,7 +10,7 @@ import { useOnline } from './OnlineContext';
 const GameContext = createContext();
 
 const STORAGE_KEY = "netwalk_data";
-const STORAGE_VERSION = "0.0.1b";
+const STORAGE_VERSION = "0.0.1c";
 
 const DEFAULT_DATA = {
     settings: {
@@ -64,7 +64,7 @@ export function GameProvider({ children }) {
     }, [gameData]);
 
     const getLevelsSolved = useCallback((mode) => {
-        //return 25; //hardcoded for now
+        //return 50; //for now, unlock all levels
         const modeProgress = gameData.progress[mode] || [];
         return modeProgress.filter(level => level && level.bestTaps < Infinity).length;
     }, [gameData.progress]);

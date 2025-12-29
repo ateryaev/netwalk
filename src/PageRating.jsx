@@ -9,37 +9,6 @@ import { SvgLoad } from "./components/Svg";
 import { Hash } from "./components/Hash";
 import { Flag } from "./components/Flag";
 
-// function RankRecord({ rank, name, uid, country, special, at, score, ...props }) {
-//     return (
-//         <div className={cn("p-0 flex gap-1 ")} {...props}>
-//             <div className={cn("text-puzzle p-2 bg-white flex flex-col items-center justify-center",
-//                 special && "bg-puzzle-50 text-darkpuzzle"
-//             )}>
-//                 <div>{rank.toString().padStart(1, 0)}</div>
-//                 <div className="h-0 invisible">0000</div>
-//             </div>
-
-//             <div className={cn("bg-whitex p-2 overflow-hidden text-darkpuzzle bg-white flex-1", special && "bg-puzzle-50 text-darkpuzzle")}>
-//                 <div className="flex gap-2 uppercase">
-//                     <div className="flex gap-0 items-center flex-1 overflow-hidden">
-//                         <Flag code={country} />
-//                         <div className="text-ellipsis overflow-hidden">{name}<Hash uid={uid} /></div>
-//                     </div>
-//                     <Inv>{score.toLocaleString('en-US')}</Inv>
-//                 </div>
-//                 <div className="flex gap-2 text-[85%] xuppercase opacity-60 -mt-1">
-//                     <div className="flex-1 text-ellipsis overflow-hidden whitespace-nowrap">
-//                         {special && <>THIS IS <Inv>YOUR</Inv> RECORD</>}
-//                         {!special && <Ago at={at} />}
-//                     </div>
-//                     POINTS
-//                 </div>
-//             </div>
-
-//         </div >
-//     )
-// }
-
 function RankRecord({ rank, name, uid, country, special, at, score, ...props }) {
     return (
         <div className={cn("p-2 px-4 gap-2 bg-white red-200 text-gray-600 darkpuzzle flex items-start",
@@ -93,12 +62,6 @@ export function PageRating({ shown, onBack, onClose }) {
     }
     return (
         <>
-
-            {/* {me && <SubContent className={"xm-3 xp-1 gap-1 xbg-puzzle-100"}>
-                <RankRecord special={true} {...me} />
-            </SubContent>} */}
-
-
             <SubHeader>TOP Players</SubHeader>
             <SubContent className={"py-2"}>
 
@@ -134,16 +97,6 @@ export function PageRating({ shown, onBack, onClose }) {
                         </div>
 
                     </div >
-                    // <div className="px-4 py-2 flex items-center gap-2 text-darkpuzzle overflow-hidden text-ellipsis"
-                    //     key={record.uid}
-                    // >
-                    //     <Flag code={record.country} />
-
-                    //     <div className="flex-1 flex gap-1 items-center overflow-hidden text-ellipsis whitespace-nowrap uppercase">{record.name}
-                    //         <div className="opacity-50 overflow-hidden text-ellipsis"><Ago at={record.at} /></div></div>
-
-                    //     <Inv> {record.msg}</Inv>
-                    // </div>
                 ))}
             </SubContent>
 
@@ -181,23 +134,5 @@ export function PageRating({ shown, onBack, onClose }) {
                     <Inv>{me.score}</Inv>
                 </div>
             </SubContent>}
-
-            {/* <SubHeader className="xopacity-50 saturate-50xx xxhue-rotate-180 bg-ipuzzle/10">
-                <div className="flex-1">
-
-                    <div className={cn("bg-whitex p-0 overflow-hidden text-ipuzzle xbg-white flex-1")}>
-                        <div className="flex gap-2 uppercase">
-                            <div className="flex gap-2 items-center flex-1 overflow-hidden">
-                                <Flag code={me.country} />
-                                <div className="text-ellipsis overflow-hidden">{me.name}<Hash uid={me.uid} /></div>
-                            </div>
-                            {me.rank.toString().padStart(1, 0)}
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </SubHeader> */}
         </>);
 }

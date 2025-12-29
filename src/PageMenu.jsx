@@ -34,7 +34,6 @@ export function PageMenu({ onModeSelect, onLeaderboard }) {
     return (
         <>
             <SubHeader>game modes</SubHeader>
-
             <SubContent>
                 {GAME_MODES.map((modeName, index) => (
                     <ModeButton key={index}
@@ -48,7 +47,7 @@ export function PageMenu({ onModeSelect, onLeaderboard }) {
                 ))}
 
                 <MenuButton
-                    className={cn("bg-ipuzzle text-white p-4",
+                    className={cn("bg-ipuzzle/20 text-ipuzzle white p-3 m-4 ring-3 ring-ipuzzle rounded-md",
                         ""
                     )}
                     disabled={!online.isOnline}
@@ -112,6 +111,10 @@ export function PageMenu({ onModeSelect, onLeaderboard }) {
                     <br /><br />
                     Use simple logic, stay focused, and find the flow.
                     <br />
+                    <br />
+                    More details
+                    <br />
+                    <a target="_blank" href="https://github.com/ateryaev" className="text-blue-600 underline normal-case ">https://github.com/ateryaev</a>
                 </p>
             </SubContent>
             <SubHeader className="">

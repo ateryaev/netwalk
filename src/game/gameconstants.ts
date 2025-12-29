@@ -57,8 +57,7 @@ export function CREATE_RND_FUNC(mode: number, level: number, seed: number): (max
 
 export function GAME_LEVEL_COLORS(mode: number, level: number): number {
     const rndFunc = CREATE_RND_FUNC(mode, level, 100);
-    let maxColors = 1;
-    if (level > 5) maxColors = 2;
+    let maxColors = 2;
     if (level > 10) maxColors = 3;
     if (level > 20) maxColors = 4;
     maxColors = Math.min(maxColors, [1, 2, 3, 4, 4][mode]);
@@ -84,7 +83,7 @@ export function GAME_LEVEL_EMPTY(mode: number, level: number): number {
     const rndFunc = CREATE_RND_FUNC(mode, level, 211);
 
     const max = Math.max(1, GAME_MODE_EMPTIES[mode] - Math.floor(level / 10)); //-1% every 10 levels
-    const min = Math.max(0, max / 2);
+    const min = mode === 4 ? 0 : Math.max(0, max / 2);
 
     const size = GAME_LEVEL_SIZE(mode, level);
     const minEmpty = Math.floor(size.x * size.y * min / 100);
@@ -97,6 +96,7 @@ export function GAME_MODE_SCORE(mode: number, levels: number): number {
 }
 
 export function GAME_MODE_TO_UNLOCK(mode: number, preSolved: number): number {
+    //return 0; //unlock all modes for now
     if (mode === 0) return 0;
     if (preSolved === 0) return Infinity;
     const needed = [2, 2, 2, 2]; //TODO: test values, one number is enough to unlock next mode

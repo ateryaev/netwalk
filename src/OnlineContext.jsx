@@ -19,24 +19,10 @@ export function OnlineProvider({ children }) {
     const hash = uid?.substr(-4) || "????";
     const [isConnected, setIsConnected] = useState(false); //has real online db connection
 
-    const [scores, setScores] = useState(null); //list of best scores from db
+    const [scores, setScores] = useState([]); //list of best scores from db
     const [events, setEvents] = useState([]); //list of best scores from db
 
     const [scoresLoading, setScoresLoading] = useState(true); //loading best scores
-
-    // const submitTaps = useCallback(async (playerName, mode, level, taps) => {
-    //     if (!uid || !isConnected) return;
-    //     const country = await fetchCountry();
-    //     const submitsRef = ref(db, 'submits');
-    //     const newSubmitRef = push(submitsRef);
-    //     set(newSubmitRef, {
-    //         player: uid,
-    //         name: playerName,
-    //         country: country,
-    //         at: serverTimestamp(),
-    //         mode, level, taps
-    //     });
-    // }, [uid, isConnected]);
 
     const submitScore = useCallback(async (playerName, score) => {
         if (!uid || !isConnected) return;
@@ -76,14 +62,18 @@ export function OnlineProvider({ children }) {
     // Firebase Auth Listener
     useEffect(() => {
         return onAuthStateChanged(auth, async (user) => {
-            setCurrentUser(user);
-            setLoading(false);
+
             if (!user) {
+                setLoading(true);
                 try {
                     await signInAnonymously(auth);
                 } catch (error) {
                     console.error("Anonymous sign-in failed:", error);
                 }
+            } else {
+                setCurrentUser(user);
+                console.log("Auth state changed, user:", user);
+                setLoading(false);
             }
         });
     }, []);
@@ -99,6 +89,7 @@ export function OnlineProvider({ children }) {
 
     // Leader Board Listener
     useEffect(() => {
+        if (!uid) return;
         setScoresLoading(true);
         // Use RTDB Query: Order by score and limit to the top 100
         const scoresQuery = query(ref(db, 'bestScores'), orderByChild('score'), limitToLast(100));
@@ -129,11 +120,11 @@ export function OnlineProvider({ children }) {
             setScoresLoading(false);
         });
 
-    }, []);
+    }, [uid]);
 
     // Events Listener
     useEffect(() => {
-
+        if (!uid) return;
         // Use RTDB Query: Order by "at" and limit to the top 10
         const eventsQuery = query(ref(db, 'events'), orderByChild('at'), limitToLast(10));
 
@@ -162,7 +153,7 @@ export function OnlineProvider({ children }) {
             console.error("Error fetching events:", error);
         });
 
-    }, []);
+    }, [uid]);
 
     const value = {
         submitScore, //(playerName, score)

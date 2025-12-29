@@ -61,8 +61,8 @@ const Modal = ({ shown, onBack, onClose, title, subtitle, children, reversed }) 
                 "min-w-svw -my-20 min-h-[calc(100svh+80px)] grid items-end justify-center",
             )}>
 
-            <div className={cn("h-[85svh] max-w-[95svw] w-xl outline-none  flex flex-col",
-                "rounded-t-xl overflow-hidden bg-white",
+            <div className={cn("h-[85svh] max-w-[calc(100svw-16px)] w-xl outline-none  flex flex-col",
+                "rounded-t-sm overflow-hidden bg-white",
                 ""
             )}
                 tabIndex={0}>
