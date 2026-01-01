@@ -1,6 +1,6 @@
 import { DetailedButton } from "./components/Button";
 import Modal, { SubContent, SubHeader } from "./components/Modal";
-import { Inv, Titled } from "./components/UI";
+import { Frame, Inv, Titled } from "./components/UI";
 import { cn } from "./utils/cn";
 import { useOnline } from "./OnlineContext";
 import { useState, useMemo } from "react";
@@ -11,8 +11,8 @@ import { Flag } from "./components/Flag";
 
 function RankRecord({ rank, name, uid, country, special, at, score, ...props }) {
     return (
-        <div className={cn("p-2 px-4 gap-2 bg-white red-200 text-gray-600 darkpuzzle flex items-start",
-            special && "border-l-6 pl-2.5 border-ipuzzle"
+        <div className={cn("p-3 gap-2 bg-white red-200 text-gray-600 darkpuzzle flex items-start",
+            special && "bg-gray-200 puzzle/20 xtext-puzzle rounded-sm "
         )} {...props}>
 
 
@@ -31,7 +31,7 @@ function RankRecord({ rank, name, uid, country, special, at, score, ...props }) 
                         {/* {!special && <Ago at={at} />} */}
                         {/* {special && <>THIS IS <Inv>YOU</Inv></>} */}
                     </div>
-                    {special ? "RANK OF YOU" : "RANK"}
+                    {special ? <div className="animate-pulse">RANK OF YOU</div> : "RANK"}
                 </div>
             </div>
         </div >
@@ -63,76 +63,83 @@ export function PageRating({ shown, onBack, onClose }) {
     return (
         <>
             <SubHeader>TOP Players</SubHeader>
-            <SubContent className={"py-2"}>
-
-                {online.scores?.map((record, index) => (
-                    <RankRecord
-                        key={record.uid}
-                        special={online.uid === record.uid}
-                        rank={index + 1} name={record.name}
-                        score={record.score}
-                        uid={record.uid}
-                        at={record.at}
-                        country={record.country} />
-                ))}
+            <SubContent>
+                <Frame className={"ring-gray-200 puzzle/40 "}>
+                    {online.scores?.map((record, index) => (
+                        <RankRecord
+                            key={record.uid}
+                            special={online.uid === record.uid}
+                            rank={index + 1} name={record.name}
+                            score={record.score}
+                            uid={record.uid}
+                            at={record.at}
+                            country={record.country} />
+                    ))}
+                </Frame>
 
             </SubContent>
             <SubHeader>Recent Events</SubHeader>
-            <SubContent className={"py-2"}>
-                {online.events?.map((record, index) => (
-                    <div key={index} className={cn("p-2 px-4 gap-2 text-gray-600 flex items-start ")}>
-                        <Flag className="" code={record.country} />
-                        <div className="flex-1 overflow-hidden">
-                            <div className="flex gap-2 uppercase items-center">
-                                <div className="flex-1 text-ellipsis overflow-hidden select-text">
-                                    {record.name}<Hash uid={record.player} /></div>
-                                <Inv>{record.msg}</Inv>
-                            </div>
-                            <div className="flex gap-2 text-[85%] xuppercase opacity-60">
-                                <div className="flex-1 text-ellipsis overflow-hidden whitespace-nowrap uppercase">
-                                    <Inv><Ago at={record.at} /></Inv>
+            <SubContent >
+                <Frame className={"ring-gray-200 puzzle/40 "}>
+                    {online.events?.map((record, index) => (
+                        <div key={index} className={cn("p-3 gap-2 text-gray-600 flex items-start ")}>
+                            <Flag className="" code={record.country} />
+                            <div className="flex-1 overflow-hidden">
+                                <div className="flex gap-2 uppercase items-center">
+                                    <div className="flex-1 text-ellipsis overflow-hidden select-text">
+                                        {record.name}<Hash uid={record.player} /></div>
+                                    <Inv>{record.msg}</Inv>
                                 </div>
-                                POINTS
+                                <div className="flex gap-2 text-[85%] xuppercase opacity-60">
+                                    <div className="flex-1 text-ellipsis overflow-hidden whitespace-nowrap uppercase">
+                                        <Inv><Ago at={record.at} /></Inv>
+                                    </div>
+                                    POINTS
+                                </div>
                             </div>
-                        </div>
 
-                    </div >
-                ))}
+                        </div >
+                    ))}
+                </Frame>
             </SubContent>
 
             <SubHeader className={""}>Own stats</SubHeader>
-            {!me && <SubContent className={"select-text"}>
-                <div className="text-gray-600 px-4 py-2 uppercase text-center">No data yet</div>
-            </SubContent>}
-            {me && <SubContent className={"uppercase text-gray-600 p-4 gap-2"}>
+            <SubContent className={"uppercase text-gray-600 p-4 gap-2"}>
+                <Frame className={"ring-gray-200 gap-4 p-4"}>
 
-                <div className="flex xflex-col items-center gap-2  overflow-hidden text-ellipsis justify-center">
-                    <div className="">Rank</div>
-                    <Inv>{me.rank}</Inv>
-                </div>
 
-                <div className="flex items-center gap-2 overflow-hidden text-ellipsis justify-center">
-                    <div className="">Name</div>
-                    <Inv>{me.name}</Inv>
-                </div>
+                    {!me && <div className="text-gray-600 px-4 py-2 uppercase text-center">No data yet</div>}
+                    {me && <>
 
-                <div className="flex items-center gap-2 overflow-hidden text-ellipsis justify-center">
-                    <div>Hash</div>
-                    <Inv><Hash className="opacity-100" uid={me.uid} /></Inv>
-                </div>
+                        <div className="flex xflex-col items-center gap-2  overflow-hidden text-ellipsis justify-center">
+                            <div className="">Rank</div>
+                            <Inv>{me.rank}</Inv>
+                        </div>
 
-                <div className="flex items-center gap-2 overflow-hidden text-ellipsis justify-center">
-                    <div>Country</div>
-                    <div className="flex gap-2 items-center">
-                        <Flag code={me.country} />
-                        <Inv>{me.country}</Inv>
-                    </div>
-                </div>
+                        <div className="flex items-center gap-2 overflow-hidden text-ellipsis justify-center">
+                            <div className="">Name</div>
+                            <Inv>{me.name}</Inv>
+                        </div>
 
-                <div className="flex items-center gap-2 overflow-hidden text-ellipsis justify-center">
-                    <div>Points</div>
-                    <Inv>{me.score}</Inv>
-                </div>
-            </SubContent>}
+                        <div className="flex items-center gap-2 overflow-hidden text-ellipsis justify-center">
+                            <div>Hash</div>
+                            <Inv><Hash className="opacity-100" uid={me.uid} /></Inv>
+                        </div>
+
+                        <div className="flex items-center gap-2 overflow-hidden text-ellipsis justify-center">
+                            <div>Country</div>
+                            <div className="flex gap-2 items-center">
+                                <Flag code={me.country} />
+                                <Inv>{me.country}</Inv>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 overflow-hidden text-ellipsis justify-center">
+                            <div>Points</div>
+                            <Inv>{me.score}</Inv>
+                        </div>
+                    </>}
+                </Frame>
+            </SubContent>
         </>);
 }

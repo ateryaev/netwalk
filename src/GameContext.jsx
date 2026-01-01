@@ -10,7 +10,7 @@ import { useOnline } from './OnlineContext';
 const GameContext = createContext();
 
 const STORAGE_KEY = "netwalk_data";
-const STORAGE_VERSION = "0.0.1c";
+const STORAGE_VERSION = "0.0.1e";
 
 const DEFAULT_DATA = {
     settings: {
@@ -64,19 +64,10 @@ export function GameProvider({ children }) {
     }, [gameData]);
 
     const getLevelsSolved = useCallback((mode) => {
-        //return 50; //for now, unlock all levels
+        //return 20; //for now, unlock all levels
         const modeProgress = gameData.progress[mode] || [];
         return modeProgress.filter(level => level && level.bestTaps < Infinity).length;
     }, [gameData.progress]);
-
-    // const totalScore = useMemo(() => {
-    //     return GAME_MODES.reduce((total, _, mode) =>
-    //         total + GAME_MODE_SCORE(mode, getLevelsSolved(mode)), 0);
-    // }, [gameData.progress]);
-
-    // useEffect(() => {
-    //     online.submitScore(gameData.settings.name, totalScore);
-    // }, [totalScore])
 
     useEffect(() => {
         const totalScore = GAME_MODES.reduce((total, _, mode) =>
@@ -110,8 +101,6 @@ export function GameProvider({ children }) {
 
         setGameData({ ...gameData, progress: [...progress] });
     }
-
-
 
     const getLevelStats = (mode, level) => {
         const modeProgress = progress[mode] || [];

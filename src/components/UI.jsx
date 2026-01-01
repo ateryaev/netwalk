@@ -11,15 +11,18 @@ export function Inv({ children, className, ...props }) {
 }
 export function Titled({ children, title, className, ...props }) {
     return (<div className={cn("uppercase overflow-hidden", className)}>
-        <div className="text-[100%] overflow-hidden  text-ellipsis">{title}</div>
+        <div className="text-[100%] overflow-hidden ">{title}</div>
         <div className="opacity-60 text-[85%] lowercasex -mt-1 overflow-hidden text-ellipsis">{children}</div>
     </div>)
 }
 
 export function BigTitled({ children, title, subtitle, className, ...props }) {
     return (<div className={cn("uppercase overflow-hidden", className)} {...props}>
-        <div key={title} className="transition-all text-[125%] font-bold starting:scale-y-0 starting:opacity-30">{title}</div>
-        <div key={subtitle} className="whitespace-nowrap overflow-hidden text-ellipsis transition-all delay-150 opacity-60 uppercase text-[90%] -mt-1 starting:scale-y-0 starting:opacity-30">{subtitle}</div>
+        <div key={title} className="transition-all text-[125%] font-bold scale-100 starting:scale-y-5 starting:opacity-30">{title}</div>
+        <div key={subtitle}
+            className="whitespace-nowrap overflow-hidden text-ellipsis uppercase text-[90%] -mt-1
+            transition-all delay-150 opacity-60 scale-100 starting:opacity-20 starting:scale-y-5">
+            {subtitle}</div>
     </div>)
 }
 
@@ -45,4 +48,20 @@ export function LabelNew() {
 
 export function LabelPlay() {
     return (<Blink><SvgPlay /></Blink>)
+}
+
+export function LabeNow({ className, ...props }) {
+    return (<sup
+        className={cn("animate-pulse uppercase text-ipuzzle inline opacity-60x mx-1 text-[9px]", className)}
+        {...props}>
+        now</sup>);
+}
+
+export function Frame({ className, children, ...props }) {
+    return (
+        <div
+            className={cn("overflow-hidden bg-white xtext-ipuzzle ring-4 xxring-gray-200 ring-ipuzzle/50 rounded-lg",
+                "border-4 border-white flex flex-col", className
+            )}>{children}</div>
+    );
 }

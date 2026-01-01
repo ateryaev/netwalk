@@ -28,25 +28,17 @@ export const GAME_MODE_EMPTIES_NAMES = [
 
 export const GAME_MODE_BORDERED = [true, true, false, false, false];
 
-export const GAME_COLORS = 4;
-
 export function GAME_LEVEL_SIZE(mode: number, level: number): XY {
-    mode;
-    const startSize = 5;
-    const clampLevel = startSize * startSize + level;
-    const x = Math.floor(Math.sqrt(clampLevel));
-    let y = (clampLevel >= x * (x + 1)) ? x + 1 : x;
+    if (level === 0) return toXY(5, 5); //tutorial levels are 5x5
+    const x = Math.floor(Math.sqrt(level)) + 4 + mode;
+    const y = x;
     return { x, y };
 }
 
 export function GAME_LEVEL_RANDOM(mode: number, level: number): boolean {
-    mode;
     if (level === 0) return false;
-    //if (level === 1) return true;
-    const startSize = 5;
-    const clampLevel = startSize * startSize + level;
-    const x = Math.floor(Math.sqrt(clampLevel));
-    return x === Math.sqrt(clampLevel);
+    if (level % (20 - mode * 2) === 0) return true;
+    return false;
 }
 
 export function CREATE_RND_FUNC(mode: number, level: number, seed: number): (max: number) => number {
@@ -57,26 +49,29 @@ export function CREATE_RND_FUNC(mode: number, level: number, seed: number): (max
 
 export function GAME_LEVEL_COLORS(mode: number, level: number): number {
     const rndFunc = CREATE_RND_FUNC(mode, level, 100);
-    let maxColors = 2;
-    if (level > 10) maxColors = 3;
-    if (level > 20) maxColors = 4;
-    maxColors = Math.min(maxColors, [1, 2, 3, 4, 4][mode]);
+    let maxColors = [1, 2, 3, 4, 4][mode];
     return rndFunc(maxColors - 1) + 1;
 }
 
 export function GAME_LEVEL_SOURCES(mode: number, level: number): XY[] {
     const count = GAME_LEVEL_COLORS(mode, level);
-    const possibleSizes = [XY1, XY1, XY1, XY1, toXY(1, 2), toXY(2, 1), toXY(1, 2), toXY(2, 1), toXY(2, 2)];
-    const maxPossible = possibleSizes.length - 1 - [8, 3, 1, 0, 0][mode];
+    let possibleSizes: XY[] = [];
+
+    if (mode === 0 && level >= 40) possibleSizes = [XY1, XY1, toXY(1, 2), toXY(2, 1)];
+    else if (mode === 0) possibleSizes = [XY1];
+    else if (mode === 1) possibleSizes = [XY1, XY1, toXY(1, 2), toXY(2, 1)];
+    else if (mode === 2) possibleSizes = [XY1, XY1, toXY(1, 2), toXY(2, 1)];
+    else if (mode === 3) possibleSizes = [XY1, XY1, toXY(1, 2), toXY(2, 1), toXY(2, 2)];
+    else if (mode === 4 && level >= 40) possibleSizes = [XY1, XY1, toXY(1, 2), toXY(2, 1), toXY(2, 2), toXY(3, 1), toXY(1, 3), XY1];
+    else if (mode === 4) possibleSizes = [XY1, XY1, toXY(1, 2), toXY(2, 1), toXY(2, 2)];
+
     const rndFunc = CREATE_RND_FUNC(mode, level, 101);
     const result = [];
     for (let i = 0; i < count; i++) {
-        result.push(possibleSizes[rndFunc(maxPossible)]);
+        result.push(possibleSizes[rndFunc(possibleSizes.length - 1)]);
     }
     return result;
 }
-
-
 
 
 export function GAME_LEVEL_EMPTY(mode: number, level: number): number {
@@ -92,13 +87,13 @@ export function GAME_LEVEL_EMPTY(mode: number, level: number): number {
 }
 
 export function GAME_MODE_SCORE(mode: number, levels: number): number {
-    return [100, 150, 350, 600, 1000][mode] * levels;
+    return [100, 200, 400, 800, 1600][mode] * levels;
 }
 
 export function GAME_MODE_TO_UNLOCK(mode: number, preSolved: number): number {
     //return 0; //unlock all modes for now
     if (mode === 0) return 0;
     if (preSolved === 0) return Infinity;
-    const needed = [2, 2, 2, 2]; //TODO: test values, one number is enough to unlock next mode
+    const needed = [5, 10, 15, 20];
     return Math.max(needed[mode - 1] - preSolved, 0);
 }

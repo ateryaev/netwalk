@@ -75,8 +75,8 @@ export function GameFooter({ taps, bordered, random, solved, tutorial, size, ...
             onClick={handleShowEvent} key={123}>
 
             <div key={eventReady} className="flex gap-2 items-center flex-1 
-                overflow-hidden text-ellipsis
-                starting:translate-y-1 starting:opacity-0 transition-all xduration-700">
+                overflow-hidden text-ellipsis transition-all translate-0 opacity-100 origin-center
+                starting:translate-y-1 starting:opacity-0">
                 {!eventReady && <>
                     <div>
                         {bordered ? "bordered" : "looped"}
@@ -99,7 +99,7 @@ export function GameFooter({ taps, bordered, random, solved, tutorial, size, ...
             </div>
 
             <div key={taps} className="min-w-[55px] rounded-lg text-ipuzzle/80 bg-ipuzzle/20 px-2 py-0.5 -my-0.5 text-center
-            starting:scale-105 starting:text-ipuzzle transition-all xduration-1000">
+              scale-100 starting:scale-110 starting:text-ipuzzle transition-all">
                 {taps}
             </div>
             <div className=" text-ipuzzle opacity-45x text-xs py-1 -my-1 lowercase">

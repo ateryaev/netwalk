@@ -5,19 +5,16 @@ import { preBeepButton } from '../utils/beep';
 import { BigTitled, Inv, Titled } from './UI';
 import { SvgClose, SvgBack } from './Svg';
 
-//starting:text-gray-600/5 transition-all duration-1000
 export function SubHeader({ className, children }) {
     return (<div
         className={cn('uppercase text-gray-600 mx-0 px-4 py-2.5 sticky top-0 z-10 flex',
-            //'starting:text-gray-600/20  starting:translate-x-2 transition-all',
-            ' bg-gray-100 hue-rotate-180', className)}>
+            ' bg-gray-200 xhue-rotate-180', className)}>
         {children}
     </div>)
 }
 
 export function SubContent({ className, children }) {
-    return (<div className={cn('flex flex-col bg-white mx-0 p-0',
-        //'starting:translate-x-2 starting:opacity-20  transition-all',
+    return (<div className={cn('flex flex-col mx-0 p-4 gap-5 bg-gray-100',
         className)}>
         {children}
     </div>)
@@ -52,18 +49,20 @@ const Modal = ({ shown, onBack, onClose, title, subtitle, children, reversed }) 
             onClick={handleBackdropClick}
             onPointerDown={(e) => e.target === dialogRef.current && preBeepButton()}
             className={cn(
-                "transition-all duration-1000x select-none",
+                "transition-all transition-discrete select-none",
                 "z-10 bg-black/50",
                 "backdrop:bg-black/0",
                 "overflow-hidden",
-                "starting:translate-y-20 starting:opacity-0",
-                "not-open:translate-y-20 not-open:hidden not-open:opacity-0 transition-discrete",
-                "min-w-svw -my-20 min-h-[calc(100svh+80px)] grid items-end justify-center",
+                "starting:bg-black/0 duration-200",
+                "not-open:hidden not-open:bg-black/0 ",
+                "min-w-svw  min-h-svh grid items-end justify-center",
             )}>
 
-            <div className={cn("h-[85svh] max-w-[calc(100svw-16px)] w-xl outline-none  flex flex-col",
-                "rounded-t-sm overflow-hidden bg-white",
-                ""
+            <div className={cn("h-[85svh] max-w-[calc(100svw-0px)] w-xl  outline-none  flex flex-col",
+                "xrounded-t-xs overflow-hidden bg-white duration-200 transition-all",
+                "fixed bottom-0 right-0 left-0 mx-auto translate-y-full translate-0 opacity-100",
+                "starting:translate-y-1/4 starting:opacity-0",
+                "not-in-open:translate-y-1/4 not-in-open:opacity-0"
             )}
                 tabIndex={0}>
                 <div className="flex items-center gap-2 text-white z-10 bg-puzzle
@@ -79,8 +78,8 @@ const Modal = ({ shown, onBack, onClose, title, subtitle, children, reversed }) 
                 <div
                     key={subtitle}
                     className={cn('sticky left-0 origin-right flex-1 flex flex-col overflow-x-hidden w-full overflow-y-auto items-stretch',
-                        "bg-white",
-                        'starting:translate-x-10 starting:opacity-20 xduration-1000 transition-all',
+                        "bg-gray-100",
+                        'translate-0 opacity-100 starting:translate-x-10 starting:opacity-20 xduration-1000 transition-all',
                         !useSubTransition && "starting:translate-x-0",
                         isStartPage && useSubTransition && "starting:-translate-x-10",
                     )}>

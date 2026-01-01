@@ -7,7 +7,7 @@ import { usePageHistory } from './components/PageHistory.tsx';
 import { Window } from './components/Window.jsx';
 import Modal from './components/Modal.jsx';
 import { MenuButton } from './components/Button.jsx';
-import { GAME_LEVEL_SIZE, GAME_MODE_BORDERED, GAME_MODES } from './game/gameconstants.ts';
+import { GAME_MODE_BORDERED, GAME_MODES } from './game/gameconstants.ts';
 import { PageLevels } from './PageLevels.jsx';
 import { PageRating } from './PageRating.jsx';
 import { useGame } from './GameContext.jsx';
@@ -95,7 +95,7 @@ function App() {
         onClose={currentPage === PAGE_MENU || currentPage === PAGE_START ? goBack : undefined}
         onBack={currentPage !== PAGE_MENU && currentPage !== PAGE_START && goBack}>
 
-        {currentPage === PAGE_MENU && <PageMenu onModeSelect={handleModeSelect} onLeaderboard={handleLeaderboard} />}
+        {(currentPage === PAGE_MENU || currentPage === PAGE_START) && <PageMenu onModeSelect={handleModeSelect} onLeaderboard={handleLeaderboard} />}
         {currentPage === PAGE_LEADERBOARD && <PageRating />}
         {currentPage === PAGE_LEVELS && <PageLevels
           mode={currentData?.mode || 0}

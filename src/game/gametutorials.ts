@@ -36,7 +36,7 @@ export function createGameTutorial1() {
         mode: 1,
         level: 0,
         hintXY: [toXY(1, 1), toXY(3, 2)],
-        ...createArray2d(toXY(5, 4))
+        ...createArray2d(toXY(5, 5))
     };
     game.forEach((_, index) => { game.set(index, { figure: 0, source: 0 }) })
 

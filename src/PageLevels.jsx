@@ -1,12 +1,13 @@
 import { use, useEffect, useMemo, useState, ViewTransition } from "react";
 import { DetailedButton, SvgPlay } from "./components/Button";
 import { SubContent, SubHeader } from "./components/Modal";
-import { Blink, Inv, LabelNew, LabelPlay } from "./components/UI";
+import { Blink, Frame, Inv, LabelNew, LabelPlay, LabeNow } from "./components/UI";
 import { cn } from "./utils/cn";
 import { GAME_LEVEL_COLORS, GAME_LEVEL_EMPTY, GAME_LEVEL_RANDOM, GAME_LEVEL_SIZE, GAME_MODE_BORDERED, GAME_MODE_SCORE, GAME_MODE_TO_UNLOCK, GAME_MODE_TUTORIALS, GAME_MODES } from "./game/gameconstants";
 import { rnd } from "./utils/numbers";
 import { useGame } from "./GameContext";
 import { usePageHistory } from "./components/PageHistory";
+import { SvgLoad } from "./components/Svg";
 
 export function PageLevels({ onLevelSelect }) {
     const { getLevelsSolved, getLevelStats, current } = useGame();
@@ -50,13 +51,14 @@ export function PageLevels({ onLevelSelect }) {
             <DetailedButton
                 special={level === levelPlaying && !selected}
                 className={cn("",
-                    selected && "bg-ipuzzle text-white scroll-m-2", className)}
+                    selected && "bg-ipuzzle/20 text-ipuzzle xbg-ipuzzle xtext-white rounded-sm  scroll-m-2", className)}
                 subtitle={subtitle}
                 value={isRandom && times > 0 && times}
                 subvalue={subvalue}
                 disabled={disabled}
                 {...props}>
                 {levelName}
+                {level === levelPlaying && <LabeNow className={selected && "xxtext-white"} />}
             </DetailedButton>
         )
     }
@@ -86,20 +88,22 @@ export function PageLevels({ onLevelSelect }) {
         <SubHeader className={""}>{GAME_MODES[mode]}</SubHeader>
 
         <SubContent key="LevelsKey" className={""}>
-            {Array.from({ length: solved + 1 }, (_, level) => (
-                <LevelButton key={level} level={level}
-                    selected={level === selectedIndex}
-                    size={GAME_LEVEL_SIZE(mode, level)}
-                    colors={GAME_LEVEL_COLORS(mode, level)}
-                    empties={GAME_LEVEL_EMPTY(mode, level)}
-                    times={getLevelStats(mode, level).playedTimes}
-                    isRandom={GAME_LEVEL_RANDOM(mode, level)}
-                    onClick={() => handleLevelSelect(level)}
-                    isNewest={level === solved}
-                    className={(selectedIndex === level || (level == solved && selectedIndex < 0)) && "scrolltoitem scroll-m-(--safe-area-bottom,0px)"}
-                />
-            ))}
-            <LevelButton disabled level={solved + 1} />
+            <Frame>
+                {Array.from({ length: solved + 1 }, (_, level) => (
+                    <LevelButton key={level} level={level}
+                        selected={level === selectedIndex}
+                        size={GAME_LEVEL_SIZE(mode, level)}
+                        colors={GAME_LEVEL_COLORS(mode, level)}
+                        empties={GAME_LEVEL_EMPTY(mode, level)}
+                        times={getLevelStats(mode, level).playedTimes}
+                        isRandom={GAME_LEVEL_RANDOM(mode, level)}
+                        onClick={() => handleLevelSelect(level)}
+                        isNewest={level === solved}
+                        className={(selectedIndex === level || (level == solved && selectedIndex < 0)) && "scrolltoitem scroll-m-(--safe-area-bottom,0px)"}
+                    />
+                ))}
+                <LevelButton disabled level={solved + 1} />
+            </Frame>
         </SubContent>
 
     </>

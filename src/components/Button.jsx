@@ -95,7 +95,7 @@ export function RoundButton({ onClick, className, children, ...props }) {
     //className={cn("-my-4 delay-0 duration-200 text-puzzle bg-white/50 text-lg")}
     return (
         <BaseButton className={cn("rounded-full text-white p-4 bg-white/10",
-            "starting:text-puzzle/50 starting:-rotate-180 transition-all",
+            "starting:text-puzzle/0 starting:-rotate-180 transition-all",
             " disabled:invisible stroke-3 active:bg-white/20 focus:bg-white/20 flex justify-center items-center gap-3",
             "text-puzzle bg-white/50 text-lg",
             className)}
@@ -134,7 +134,7 @@ export function PinkButton({ Svg, className, blink, children, ...props }) {
 
 export function MenuButton({ Svg, children, className, ...props }) {
     return (
-        <BaseButton className={cn("items-center uppercase p-6 flex gap-2 justify-center",
+        <BaseButton className={cn("items-center uppercase p-3 flex gap-2 justify-center",
             "text-gray-700 darkpuzzle whitespace-nowrap",
             "focus:opacity-75 disabled:opacity-50",
             "active:opacity-75",
@@ -184,8 +184,8 @@ export function DetailedButton({ children, special, safe, className, subtitle, v
         setIsFocused(true);
     }
     return (
-        <MenuButton className={cn("px-4 py-4 flex gap-2 items-center justify-between",
-            special && "border-l-6 pl-2.5 border-ipuzzle", className)}
+        <MenuButton className={cn("p-3 flex gap-2 items-center justify-between",
+            false && special && "border-l-6 pl-2.5 border-ipuzzle", className)}
             {...props}
             onBlur={handleBlur}
             onClick={handleClick}>

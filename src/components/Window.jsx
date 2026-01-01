@@ -45,7 +45,7 @@ export function Window({ onBack, title, subtitle, footer, subheader, className, 
             <div className="bg-puzzle text-white p-4 pt-[calc(20px+var(--safe-area-top,0px))] pl-2xx flex items-center z-10 gap-2">
                 <RoundButton onClick={onBack}>
                     <SvgMenu />
-                    {hasNewMode && <Blink className="w-1 h-1 rounded-full bg-puzzle/80 absolute ml-6 mb-6"></Blink>}
+                    {hasNewMode && <Blink className="w-1 bg-puzzle/50 h-1 rounded-full absolute ml-6 mb-6"></Blink>}
                 </RoundButton>
                 <BigTitled className={cn("text-right flex-1")} title={title} subtitle={subtitle} />
             </div>
@@ -53,7 +53,7 @@ export function Window({ onBack, title, subtitle, footer, subheader, className, 
             <div className={cn('bg-white z-10 overflow-hidden')}>
                 <div
                     key={title + subtitle}
-                    className={cn('transition-all delay-300 bg-white p-2 flex gap-2 starting:scale-y-0 starting:opacity-30'
+                    className={cn('transition-all delay-300 scale-100 opacity-100 bg-white p-2 flex gap-2 starting:scale-y-5 starting:opacity-30'
                     )}>
                     {subheader}
                 </div>
@@ -84,7 +84,7 @@ export function Window({ onBack, title, subtitle, footer, subheader, className, 
             <div className='text-puzzle  font-semibold  bg-white uppercase whitespace-nowrap pb-[calc(var(--safe-area-bottom,0px))]'>
                 <div key={title + subtitle}
                     className={cn('delay-300 transition-all flex flex-col items-center justify-center p-2 gap-2 ps-3 pe-2',
-                        'starting:scale-y-0 starting:opacity-30'
+                        'scale-100 opacity-100 starting:scale-y-0 starting:opacity-30'
                     )}>{footer}</div>
             </div>
         </div>

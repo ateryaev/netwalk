@@ -1,7 +1,7 @@
 import { use, useEffect, useMemo, useState } from "react";
 import { BaseButton, CheckBox, DetailedButton, MenuButton, PinkButton, RoundButton, SvgBell, SvgRestart } from "./components/Button";
 import Modal, { SubHeader, SubContent } from "./components/Modal";
-import { Blink, Inv, LabelNew, LabelPlay, Titled } from "./components/UI";
+import { Blink, Frame, Inv, LabelNew, LabelPlay, LabeNow, Titled } from "./components/UI";
 import { cn } from "./utils/cn";
 import { GAME_MODE_BORDERED, GAME_MODE_EMPTIES, GAME_MODE_EMPTIES_NAMES, GAME_MODE_SCORE, GAME_MODE_TO_UNLOCK, GAME_MODES } from "./game/gameconstants";
 import { useGame } from "./GameContext";
@@ -21,44 +21,49 @@ export function PageMenu({ onModeSelect, onLeaderboard }) {
 
 
         return (<DetailedButton
-            special={mode === current.mode}
+            className={cn("")}
+            special={mode === current.mode + 100}
             disabled={toUnlock > 0}
             subtitle={subtitle}
             value={points > 0 && points.toLocaleString('en-US')}
             subvalue={points === 0 ? (toUnlock <= 0 ? <Blink><Inv>new</Inv></Blink> : "locked") : "points"}
             {...props}>
             {GAME_MODES[mode]}
+            {mode === current.mode && <LabeNow />}
         </DetailedButton >)
     }
 
     return (
         <>
+
             <SubHeader>game modes</SubHeader>
-            <SubContent>
-                {GAME_MODES.map((modeName, index) => (
-                    <ModeButton key={index}
-                        toUnlock={GAME_MODE_TO_UNLOCK(index, getLevelsSolved(index - 1))}
-                        mode={index}
-                        points={GAME_MODE_SCORE(index, getLevelsSolved(index))}
-                        emptyTo={GAME_MODE_EMPTIES[index]}
-                        bordered={GAME_MODE_BORDERED[index]}
-                        onClick={() => onModeSelect?.(index)}
-                    />
-                ))}
+            <SubContent className={"bg-gray-50"}>
+                <Frame>
+                    {GAME_MODES.map((modeName, index) => (
+                        <ModeButton key={index}
+                            toUnlock={GAME_MODE_TO_UNLOCK(index, getLevelsSolved(index - 1))}
+                            mode={index}
+                            points={GAME_MODE_SCORE(index, getLevelsSolved(index))}
+                            emptyTo={GAME_MODE_EMPTIES[index]}
+                            bordered={GAME_MODE_BORDERED[index]}
+                            onClick={() => onModeSelect?.(index)}
+                        />
+                    ))}
+                </Frame>
 
-                <MenuButton
-                    className={cn("bg-ipuzzle/20 text-ipuzzle white p-3 m-4 ring-3 ring-ipuzzle rounded-md",
-                        ""
-                    )}
-                    disabled={!online.isOnline}
-                    onClick={() => { onLeaderboard(); }} >
-                    <Titled title={"Leaderboard"}>
-                        {online.isOnline && "check your global rank"}
-                        {!online.isOnline && <SvgLoad />}
-                    </Titled>
-                </MenuButton>
-
-
+                <Frame className={"ring-puzzle/40"}>
+                    <MenuButton
+                        className={cn("bg-puzzle/20 text-puzzle rounded-sm",
+                            ""
+                        )}
+                        disabled={!online.isOnline}
+                        onClick={() => { onLeaderboard(); }} >
+                        <Titled title={"Leaderboard"}>
+                            {online.isOnline && "check your global rank"}
+                            {!online.isOnline && <SvgLoad className="animate-spin m-auto inline-block" />}
+                        </Titled>
+                    </MenuButton>
+                </Frame>
             </SubContent>
 
             {/* 
@@ -77,23 +82,25 @@ export function PageMenu({ onModeSelect, onLeaderboard }) {
 
             <SubContent>
 
-                <DetailedButton onClick={() => updateSettings({ sound: !settings.sound })}
-                    subtitle={"responsive cues"}
-                    icon={<CheckBox checked={settings.sound} />}
-                >SOUND</DetailedButton>
+                <Frame>
 
-                <DetailedButton onClick={() => updateSettings({ music: !settings.music })}
-                    icon={<CheckBox checked={settings.music} />}
-                    subvalue={""}
-                    subtitle={"mood-enhancing background"}
-                > music</DetailedButton>
+                    <DetailedButton onClick={() => updateSettings({ sound: !settings.sound })}
+                        subtitle={"responsive cues"}
+                        icon={<CheckBox checked={settings.sound} />}
+                    >SOUND</DetailedButton>
 
-                <DetailedButton onClick={() => updateSettings({ vibro: !settings.vibro })}
-                    icon={<CheckBox checked={settings.vibro} />}
-                    subvalue={""}
-                    subtitle={"tactile feedback"}
-                >vibrations</DetailedButton>
+                    <DetailedButton onClick={() => updateSettings({ music: !settings.music })}
+                        icon={<CheckBox checked={settings.music} />}
+                        subvalue={""}
+                        subtitle={"mood-enhancing background"}
+                    > music</DetailedButton>
 
+                    <DetailedButton onClick={() => updateSettings({ vibro: !settings.vibro })}
+                        icon={<CheckBox checked={settings.vibro} />}
+                        subvalue={""}
+                        subtitle={"tactile feedback"}
+                    >vibrations</DetailedButton>
+                </Frame>
                 {/* <DetailedButton onClick={() => updateSettings({ vibro: !settings.vibro })}
                     value={"BlackShark"}
                     subvalue={""}
@@ -104,18 +111,20 @@ export function PageMenu({ onModeSelect, onLeaderboard }) {
             <SubHeader>about</SubHeader>
 
             <SubContent>
-                <p className="p-4 text-[90%] uppercase text-gray-700">
-                    Rotate the tiles to connect each core with paths of the same color.
-                    All links must form complete networks — no open ends.
-                    When every core is connected, the puzzle is solved.
-                    <br /><br />
-                    Use simple logic, stay focused, and find the flow.
-                    <br />
-                    <br />
-                    More details
-                    <br />
-                    <a target="_blank" href="https://github.com/ateryaev" className="text-blue-600 underline normal-case ">https://github.com/ateryaev</a>
-                </p>
+                <Frame className="ring-gray-200 p-3">
+                    <p className="p-1 text-[90%] uppercase text-gray-700">
+                        Rotate the tiles to connect each core with paths of the same color.
+                        All links must form complete networks — no open ends.
+                        When every core is connected, the puzzle is solved.
+                        <br /><br />
+                        Use simple logic, stay focused, and find the flow.
+                        <br />
+                        <br />
+                        More details
+                        <br />
+                        <a target="_blank" href="https://github.com/ateryaev" className="text-blue-600 underline normal-case ">https://github.com/ateryaev</a>
+                    </p>
+                </Frame>
             </SubContent>
             <SubHeader className="">
                 <div className="flex-1">Anton Teryaev</div> 2025
