@@ -51,11 +51,9 @@ export function PageMenu({ onModeSelect, onLeaderboard }) {
                     ))}
                 </Frame>
 
-                <Frame className={"ring-puzzle/40"}>
+                <Frame>
                     <MenuButton
-                        className={cn("bg-puzzle/20 text-puzzle rounded-sm",
-                            ""
-                        )}
+                        className={cn("bg-ipuzzle/20 text-ipuzzle rounded-sm")}
                         disabled={!online.isOnline}
                         onClick={() => { onLeaderboard(); }} >
                         <Titled title={"Leaderboard"}>
@@ -82,7 +80,7 @@ export function PageMenu({ onModeSelect, onLeaderboard }) {
 
             <SubContent>
 
-                <Frame>
+                <Frame className={"ring-puzzle/40"}>
 
                     <DetailedButton onClick={() => updateSettings({ sound: !settings.sound })}
                         subtitle={"responsive cues"}

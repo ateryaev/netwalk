@@ -2,6 +2,11 @@
 
 Netwalk is a modern, feature-rich puzzle game inspired by the classic Netwalk. This version introduces new levels, increasing complexity, multi-color puzzles, and additional gameplay features for a fresh and challenging experience.
 
+## Screenshots
+<img src="./media/s1.jpeg" width="200"> <img src="./media/s2.jpeg" width="200"> <img src="./media/s3.jpeg" width="200"> <img src="./media/s4.jpeg" width="200">
+<img src="./media/smenu.jpeg" width="200">
+<img src="./media/s5.jpeg" width="200">
+<img src="./media/s6.jpeg" width="200">
 
 ## Progressive Web App (PWA)
 
@@ -16,7 +21,7 @@ Netwalk is a Progressive Web App (PWA). You can install it on your mobile device
 - **Achievements & Scoring**: Earn points, track your progress, and compete on the leaderboard.
 - **Responsive UI**: Designed for both desktop and mobile devices.
 - **Sound & Music**: Optional sound effects and background music for an immersive experience.
-- **Settings**: Customize sound, music, vibration, and player name.
+- **Settings**: Customize sound, music, vibration.
 
 ## Gameplay
 
@@ -29,8 +34,8 @@ Netwalk is a Progressive Web App (PWA). You can install it on your mobile device
 
 1. **Clone the repository**:
 	```sh
-	git clone https://github.com/ateryaev/netwalker.git
-	cd netwalker
+	git clone https://github.com/ateryaev/netwalk.git
+	cd netwalk
 	```
 2. **Install dependencies**:
 	```sh

@@ -108,10 +108,10 @@ export function PageRating({ shown, onBack, onClose }) {
                 <Frame className={"ring-gray-200 gap-4 p-4"}>
 
 
-                    {!me && <div className="text-gray-600 px-4 py-2 uppercase text-center">No data yet</div>}
+                    {!me && <div className="text-gray-600 uppercase text-center">No data yet</div>}
                     {me && <>
 
-                        <div className="flex xflex-col items-center gap-2  overflow-hidden text-ellipsis justify-center">
+                        <div className="flex items-center gap-2  overflow-hidden text-ellipsis justify-center">
                             <div className="">Rank</div>
                             <Inv>{me.rank}</Inv>
                         </div>

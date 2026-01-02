@@ -10,7 +10,7 @@ import { useOnline } from './OnlineContext';
 const GameContext = createContext();
 
 const STORAGE_KEY = "netwalk_data";
-const STORAGE_VERSION = "0.0.1e";
+const STORAGE_VERSION = "2026-01-02";
 
 const DEFAULT_DATA = {
     settings: {

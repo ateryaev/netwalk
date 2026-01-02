@@ -6,7 +6,7 @@ import { SvgBack, SvgCheck, SvgClose, SvgUnCheck } from "./Svg";
 
 export function CheckBox({ checked, className, ...props }) {
     return (
-        checked ? <SvgCheck className={"text-2xl"} /> : <SvgUnCheck className={"text-2xl opacity-70"} />
+        checked ? <SvgCheck className={"text-2xl text-puzzle/60"} /> : <SvgUnCheck className={"text-2xl opacity-70"} />
     )
 }
 export function BaseButton({ children, className, onClick, ...props }) {
@@ -191,7 +191,7 @@ export function DetailedButton({ children, special, safe, className, subtitle, v
             onClick={handleClick}>
             <Titled className={"text-left flex-1"} title={children}>{subtitle}</Titled>
             <Titled className={"text-right"} title={<Inv className={"normal-case"}>{value || <>&nbsp;</>}</Inv>}>{subvalue || <>&nbsp;</>}</Titled>
-            {icon && <Inv>{icon}</Inv>}
+            {icon}
         </MenuButton>
     )
 }
