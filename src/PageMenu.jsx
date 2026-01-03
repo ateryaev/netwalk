@@ -120,7 +120,7 @@ export function PageMenu({ onModeSelect, onLeaderboard }) {
                         <br />
                         More details
                         <br />
-                        <a target="_blank" href="https://github.com/ateryaev" className="text-blue-600 underline normal-case ">https://github.com/ateryaev</a>
+                        <a target="_blank" href="https://github.com/ateryaev/netwalk" className="text-blue-600 underline normal-case ">https://github.com/ateryaev/netwalk</a>
                     </p>
                 </Frame>
             </SubContent>

@@ -53,7 +53,7 @@ export function Window({ onBack, title, subtitle, footer, subheader, className, 
             <div className={cn('bg-white z-10 overflow-hidden')}>
                 <div
                     key={title + subtitle}
-                    className={cn('transition-all delay-300 scale-100 opacity-100 bg-white p-2 flex gap-2 starting:scale-y-5 starting:opacity-30'
+                    className={cn('transition-all delay-300 scale-100 opacity-100 bg-white p-2 flex gap-2 starting:scale-y-5 starting:opacity-0'
                     )}>
                     {subheader}
                 </div>

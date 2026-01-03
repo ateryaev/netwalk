@@ -4,8 +4,9 @@ import './index.css'
 import App from './App.jsx'
 import { GameProvider } from './GameContext.jsx'
 import { OnlineProvider } from './OnlineContext.jsx'
+import * as serviceWorkerRegistration from './serviceWorkerRegistration.js';
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById('root')).render(
   <><StrictMode></StrictMode>
     <OnlineProvider>
       <GameProvider>
@@ -14,3 +15,5 @@ createRoot(document.getElementById('root')!).render(
     </OnlineProvider>
   </>
 )
+
+serviceWorkerRegistration.register();
