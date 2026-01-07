@@ -50,16 +50,17 @@ const Modal = ({ shown, onBack, onClose, title, subtitle, children, reversed }) 
             onPointerDown={(e) => e.target === dialogRef.current && preBeepButton()}
             className={cn(
                 "transition-all transition-discrete select-none",
-                "z-10 bg-black/50",
-                "backdrop:bg-black/0",
+                "z-10 bg-black/0 hidden",
+                "backdrop:bg-transparent",
                 "overflow-hidden",
                 "starting:bg-black/0 duration-200",
                 "not-open:hidden not-open:bg-black/0 ",
+                "open:block open:bg-black/50",
                 "min-w-svw  min-h-svh grid items-end justify-center",
             )}>
 
-            <div className={cn("h-[85svh] max-w-[calc(100svw-0px)] w-xl  outline-none  flex flex-col",
-                "xrounded-t-xs overflow-hidden bg-white duration-200 transition-all",
+            <div className={cn("h-[85svh] max-w-svw w-xl  outline-none  flex flex-col",
+                "overflow-hidden bg-white duration-200 transition-all",
                 "fixed bottom-0 right-0 left-0 mx-auto translate-y-full translate-0 opacity-100",
                 "starting:translate-y-1/4 starting:opacity-0",
                 "not-in-open:translate-y-1/4 not-in-open:opacity-0"

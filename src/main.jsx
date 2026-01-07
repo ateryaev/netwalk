@@ -7,12 +7,13 @@ import { OnlineProvider } from './OnlineContext.jsx'
 import * as serviceWorkerRegistration from './serviceWorkerRegistration.js';
 
 createRoot(document.getElementById('root')).render(
-  <><StrictMode></StrictMode>
+  <><StrictMode>
     <OnlineProvider>
       <GameProvider>
         <App />
       </GameProvider>
     </OnlineProvider>
+  </StrictMode>
   </>
 )
 

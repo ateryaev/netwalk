@@ -6,7 +6,7 @@ import { SvgBack, SvgCheck, SvgClose, SvgUnCheck } from "./Svg";
 
 export function CheckBox({ checked, className, ...props }) {
     return (
-        checked ? <SvgCheck className={"text-2xl text-puzzle/60"} /> : <SvgUnCheck className={"text-2xl opacity-70"} />
+        checked ? <SvgCheck className={"text-2xl text-puzzle/60"} /> : <SvgUnCheck className={"text-2xl text-puzzle/60 opacity-80"} />
     )
 }
 export function BaseButton({ children, className, onClick, ...props }) {
@@ -135,9 +135,10 @@ export function PinkButton({ Svg, className, blink, children, ...props }) {
 export function MenuButton({ Svg, children, className, ...props }) {
     return (
         <BaseButton className={cn("items-center uppercase p-3 flex gap-2 justify-center",
-            "text-gray-700 darkpuzzle whitespace-nowrap",
-            "focus:opacity-75 disabled:opacity-50",
-            "active:opacity-75",
+            "text-gray-700 darkpuzzle whitespace-nowrap rounded-md",
+            " disabled:opacity-50",
+            "active:bg-gray-100 focus:bg-gray-100",
+            "",
             className)}
             {...props}>
             {children}

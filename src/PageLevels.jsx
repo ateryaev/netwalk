@@ -9,6 +9,52 @@ import { useGame } from "./GameContext";
 import { usePageHistory } from "./components/PageHistory";
 import { SvgLoad } from "./components/Svg";
 
+function LevelButton({ level, disabled, className, size, colors, empties, times, isRandom, selected, isNewest, now, ...props }) {
+    let subvalue;
+    const isNew = isNewest;//times === 0 && !disabled;
+
+    if (isNewest && !selected) subvalue = <Blink><Inv>new</Inv></Blink>;
+    else if (times === 0 && selected) subvalue = "new";
+    else if (times === 0) subvalue = <Inv>new</Inv>;
+    else if (isRandom) subvalue = "times";
+    else if (disabled) subvalue = "locked";
+    else subvalue = times === 0 ? "" : "solved";
+
+    if (level === 0 && times > 0) subvalue = "completed";
+
+    let subtitle;
+    if (disabled) subtitle = "solve previous to unlock";
+    else if (selected) subtitle = <Blink>tap again to play</Blink>;
+    else if (isRandom) subtitle = <>size:{size.x}<Inv>&times;</Inv>{size.y},&nbsp;<Inv>every time new</Inv></>;
+    else subtitle = <>
+        size: {size.x}<Inv>&times;</Inv>{size.y},&nbsp;
+        colors: <Inv>{colors}</Inv>,
+        empty: <Inv>{empties}</Inv>
+    </>;
+
+    if (!selected && level === 0) subtitle = GAME_MODE_TUTORIALS[mode];
+
+    let levelName = "";
+    if (level === 0) levelName = "Begin";
+    else if (isRandom) levelName = "Random " + level;
+    else if (level > 0) levelName = "Level " + level;
+
+    return (
+        <DetailedButton
+            special={now && !selected}
+            className={cn("",
+                selected && "bg-ipuzzle/20 text-ipuzzle scroll-m-2 active:bg-ipuzzle/10 focus:bg-ipuzzle/10", className)}
+            subtitle={subtitle}
+            value={isRandom && times > 0 && times}
+            subvalue={subvalue}
+            disabled={disabled}
+            {...props}>
+            {levelName}
+            {now && <LabeNow className={selected && "xxtext-white"} />}
+        </DetailedButton>
+    )
+}
+
 export function PageLevels({ onLevelSelect }) {
     const { getLevelsSolved, getLevelStats, current } = useGame();
     const { currentData } = usePageHistory();
@@ -16,55 +62,7 @@ export function PageLevels({ onLevelSelect }) {
     const mode = currentData ? currentData.mode : 0;
     const levelPlaying = mode === current.mode ? current.level : -1;
 
-    function LevelButton({ level, disabled, className, size, colors, empties, times, isRandom, selected, isNewest, ...props }) {
-        let subvalue;
-        const isNew = isNewest;//times === 0 && !disabled;
-
-        if (isNewest && !selected) subvalue = <Blink><Inv>new</Inv></Blink>;
-        else if (times === 0 && selected) subvalue = "new";
-        else if (times === 0) subvalue = <Inv>new</Inv>;
-        else if (isRandom) subvalue = "times";
-        else if (disabled) subvalue = "locked";
-        else subvalue = times === 0 ? "" : "solved";
-
-        if (level === 0 && times > 0) subvalue = "completed";
-
-        let subtitle;
-        if (disabled) subtitle = "solve previous to unlock";
-        //else if (selected && levelPlaying === level) subtitle = <Blink>tap again to continue</Blink>;
-        else if (selected) subtitle = <Blink>tap again to play</Blink>;
-        else if (isRandom) subtitle = <>size:{size.x}<Inv>&times;</Inv>{size.y},&nbsp;<Inv>every time new</Inv></>;
-        else subtitle = <>
-            size: {size.x}<Inv>&times;</Inv>{size.y},&nbsp;
-            colors: <Inv>{colors}</Inv>,
-            empty: <Inv>{empties}</Inv>
-        </>;
-
-        if (!selected && level === 0) subtitle = GAME_MODE_TUTORIALS[mode];
-
-        let levelName = "";
-        if (level === 0) levelName = "Begin";
-        else if (isRandom) levelName = "Random " + level;
-        else if (level > 0) levelName = "Level " + level;
-
-        return (
-            <DetailedButton
-                special={level === levelPlaying && !selected}
-                className={cn("",
-                    selected && "bg-ipuzzle/20 text-ipuzzle xbg-ipuzzle xtext-white rounded-sm  scroll-m-2", className)}
-                subtitle={subtitle}
-                value={isRandom && times > 0 && times}
-                subvalue={subvalue}
-                disabled={disabled}
-                {...props}>
-                {levelName}
-                {level === levelPlaying && <LabeNow className={selected && "xxtext-white"} />}
-            </DetailedButton>
-        )
-    }
-
     const solved = getLevelsSolved(mode);
-    //const defaultIndex = levelPlaying;// < 0 ? solved : levelPlaying;
 
     const [selectedIndex, setSelectedIndex] = useState(levelPlaying);
 
@@ -86,11 +84,11 @@ export function PageLevels({ onLevelSelect }) {
 
     return (<>
         <SubHeader className={""}>{GAME_MODES[mode]}</SubHeader>
-
         <SubContent key="LevelsKey" className={""}>
             <Frame>
                 {Array.from({ length: solved + 1 }, (_, level) => (
                     <LevelButton key={level} level={level}
+                        now={level === levelPlaying}
                         selected={level === selectedIndex}
                         size={GAME_LEVEL_SIZE(mode, level)}
                         colors={GAME_LEVEL_COLORS(mode, level)}
@@ -105,7 +103,6 @@ export function PageLevels({ onLevelSelect }) {
                 <LevelButton disabled level={solved + 1} />
             </Frame>
         </SubContent>
-
     </>
     );
 }

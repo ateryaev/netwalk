@@ -86,7 +86,7 @@ function App() {
         mode={current.mode}
         level={current.level}
         onNext={handleNext}
-        className={cn("transition-all", (isPaused) && "blur-[2px] contrast-50 grayscale-75")}
+        //className={cn("transition-allx", (isPaused) && "xblur-[2px] xcontrast-50 xxgrayscale-75")}
         onMenu={handleMenu} />
 
       <Modal shown={currentPage != PAGE_START}
