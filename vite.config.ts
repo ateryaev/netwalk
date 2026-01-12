@@ -7,7 +7,8 @@ import { VitePWA } from 'vite-plugin-pwa'
 export default defineConfig({
   plugins: [react(), tailwindcss(),
   VitePWA({
-    registerType: 'autoUpdate', // Automatically detects new versions
+    //registerType: 'autoUpdate',
+    registerType: 'prompt',
     workbox: {
       maximumFileSizeToCacheInBytes: 7000000, // Increase limit for larger files
       globPatterns: ['**/*.{js,css,html,ico,png,svg,mp3,ttf}'], // Precache these files
