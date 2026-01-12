@@ -10,6 +10,8 @@ import { usePageHistory } from "./components/PageHistory";
 import { SvgLoad } from "./components/Svg";
 
 function LevelButton({ level, disabled, className, size, colors, empties, times, isRandom, selected, isNewest, now, ...props }) {
+    const { currentData } = usePageHistory();
+    const mode = currentData ? currentData.mode : 0;
     let subvalue;
     const isNew = isNewest;//times === 0 && !disabled;
 
