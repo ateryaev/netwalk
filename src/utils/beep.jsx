@@ -19,7 +19,6 @@ export function preBeepButton(mult = 1) {
 }
 
 export function beepLevelComplete(vol = 1) {
-    if (!BEEP.sound) return;
     BEEP.sound && zzfx(1.7 * vol, .05, 579 * 0.5, .01, 0.0, .15, 5, 1.9, 0, 0, 296, .08, 0, 0, 0, .1, .08, .7, .02, 0, -720);
     BEEP.vibro && vibro([20, 20, 40])
 }
