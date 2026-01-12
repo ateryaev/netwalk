@@ -1,4 +1,4 @@
-const DEFAULT_COUNTRY = "AQ"; //Antarctica
+export const DEFAULT_COUNTRY = "AQ"; //Antarctica
 
 let country = DEFAULT_COUNTRY;
 

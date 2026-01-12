@@ -1,18 +1,20 @@
-import { DetailedButton } from "./components/Button";
+import { DetailedButton, MenuButton, PinkButton, RoundButton } from "./components/Button";
 import Modal, { SubContent, SubHeader } from "./components/Modal";
 import { Frame, Inv, Titled } from "./components/UI";
 import { cn } from "./utils/cn";
 import { useOnline } from "./OnlineContext";
 import { useState, useMemo } from "react";
 import { Ago } from "./components/Ago";
-import { SvgLoad } from "./components/Svg";
+import { SvgBack, SvgLoad } from "./components/Svg";
 import { Hash } from "./components/Hash";
 import { Flag } from "./components/Flag";
+import { useGame } from "./GameContext";
+import { GAME_MODE_SCORE, GAME_MODES } from "./game/gameconstants";
 
 function RankRecord({ rank, name, uid, country, special, at, score, ...props }) {
     return (
         <div className={cn("p-3 gap-2 bg-white red-200 text-gray-600 darkpuzzle flex items-start",
-            special && "bg-gray-200 puzzle/20 xtext-puzzle rounded-sm "
+            special && "bg-puzzle/10 -200 puzzle/20 xtext-puzzle rounded-sm"
         )} {...props}>
 
 
@@ -28,8 +30,6 @@ function RankRecord({ rank, name, uid, country, special, at, score, ...props }) 
                 <div className="flex gap-2 text-[85%] xuppercase opacity-60">
                     <div className="flex-1 text-ellipsis overflow-hidden whitespace-nowrap uppercase">
                         <Inv>{score.toLocaleString('en-US')}</Inv> points&nbsp;
-                        {/* {!special && <Ago at={at} />} */}
-                        {/* {special && <>THIS IS <Inv>YOU</Inv></>} */}
                     </div>
                     {special ? <div className="animate-pulse">RANK OF YOU</div> : "RANK"}
                 </div>
@@ -42,52 +42,85 @@ export function PageRating({ shown, onBack, onClose }) {
     const online = useOnline();
     const [show, setShow] = useState(false);
 
+    const [recortCount, setRecordCount] = useState(5);
+
+    function handleMore() {
+        setRecordCount((prev) => prev + 10);
+    }
+
+    const { settings, getLevelsSolved } = useGame();
+
+    //    const country = await fetchCountry();
+    const totalScore = GAME_MODES.reduce((total, _, mode) =>
+        total + GAME_MODE_SCORE(mode, getLevelsSolved(mode)), 0);
+
     const me = useMemo(() => {
-        // return online.scores item online.uid === record.uid
-        // also add .rank to the item
         const myIndex = online.scores?.findIndex(record => record.uid === online.uid) ?? -1;
         return myIndex !== -1 ? {
             ...online.scores[myIndex],
             rank: myIndex + 1
-        } : null;
+        } : {
+            name: settings?.name || "NONAME",
+            country: online.country,
+            uid: online.uid,
+            score: totalScore,
+            rank: "LOW"
+        };
 
-    }, [online.scores, online.uid])
+    }, [online.scores, online.uid, online.country, settings?.name, totalScore]);
 
-    if (!online.isOnline) {
-        return (<div className="flex-1 grid items-center justify-center p-4 text-gray-600">
-            <div className="flex h-fit gap-2 uppercase text-[85%] animate-pulse items-center">
-                Loading <SvgLoad />
-            </div>
-        </div>)
-    }
+
+    if (!online.isOnline) return (
+        <SubContent>
+            <Frame className={"ring-gray-100 bg-gray-100 flex flex-row justify-center text-puzzle-400 h-fit gap-2 uppercase text-sm p-4 items-center"}>
+
+                connecting <SvgLoad className="animate-spin inline-block" />
+            </Frame>
+        </SubContent>
+    )
+
     return (
         <>
             <SubHeader>TOP Players</SubHeader>
             <SubContent>
                 <Frame className={"ring-gray-200 puzzle/40 "}>
-                    {online.scores?.map((record, index) => (
+                    {online.scores?.slice(0, recortCount).map((record, index) => (
                         <RankRecord
                             key={record.uid}
                             special={online.uid === record.uid}
-                            rank={index + 1} name={record.name}
+                            rank={index + 1}
+                            name={record.name}
                             score={record.score}
                             uid={record.uid}
                             at={record.at}
                             country={record.country} />
                     ))}
+                    <MenuButton
+                        disabled={recortCount >= (online.scores?.length || 0)}
+                        className={cn("bg-puzzle-50 text-puzzle-500 rounded-sm flex-1",
+                            "active:bg-gray-200 focus:bg-gray-200",
+                            "w-fit m-auto p-1 px-4 my-2",
+                            "disabled:hidden"
+                        )}
+                        onClick={handleMore} >
+                        show more
+                    </MenuButton>
                 </Frame>
-
             </SubContent>
+
             <SubHeader>Recent Events</SubHeader>
             <SubContent >
                 <Frame className={"ring-gray-200 puzzle/40 "}>
-                    {online.events?.map((record, index) => (
-                        <div key={index} className={cn("p-3 gap-2 text-gray-600 flex items-start ")}>
+                    {online.events?.slice(0, 5).map((record, index) => (
+                        <div key={index} className={cn("p-3 gap-2 text-gray-600 flex items-start ",
+                            (record.uid === online.uid) && "bg-puzzle/10 rounded-sm "
+
+                        )}>
                             <Flag className="" code={record.country} />
                             <div className="flex-1 overflow-hidden">
                                 <div className="flex gap-2 uppercase items-center">
                                     <div className="flex-1 text-ellipsis overflow-hidden select-text">
-                                        {record.name}<Hash uid={record.player} /></div>
+                                        {record.name}<Hash uid={record.uid} /></div>
                                     <Inv>{record.msg}</Inv>
                                 </div>
                                 <div className="flex gap-2 text-[85%] xuppercase opacity-60">
@@ -105,39 +138,29 @@ export function PageRating({ shown, onBack, onClose }) {
 
             <SubHeader className={""}>Own stats</SubHeader>
             <SubContent className={"uppercase text-gray-600 p-4 gap-2"}>
-                <Frame className={"ring-gray-200 gap-4 p-4"}>
-
-
-                    {!me && <div className="text-gray-600 uppercase text-center">No data yet</div>}
+                <Frame className={"ring-gray-200 gap-4 p-4 grid grid-cols-2"}>
+                    {!me && <div className="text-gray-600 uppercase text-center col-span-2">No data yet</div>}
                     {me && <>
 
-                        <div className="flex items-center gap-2  overflow-hidden text-ellipsis justify-center">
-                            <div className="">Rank</div>
-                            <Inv>{me.rank}</Inv>
+                        <div className="text-right">Rank</div>
+                        <Inv>{me.rank}</Inv>
+
+                        <div className="text-right">Name</div>
+                        <Inv>{me.name}</Inv>
+
+                        <div className="text-right">Hash</div>
+                        <Inv><Hash className="opacity-100" uid={me.uid} /></Inv>
+
+
+                        <div className="text-right">Country</div>
+
+                        <div className="flex gap-2 items-center">
+                            <Flag code={online.country} />
+                            <Inv>{online.country}</Inv>
                         </div>
 
-                        <div className="flex items-center gap-2 overflow-hidden text-ellipsis justify-center">
-                            <div className="">Name</div>
-                            <Inv>{me.name}</Inv>
-                        </div>
-
-                        <div className="flex items-center gap-2 overflow-hidden text-ellipsis justify-center">
-                            <div>Hash</div>
-                            <Inv><Hash className="opacity-100" uid={me.uid} /></Inv>
-                        </div>
-
-                        <div className="flex items-center gap-2 overflow-hidden text-ellipsis justify-center">
-                            <div>Country</div>
-                            <div className="flex gap-2 items-center">
-                                <Flag code={me.country} />
-                                <Inv>{me.country}</Inv>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 overflow-hidden text-ellipsis justify-center">
-                            <div>Points</div>
-                            <Inv>{me.score}</Inv>
-                        </div>
+                        <div className="text-right">Points</div>
+                        <Inv>{me.score}</Inv>
                     </>}
                 </Frame>
             </SubContent>

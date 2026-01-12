@@ -4,7 +4,7 @@ import {
     ref, set, query, orderByChild, limitToLast, onValue, runTransaction, getCurrentUid
 } from './firebaseConfig';
 import { push, serverTimestamp } from 'firebase/database';
-import { fetchCountry } from './utils/country';
+import { DEFAULT_COUNTRY, fetchCountry } from './utils/country';
 
 const OnlineContext = createContext();
 
@@ -21,13 +21,14 @@ export function OnlineProvider({ children }) {
 
     const [scores, setScores] = useState([]); //list of best scores from db
     const [events, setEvents] = useState([]); //list of best scores from db
+    const [country, setCountry] = useState(DEFAULT_COUNTRY); //list of best scores from db
 
     const [scoresLoading, setScoresLoading] = useState(true); //loading best scores
 
     const submitScore = useCallback(async (playerName, score) => {
         if (!uid || !isConnected) return;
 
-        const country = await fetchCountry();
+        //const country = await fetchCountry();
         const bestScoreRef = ref(db, `bestScores/${uid}`);
 
         try {
@@ -80,6 +81,7 @@ export function OnlineProvider({ children }) {
 
     // Connection Listener
     useEffect(() => {
+        fetchCountry().then(setCountry).catch(() => setCountry(DEFAULT_COUNTRY));
         const connectedRef = ref(db, '.info/connected');
         const unsubscribeConn = onValue(connectedRef, (snap) => {
             setIsConnected(snap.val() === true);
@@ -133,7 +135,7 @@ export function OnlineProvider({ children }) {
             const eventList = [];
             snapshot.forEach((childSnapshot) => {
                 eventList.push({
-                    id: childSnapshot.key,
+                    uid: childSnapshot.key,
                     ...childSnapshot.val()
                 });
             });
@@ -148,7 +150,7 @@ export function OnlineProvider({ children }) {
             // Sort by timestamp (oldest -> newest) then reverse so newest appear first
             eventList.sort((a, b) => (a.at || 0) > (b.at || 0) ? 1 : -1);
             console.log("eventList", eventList);
-            setEvents(eventList.reverse().slice(0, 10));
+            setEvents(eventList.reverse().slice(0, 100));
         }, (error) => {
             console.error("Error fetching events:", error);
         });
@@ -162,7 +164,8 @@ export function OnlineProvider({ children }) {
         scoresLoading, //loading in progress
         isOnline: isConnected && currentUser && !loading, //do is online, user is set, auth completed
         hash,
-        uid
+        uid,
+        country
     };
 
     // Only render children after initial authentication load
