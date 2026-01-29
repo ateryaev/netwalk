@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- This fills the background of the mask (e.g. the circle) -->
+    <background>
+        <vector xmlns:android="http://schemas.android.com/apk/res/android"
+            android:width="108dp"
+            android:height="108dp"
+            android:viewportWidth="550"
+            android:viewportHeight="550">
+
+            <group
+                android:translateX="125"
+                android:translateY="125">
+
+                <!-- Background base -->
+                <path
+                    android:fillColor="#444444"
+                    android:pathData="M0,0h300v300h-300z" />
+
+                <!-- Decorative grid rects -->
+                <path android:fillAlpha="0.1" android:fillColor="#FFFFFF" android:pathData="M50,50h100v100h-100z" />
+                <path android:fillAlpha="0.1" android:fillColor="#FFFFFF" android:pathData="M250,50h100v100h-100z" />
+                <path android:fillAlpha="0.1" android:fillColor="#FFFFFF" android:pathData="M150,150h100v100h-100z" />
+                <path android:fillAlpha="0.1" android:fillColor="#FFFFFF" android:pathData="M-50,150h100v100h-100z" />
+                <path android:fillAlpha="0.1" android:fillColor="#FFFFFF" android:pathData="M-50,-50h100v100h-100z" />
+                <path android:fillAlpha="0.1" android:fillColor="#FFFFFF" android:pathData="M150,-50h100v100h-100z" />
+                <path android:fillAlpha="0.1" android:fillColor="#FFFFFF" android:pathData="M50,250h100v100h-100z" />
+                <path android:fillAlpha="0.1" android:fillColor="#FFFFFF" android:pathData="M250,250h100v100h-100z" />
+
+                <!-- Blue Node -->
+                <path
+                    android:pathData="M100,100 l0,60 q0,40 -40,40 l-50,0"
+                    android:strokeColor="#3399FF"
+                    android:strokeWidth="24"
+                    android:strokeLineCap="round"
+                    android:strokeLineJoin="round" />
+                <path android:fillColor="#3399FF" android:pathData="M100,65a35,35 0 1,0 0,70a35,35 0 1,0 0,-70" />
+                <path android:fillColor="#FFFFFF" android:pathData="M100,85a15,15 0 1,0 0,30a15,15 0 1,0 0,-30" />
+                <path android:fillColor="#444444" android:pathData="M100,95a5,5 0 1,0 0,10a5,5 0 1,0 0,-10" />
+
+                <!-- Orange Node -->
+                <path
+                    android:pathData="M200,200l0,-60q0,-40 40,-40q-40,0 -40,-40l0,100l0,-200l0,140l100,0"
+                    android:strokeColor="#FF9933"
+                    android:strokeWidth="24"
+                    android:strokeLineCap="round"
+                    android:strokeLineJoin="round" />
+                <path android:fillColor="#FF9933" android:pathData="M200,165a35,35 0 1,0 0,70a35,35 0 1,0 0,-70" />
+                <path android:fillColor="#FFFFFF" android:pathData="M200,185a15,15 0 1,0 0,30a15,15 0 1,0 0,-30" />
+                <path android:fillColor="#444444" android:pathData="M200,195a5,5 0 1,0 0,10a5,5 0 1,0 0,-10" />
+
+            </group>
+        </vector>
+    </background>
+    <!-- This is your "maskable" content -->
+    <foreground>
+        <vector xmlns:android="http://schemas.android.com/apk/res/android"
+            android:width="108dp"
+            android:height="108dp"
+            android:viewportWidth="550"
+            android:viewportHeight="550">
+            <group
+                android:translateX="125"
+                android:translateY="125">
+
+                <!-- Outer Rings -->
+                <path
+                    android:strokeAlpha="0.1"
+                    android:strokeColor="#000000"
+                    android:strokeWidth="160"
+                    android:pathData="M150,-50a200,200 0 1,0 0,400a200,200 0 1,0 0,-400" />
+                <path
+                    android:strokeColor="#33aa77"
+                    android:strokeWidth="130"
+                    android:pathData="M150,-50a200,200 0 1,0 0,400a200,200 0 1,0 0,-400" />
+                <path
+                    android:strokeColor="#229966"
+                    android:strokeWidth="100"
+                    android:pathData="M150,-50a200,200 0 1,0 0,400a200,200 0 1,0 0,-400" />
+            </group>
+        </vector>
+    </foreground>
+</adaptive-icon>

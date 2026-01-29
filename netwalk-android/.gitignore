@@ -1,0 +1,36 @@
+# Created by Android Studio
+
+# JNI
+*.so
+
+# Eclipse
+*.pyc
+*.pyo
+*.class
+.project
+.metadata
+bin/
+tmp/
+
+# External native build
+.externalNativeBuild/
+.cxx/
+
+# Android Studio
+*.iml
+.gradle/
+/local.properties
+.idea/
+.DS_Store
+/build
+release/
+/captures
+.kotlin/
+
+# Built application files
+*.apk
+*.aab
+*.ap_
+
+# Log files
+*.log
