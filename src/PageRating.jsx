@@ -13,8 +13,8 @@ import { GAME_MODE_SCORE, GAME_MODES } from "./game/gameconstants";
 
 function RankRecord({ rank, name, uid, country, special, at, score, ...props }) {
     return (
-        <div className={cn("p-3 gap-2 bg-white red-200 text-gray-600 darkpuzzle flex items-start",
-            special && "bg-puzzle/10 -200 puzzle/20 xtext-puzzle rounded-sm"
+        <div className={cn("p-3 gap-2 rounded-md text-gray-600 flex items-start bg-gray-50",
+            special && "bg-puzzle/10"
         )} {...props}>
 
 
@@ -83,7 +83,7 @@ export function PageRating({ shown, onBack, onClose }) {
         <>
             <SubHeader>TOP Players</SubHeader>
             <SubContent>
-                <Frame className={"ring-gray-200 puzzle/40 "}>
+                <Frame className={"ring-gray-200"}>
                     {online.scores?.slice(0, recortCount).map((record, index) => (
                         <RankRecord
                             key={record.uid}
@@ -95,25 +95,21 @@ export function PageRating({ shown, onBack, onClose }) {
                             at={record.at}
                             country={record.country} />
                     ))}
-                    <MenuButton
-                        disabled={recortCount >= (online.scores?.length || 0)}
-                        className={cn("bg-puzzle-50 text-puzzle-500 rounded-sm flex-1",
-                            "active:bg-gray-200 focus:bg-gray-200",
-                            "w-fit m-auto p-1 px-4 my-2",
-                            "disabled:hidden"
+
+                    {recortCount < (online.scores?.length || 0) && <MenuButton
+                        className={cn("bg-puzzle/20 text-puzzle",
+                            "active:bg-puzzle/10 focus:bg-puzzle/10"
                         )}
-                        onClick={handleMore} >
-                        show more
-                    </MenuButton>
+                        onClick={handleMore} >show more</MenuButton>}
                 </Frame>
             </SubContent>
 
             <SubHeader>Recent Events</SubHeader>
             <SubContent >
-                <Frame className={"ring-gray-200 puzzle/40 "}>
+                <Frame className={"ring-gray-200  "}>
                     {online.events?.slice(0, 5).map((record, index) => (
-                        <div key={index} className={cn("p-3 gap-2 text-gray-600 flex items-start ",
-                            (record.uid === online.uid) && "bg-puzzle/10 rounded-sm "
+                        <div key={index} className={cn("p-3 gap-2 text-gray-600 flex items-start bg-gray-50",
+                            (record.uid === online.uid) && "bg-puzzle/10 rounded-md "
 
                         )}>
                             <Flag className="" code={record.country} />
@@ -138,7 +134,7 @@ export function PageRating({ shown, onBack, onClose }) {
 
             <SubHeader className={""}>Own stats</SubHeader>
             <SubContent className={"uppercase text-gray-600 p-4 gap-2"}>
-                <Frame className={"ring-gray-200 gap-4 p-4 grid grid-cols-2"}>
+                <Frame className={"ring-gray-200 gap-4 p-4 grid grid-cols-2 bg-gray-50"}>
                     {!me && <div className="text-gray-600 uppercase text-center col-span-2">No data yet</div>}
                     {me && <>
 
@@ -160,7 +156,7 @@ export function PageRating({ shown, onBack, onClose }) {
                         </div>
 
                         <div className="text-right">Points</div>
-                        <Inv>{me.score}</Inv>
+                        <Inv>{me.score.toLocaleString('en-US')}</Inv>
                     </>}
                 </Frame>
             </SubContent>

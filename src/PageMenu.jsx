@@ -7,6 +7,7 @@ import { GAME_MODE_BORDERED, GAME_MODE_EMPTIES, GAME_MODE_EMPTIES_NAMES, GAME_MO
 import { useGame } from "./GameContext";
 import { SvgCheck, SvgClose, SvgLoad, SvgRates, SvgUnCheck } from "./components/Svg";
 import { useOnline } from "./OnlineContext";
+import { usePageHistory } from "./components/PageHistory";
 
 function ModeButton({ mode, points, emptyTo, toUnlock, bordered, ...props }) {
     const { current } = useGame();
@@ -16,7 +17,7 @@ function ModeButton({ mode, points, emptyTo, toUnlock, bordered, ...props }) {
     else subtitle = <>{(bordered ? "bordered" : "looped")} <Inv>{GAME_MODE_EMPTIES_NAMES[mode]}</Inv> empties</>;
 
     return (<DetailedButton
-        className={cn("")}
+        className={cn("bg-gray-50 disabled:bg-white active:bg-ipuzzle/10 focus:bg-ipuzzle/10",)}
         special={mode === current.mode + 100}
         disabled={toUnlock > 0}
         subtitle={subtitle}
@@ -31,7 +32,18 @@ function ModeButton({ mode, points, emptyTo, toUnlock, bordered, ...props }) {
 export function PageMenu({ onModeSelect, onLeaderboard }) {
     const online = useOnline();
     const { settings, getLevelsSolved, updateSettings, current } = useGame();
+    const { currentPage } = usePageHistory();
 
+    useEffect(() => {
+        const PAGE_MENU = "Menu";
+        if (currentPage !== PAGE_MENU) return;
+        const to = setTimeout(() => {
+            const modalscroller = document.querySelector(".modalscroller");
+            if (modalscroller) modalscroller.scrollTop = 0;
+        }, 100);
+        return () => clearTimeout(to);
+
+    }, [currentPage]);
     return (
         <>
             <SubHeader>game modes</SubHeader>
@@ -49,16 +61,14 @@ export function PageMenu({ onModeSelect, onLeaderboard }) {
                     ))}
                 </Frame>
 
-                <Frame>
+                <Frame className={!online.isOnline ? "animate-pulse" : ""}>
                     <MenuButton
-                        className={cn("bg-ipuzzle/20 text-ipuzzle rounded-sm",
-                            "active:bg-ipuzzle/10 focus:bg-ipuzzle/10",
-                        )}
+                        className={cn("bg-ipuzzle/20 text-ipuzzle active:bg-ipuzzle/10 focus:bg-ipuzzle/10")}
                         disabled={!online.isOnline}
                         onClick={() => { onLeaderboard(); }} >
                         <Titled title={"Leaderboard"}>
                             {online.isOnline && "check your global rank"}
-                            {!online.isOnline && <SvgLoad className="animate-spin m-auto inline-block" />}
+                            {!online.isOnline && "connecting"}
                         </Titled>
                     </MenuButton>
                 </Frame>

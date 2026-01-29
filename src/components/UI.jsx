@@ -61,7 +61,7 @@ export function Frame({ className, children, ...props }) {
     return (
         <div
             className={cn("overflow-hidden bg-white xtext-ipuzzle ring-4 xxring-gray-200 ring-ipuzzle/50 rounded-lg",
-                "border-4 border-white flex flex-col", className
+                "border-4 border-white flex flex-col gap-1", className
             )}>{children}</div>
     );
 }

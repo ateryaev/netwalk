@@ -185,8 +185,7 @@ export function DetailedButton({ children, special, safe, className, subtitle, v
         setIsFocused(true);
     }
     return (
-        <MenuButton className={cn("p-3 flex gap-2 items-center justify-between",
-            false && special && "border-l-6 pl-2.5 border-ipuzzle", className)}
+        <MenuButton className={cn("p-3 flex gap-2 items-center justify-between", className)}
             {...props}
             onBlur={handleBlur}
             onClick={handleClick}>

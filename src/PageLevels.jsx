@@ -1,5 +1,5 @@
-import { use, useEffect, useMemo, useState, ViewTransition } from "react";
-import { DetailedButton, SvgPlay } from "./components/Button";
+import React, { use, useEffect, useMemo, useState, ViewTransition } from "react";
+import { DetailedButton, MenuButton, SvgPlay } from "./components/Button";
 import { SubContent, SubHeader } from "./components/Modal";
 import { Blink, Frame, Inv, LabelNew, LabelPlay, LabeNow } from "./components/UI";
 import { cn } from "./utils/cn";
@@ -44,8 +44,9 @@ function LevelButton({ level, disabled, className, size, colors, empties, times,
     return (
         <DetailedButton
             special={now && !selected}
-            className={cn("",
-                selected && "bg-ipuzzle/20 text-ipuzzle scroll-m-2 active:bg-ipuzzle/10 focus:bg-ipuzzle/10", className)}
+            className={cn("bg-gray-50 disabled:bg-white",
+                selected && "bg-ipuzzle/20 text-ipuzzle scroll-m-2 active:bg-ipuzzle/10 focus:bg-ipuzzle/10",
+                "active:bg-ipuzzle/10 focus:bg-ipuzzle/10", className)}
             subtitle={subtitle}
             value={isRandom && times > 0 && times}
             subvalue={subvalue}
@@ -61,13 +62,19 @@ export function PageLevels({ onLevelSelect }) {
     const { getLevelsSolved, getLevelStats, current } = useGame();
     const { currentData } = usePageHistory();
 
-    const mode = currentData ? currentData.mode : 0;
-    const levelPlaying = mode === current.mode ? current.level : -1;
 
+    const mode = currentData ? currentData.mode : 0;
     const solved = getLevelsSolved(mode);
+    const levelPlaying = mode === current.mode ? current.level : solved;
+
+
 
     const [selectedIndex, setSelectedIndex] = useState(levelPlaying);
+    const [limit, setLimit] = useState(20);
 
+    function increaseLimit() {
+        setLimit((prev) => prev + 10);
+    }
 
     function handleLevelSelect(level) {
         if (level === selectedIndex && level >= 0) {
@@ -78,30 +85,44 @@ export function PageLevels({ onLevelSelect }) {
     }
 
     useEffect(() => {
-        const element = document.querySelector(".scrolltoitem");
-        if (!element) return;
-        element.parentNode.scrollTop = element.offsetTop;
-        element?.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });
-    }, [selectedIndex]);
+        if (levelPlaying === solved) {
+            const modalscroller = document.querySelector(".modalscroller");
+            if (modalscroller) modalscroller.scrollTop = modalscroller.scrollHeight;
+        } else {
+            const element = document.querySelector(".scrolltoitem");
+            if (element) element.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });
+        }
+    }, []);
 
     return (<>
         <SubHeader className={""}>{GAME_MODES[mode]}</SubHeader>
         <SubContent key="LevelsKey" className={""}>
             <Frame>
-                {Array.from({ length: solved + 1 }, (_, level) => (
-                    <LevelButton key={level} level={level}
-                        now={level === levelPlaying}
-                        selected={level === selectedIndex}
-                        size={GAME_LEVEL_SIZE(mode, level)}
-                        colors={GAME_LEVEL_COLORS(mode, level)}
-                        empties={GAME_LEVEL_EMPTY(mode, level)}
-                        times={getLevelStats(mode, level).playedTimes}
-                        isRandom={GAME_LEVEL_RANDOM(mode, level)}
-                        onClick={() => handleLevelSelect(level)}
-                        isNewest={level === solved}
-                        className={(selectedIndex === level || (level == solved && selectedIndex < 0)) && "scrolltoitem scroll-m-(--safe-area-bottom,0px)"}
-                    />
-                ))}
+
+                {limit < solved && <MenuButton
+                    className={cn("bg-ipuzzle/20 text-ipuzzle",
+                        "active:bg-ipuzzle/10 focus:bg-ipuzzle/10"
+                    )}
+                    onClick={increaseLimit} >
+                    show more
+                </MenuButton>}
+                {Array.from({ length: Math.min(solved, limit) + 1 }, (_, index) => {
+                    const level = Math.max(0, solved - limit) + index;
+                    return (
+                        <LevelButton key={level} level={level}
+                            now={level === levelPlaying && mode === current.mode}
+                            selected={level === selectedIndex}
+                            size={GAME_LEVEL_SIZE(mode, level)}
+                            colors={GAME_LEVEL_COLORS(mode, level)}
+                            empties={GAME_LEVEL_EMPTY(mode, level)}
+                            times={getLevelStats(mode, level).playedTimes}
+                            isRandom={GAME_LEVEL_RANDOM(mode, level)}
+                            onClick={() => handleLevelSelect(level)}
+                            isNewest={level === solved}
+                            className={(selectedIndex === level || (level == solved && selectedIndex < 0)) && "scrolltoitem scroll-m-[calc(var(--safe-area-bottom,0px)+1rem)]"}
+                        />
+                    )
+                })}
                 <LevelButton disabled level={solved + 1} />
             </Frame>
         </SubContent>

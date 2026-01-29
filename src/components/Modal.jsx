@@ -83,6 +83,7 @@ const Modal = ({ shown, onBack, onClose, title, subtitle, children, reversed }) 
                         'translate-0 opacity-100 starting:translate-x-10 starting:opacity-20 xduration-1000 transition-all',
                         !useSubTransition && "starting:translate-x-0",
                         isStartPage && useSubTransition && "starting:-translate-x-10",
+                        "modalscroller"
                     )}>
                     {children}
                     <div className='flex-1'></div>
